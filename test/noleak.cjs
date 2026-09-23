@@ -46,6 +46,42 @@ const STD_HEADERS = new Set(['accept', 'accept-language', 'accept-encoding', 'co
   'user-agent', 'connection', 'host', 'sec-fetch-site', 'sec-fetch-mode', 'sec-fetch-dest', 'sec-fetch-user',
   'sec-ch-ua', 'sec-ch-ua-mobile', 'sec-ch-ua-platform', 'upgrade-insecure-requests', 'cache-control', 'pragma', 'priority']);
 
+// DLONLY0X_20260924：同一个文件两种用法 —— 在 0x000000000.com 上打开只给下载、不许有 6 步；
+//   下载到电脑上（file://）双击打开才有 6 步，而且一开始就断网也要能选 TRON、能造钥匙。
+//   网站模式用 route 把这一个文件当成 https://0x000000000.com/ 送进浏览器，接口转给本机的平台 —— 一个字节都不碰真网站。
+async function modes(browser) {
+  const html = fs.readFileSync(path.join(PAGE_DIR, 'index.html'), 'utf8');
+  const ctx1 = await browser.newContext();
+  await ctx1.route('https://0x000000000.com/**', async (route) => {
+    const u = new URL(route.request().url());
+    if (u.pathname === '/' || u.pathname === '/index.html') return route.fulfill({ status: 200, contentType: 'text/html; charset=utf-8', body: html });
+    if (u.pathname.startsWith('/api/')) return route.fulfill({ response: await route.fetch({ url: 'http://127.0.0.1:8787' + u.pathname + u.search }) });
+    return route.abort();
+  });
+  const p1 = await ctx1.newPage(); const errs = []; p1.on('pageerror', (e) => errs.push(e.message));
+  await p1.goto('https://0x000000000.com/'); await sleep(1500);
+  const site = await p1.evaluate(() => ({ gate: !document.querySelector('#dlGate').hidden, flow: !document.querySelector('#flowWrap').hidden,
+    genShown: !!(document.querySelector('#btnGen') && document.querySelector('#btnGen').offsetParent),
+    dl: document.querySelector('#dlPage2') ? document.querySelector('#dlPage2').getAttribute('href') : null }));
+  await ctx1.close();
+  const f = path.join(DATA, 'offline-copy.html'); fs.writeFileSync(f, html);
+  const ctx2 = await browser.newContext({ acceptDownloads: true, offline: true });
+  const p2 = await ctx2.newPage(); p2.on('pageerror', (e) => errs.push(e.message));
+  await p2.goto('file://' + f); await sleep(1500);
+  const file = await p2.evaluate(() => ({ gate: !document.querySelector('#dlGate').hidden, flow: !document.querySelector('#flowWrap').hidden,
+    chains: [...document.querySelectorAll('#chainPick [data-chain]')].map((b) => b.dataset.chain),
+    nets: document.querySelectorAll('#steps .netline').length }));
+  let secChain = null;
+  try {
+    await p2.click('#chainPick [data-chain="tron"]'); await sleep(200);
+    await p2.fill('#orderPat', 'TX'); await p2.dispatchEvent('#orderPat', 'input');
+    const [d] = await Promise.all([p2.waitForEvent('download', { timeout: 15000 }), p2.click('#btnGen')]);
+    secChain = JSON.parse(fs.readFileSync(await d.path(), 'utf8')).chain || null;
+  } catch (e) { errs.push('断网造 TRON 钥匙没做成：' + e.message.split('\n')[0]); }
+  await ctx2.close();
+  return { site, file, secChain, errs };
+}
+
 async function walk(browser, N, chain, pos, pre, suf) {
   const ctx = await browser.newContext({ viewport: { width: 1280, height: 900 }, acceptDownloads: true });
   await ctx.addInitScript(() => { try { localStorage.setItem('0xlang', 'zh'); } catch (e) {} });
@@ -73,16 +109,23 @@ async function walk(browser, N, chain, pos, pre, suf) {
   await page.click('#btnPay');
   await page.waitForFunction(() => /可以取货/.test(document.querySelector('#out4').textContent), null, { timeout: 90000 });
   await page.click('#btnDownload');
+  await page.waitForFunction(() => /拿到了/.test(document.querySelector('#out5').textContent), null, { timeout: 15000 });
+  // MERGESPLIT0X_20260924：拿到另一半之后断网，再合成、再导出钱包 —— 这两步期间页面一个请求都不许发
+  const before2 = wire.length;
+  await ctx.setOffline(true);
+  await page.click('#btnMerge');
   await page.waitForFunction(() => /合成成功/.test(document.querySelector('#out5').textContent), null, { timeout: 15000 });
   await page.fill('#ksPw', 'test-password-123');
   const [dl2] = await Promise.all([page.waitForEvent('download', { timeout: 120000 }), page.click('#btnKs')]);
   const ksPath = path.join(DATA, chain + pos + '-ks.json'); await dl2.saveAs(ksPath);
+  const offlineReq2 = wire.length - before2;
+  await ctx.setOffline(false);
   const k = keyFromKeystore(JSON.parse(fs.readFileSync(ksPath, 'utf8')), 'test-password-123');
   await page.click('#btnReceipt');
   await page.waitForFunction(() => /收条收到了/.test(document.querySelector('#out6').textContent), null, { timeout: 15000 });
   await sleep(500);
   await ctx.close();
-  return { s, k, wire, resp, offlineReq, errs };
+  return { s, k, wire, resp, offlineReq, offlineReq2, errs };
 }
 
 (async () => {
@@ -105,6 +148,7 @@ async function walk(browser, N, chain, pos, pre, suf) {
       console.log(`== ${chain} ${pos} ${pre}…${suf} ==`);
       const w = await walk(browser, N, chain, pos, pre, suf);
       chk(w.offlineReq === 0, `断网点「造钥匙」照样成功，期间请求 ${w.offlineReq} 个`);
+      chk(w.offlineReq2 === 0, `拿到另一半后断网：「合成我的钥匙」「导出钱包」照样成功，期间请求 ${w.offlineReq2} 个`);
       const challenge = (w.resp.find((j) => j && typeof j.challenge === 'string') || {}).challenge;
       const receiptMsg = (w.resp.find((j) => j && typeof j.receiptChallenge === 'string') || {}).receiptChallenge;
       chk(!!challenge && !!receiptMsg, '从平台回包里拿到了挑战串和回执原文（重算签名要用）');
@@ -153,6 +197,14 @@ async function walk(browser, N, chain, pos, pre, suf) {
         `白名单：打平台的 ${n} 个请求逐个核对，不合格 ${bad} 个 · ${JSON.stringify(kinds)}`);
       chk(w.errs.length === 0, '页面没有报错' + (w.errs.length ? '：' + w.errs.join(' | ') : ''));
     }
+    console.log('== 网站模式 / 下载到电脑模式 ==');
+    const m = await modes(browser);
+    chk(m.site.gate && !m.site.flow && !m.site.genShown && m.site.dl === '0x000000000.html',
+      '当成 https://0x000000000.com/ 打开：只有「下载铸造页面」，6 步不显示 · ' + JSON.stringify(m.site));
+    chk(!m.file.gate && m.file.flow && m.file.nets === 6, '下载到电脑上打开（file://）：6 步都在，每一步都标了断网/联网（' + m.file.nets + ' 条）');
+    chk(m.file.chains.includes('evm') && m.file.chains.includes('tron'), '一开始就断网也能选 TRON（' + m.file.chains.join(' / ') + '）');
+    chk(m.secChain === 'tron', '断网选 TRON 造出来的钥匙备份就是 TRON 的（' + m.secChain + '）');
+    chk(m.errs.length === 0, '两种打开方式页面都没有报错' + (m.errs.length ? '：' + m.errs.join(' | ') : ''));
   } catch (e) {
     fail++; console.log('  ★ 走到一半炸了：' + e.message.split('\n')[0]); console.log(slog.slice(-800));
   } finally {
