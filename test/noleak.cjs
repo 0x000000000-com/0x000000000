@@ -82,6 +82,73 @@ async function modes(browser) {
   return { site, file, secChain, errs };
 }
 
+// NETSYNC0X_20260924：下载版【断网打开、后来联网】—— 付款链要补全、第 3 步要换成真收款字样，而且不许只靠浏览器的 online 事件
+//   （Windows 上有虚拟网卡时，拔了网浏览器也以为自己在线，事件根本不来 —— 20260924 实测第 2 步只剩 TRON）。
+//   silent = 网是断的但浏览器以为在线（没有事件）· event = 浏览器知道断网，连上时有 online 事件 · up = 一直在线。
+//   /api/health 在线路上改成 live：测的是页面怎么补拿，不是平台。
+async function netsync(browser) {
+  const html = fs.readFileSync(path.join(PAGE_DIR, 'index.html'), 'utf8');
+  const res = [], ctxs = []; const ok = (c, m) => res.push([!!c, m]);
+  const open = async (net) => {
+    const st = { NET: net === 'up', orders: [] };
+    const c = await browser.newContext({ acceptDownloads: true, offline: net === 'event' }); ctxs.push(c);
+    await c.addInitScript(() => { try { localStorage.setItem('0xlang', 'zh'); } catch (e) {} });
+    await c.route('https://0x000000000.com/**', async (r) => {
+      const u = new URL(r.request().url());
+      if (!st.NET || !u.pathname.startsWith('/api/')) return r.abort('internetdisconnected');
+      if (u.pathname === '/api/orders' && r.request().method() === 'POST') st.orders.push(JSON.parse(r.request().postData() || '{}'));
+      let resp; try { resp = await r.fetch({ url: 'http://127.0.0.1:8787' + u.pathname + u.search }); } catch (e) { return r.abort('connectionrefused'); }
+      if (u.pathname === '/api/health') { const j = await resp.json(); j.mode = 'live'; return r.fulfill({ response: resp, body: JSON.stringify(j) }); }
+      return r.fulfill({ response: resp });
+    });
+    const f = path.join(DATA, 'netsync-' + net + '-' + ctxs.length + '.html'); fs.writeFileSync(f, html);
+    const p = await c.newPage(); const errs = []; p.on('pageerror', (e) => errs.push(e.message));
+    await p.goto('file://' + f); await sleep(1200);
+    await p.click('#chainPick [data-chain="tron"]'); await p.fill('#orderPat', 'TXo'); await p.dispatchEvent('#orderPat', 'input');
+    await Promise.all([p.waitForEvent('download', { timeout: 15000 }), p.click('#btnGen')]); await sleep(300);
+    return { p, st, errs,
+      up: async () => { st.NET = true; if (net === 'event') await c.setOffline(false); },
+      pays: () => p.$$eval('#payChain option', (os) => os.map((o) => o.value).join(' / ')),
+      out2: async () => (await p.textContent('#out2')) || '',
+      btnPay: async () => (await p.textContent('#btnPay')) || '',
+      paid: () => p.evaluate(() => !document.querySelector('#payInfo').hidden),
+      placed: () => p.waitForFunction(() => !document.querySelector('#payInfo').hidden, null, { timeout: 15000 }).catch(() => {}) };
+  };
+  const run = async (name, fn) => { try { await fn(); } catch (e) { ok(false, name + ' 没走完：' + String(e.message).split('\n')[0].slice(0, 100)); } };
+  await run('断网打开 · 没有 online 事件 · 直接点下单', async () => {
+    const x = await open('silent');
+    ok((await x.pays()) === 'tron' && /还没联网/.test(await x.p.textContent('#payChainNote')), '断网打开：付款链只有缺省那一条，并且写明要联网才看得全');
+    await x.up(); await x.p.click('#btnCreate'); await sleep(1500);
+    ok(/付款方式刚取到/.test(await x.out2()) && x.st.orders.length === 0, '连上网（浏览器没发 online 事件）直接点下单：先补拿付款链、不建单、叫他先选');
+    ok((await x.pays()) === 'tron / bsc', '补拿之后付款链有 TRON 和 BSC（' + (await x.pays()) + '）');
+    ok(/我转好了/.test(await x.btnPay()), '第 3 步换成了真收款字样（' + (await x.btnPay()) + '）');
+    await x.p.selectOption('#payChain', 'bsc', { timeout: 3000 }); await x.p.click('#btnCreate'); await x.placed();
+    ok(x.st.orders.length === 1 && x.st.orders[0].payChain === 'bsc' && await x.paid(), '选了 BSC 再点下单：建单用的就是 BSC，付款信息出来了');
+    ok(x.errs.length === 0, '页面没有报错' + (x.errs.length ? '：' + x.errs.join(' | ') : ''));
+  });
+  await run('断网打开 · 没有 online 事件 · 先点付款链', async () => {
+    const x = await open('silent'); await x.up();
+    await x.p.click('#payChain'); await x.p.keyboard.press('Escape'); await sleep(1500);
+    ok((await x.pays()) === 'tron / bsc', '连上网后点一下付款链：TRON 和 BSC 都出来了（' + (await x.pays()) + '）');
+    await x.p.selectOption('#payChain', 'bsc', { timeout: 3000 }); await x.p.click('#btnCreate'); await x.placed();
+    ok(x.st.orders.length === 1 && x.st.orders[0].payChain === 'bsc' && !/付款方式刚取到/.test(await x.out2()) && await x.paid(), '选好 BSC 点下单：一次就建单，不再多问');
+  });
+  await run('一直在线', async () => {
+    const x = await open('up');
+    ok((await x.pays()) === 'tron / bsc', '一直在线：付款链一打开就是 TRON 和 BSC');
+    await x.p.click('#btnCreate'); await x.placed();
+    ok(x.st.orders.length === 1 && !/付款方式刚取到/.test(await x.out2()) && await x.paid(), '一直在线点下单：直接建单，不多问一句');
+  });
+  await run('断网打开 · 有 online 事件', async () => {
+    const x = await open('event'); await x.up(); await sleep(1500);
+    ok((await x.pays()) === 'tron / bsc' && /我转好了/.test(await x.btnPay()), '浏览器知道断网又连上：自己补到 TRON 和 BSC，第 3 步是真收款字样');
+    await x.p.click('#btnCreate'); await sleep(800);
+    ok(/付款方式刚取到/.test(await x.out2()) && x.st.orders.length === 0, '付款链是背后补到的、他还没看过：点下单先叫他选一次');
+  });
+  for (const c of ctxs) await c.close().catch(() => {});
+  return res;
+}
+
 async function walk(browser, N, chain, pos, pre, suf) {
   const ctx = await browser.newContext({ viewport: { width: 1280, height: 900 }, acceptDownloads: true });
   await ctx.addInitScript(() => { try { localStorage.setItem('0xlang', 'zh'); } catch (e) {} });
@@ -205,6 +272,8 @@ async function walk(browser, N, chain, pos, pre, suf) {
     chk(m.file.chains.includes('evm') && m.file.chains.includes('tron'), '一开始就断网也能选 TRON（' + m.file.chains.join(' / ') + '）');
     chk(m.secChain === 'tron', '断网选 TRON 造出来的钥匙备份就是 TRON 的（' + m.secChain + '）');
     chk(m.errs.length === 0, '两种打开方式页面都没有报错' + (m.errs.length ? '：' + m.errs.join(' | ') : ''));
+    console.log('== 下载版断网打开、后来联网 ==');
+    for (const [c, msg] of await netsync(browser)) chk(c, msg);
   } catch (e) {
     fail++; console.log('  ★ 走到一半炸了：' + e.message.split('\n')[0]); console.log(slog.slice(-800));
   } finally {
