@@ -1,0 +1,217 @@
+/* 0x000000000 · UIFLIP_20260922
+   把站从「PowerShell 终端皮肤」换成 tool.html 那一套：深色卡片 · 圆角 · 金色主按钮。
+   ★ 设计令牌逐字取自 web/tool.html 的 :root —— 两边必须是同一套，不是「差不多」。
+   ★★ 结构一个字没改：index/faq/track/admin 的每一个类名都还在，app.js 用的 id 全没动。
+      只换外观，所以功能不可能被它弄坏。 */
+:root{
+  --bg0:#06070c; --panel:#0e1118; --panel2:#141824; --line:#1d222d; --line2:#2b3240;
+  --text:#e9e5d9; --dim:#9aa0ab; --faint:#5d6470;
+  --gold:#c9a227; --gold-b:#ebc65c; --gold-d:#8f6f1a;
+  --up:#2fbf8f; --down:#e5484d; --warn:#e8a13c; --info:#6aa9ff;
+  --sans:system-ui,"PingFang SC","Microsoft YaHei","Noto Sans SC",sans-serif;
+  --mono:"Cascadia Mono",Consolas,"Courier New",ui-monospace,monospace;
+  --metal-text:linear-gradient(180deg,#f0d98c,#c9a227 55%,#8f6f1a);
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+html,body{margin:0;padding:0}
+body{background:var(--bg0);color:var(--text);font-family:var(--sans);font-size:15px;line-height:1.65;
+     padding:24px 16px 64px}
+body::before,body::after{content:none}
+
+/* 终端皮肤的三件套：星空 / 开机字 / 光标行 —— 这次要的就是没有它们 */
+.cosmos,#space,.boot,.cursor-line{display:none!important}
+
+.term{max-width:900px;margin:0 auto}
+
+/* ── 顶栏：留标题+时钟+语言，去掉 mac 三个点 ── */
+.titlebar{display:flex;align-items:center;gap:12px;padding:0 2px 18px;border-bottom:1px solid var(--line);margin-bottom:22px}
+.dots,.dots .d,.d.r,.d.y,.d.g{display:none}
+.ttl{font-family:var(--mono);font-size:13px;color:var(--dim);letter-spacing:.02em}
+.utc{margin-left:auto;font-family:var(--mono);font-size:11.5px;color:var(--faint)}
+.lang button{background:transparent;color:var(--dim);border:1px solid var(--line2);border-radius:6px;
+  font-family:var(--sans);font-size:12px;padding:4px 10px;margin-left:6px;cursor:pointer}
+.lang button.active{background:rgba(201,162,39,.14);color:var(--gold-b);border-color:var(--gold-d)}
+.body{display:block}
+
+/* ── Hero ── */
+.hero{margin:0 0 22px}
+.hero-brand{font-family:var(--mono);font-size:34px;font-weight:700;letter-spacing:.06em;line-height:1.2;
+  background:var(--metal-text);-webkit-background-clip:text;background-clip:text;color:transparent}
+.hero-tag{font-family:var(--mono);font-size:12px;color:var(--faint);margin-top:6px;letter-spacing:.06em;text-transform:uppercase}
+.hero-mission{color:var(--dim);font-size:14px;margin-top:12px;max-width:62ch}
+.gold-strip{display:flex;flex-wrap:wrap;gap:12px;margin-top:20px}
+.gs-item{background:linear-gradient(180deg,#121722,#0e1118);border:1px solid var(--line2);
+  border-radius:10px;padding:12px 16px;min-width:180px}
+.gs-l{display:block;font-family:var(--mono);font-size:12px;color:var(--dim)}
+.gs-v{display:block;margin-top:4px;font-family:var(--mono);font-size:16px;font-weight:700;
+  background:var(--metal-text);-webkit-background-clip:text;background-clip:text;color:transparent}
+.gs-item.cta{display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#ebc65c,#c9a227);
+  border-color:var(--gold-d);min-width:0;padding:0}
+.gs-item.cta a{display:block;padding:14px 22px;color:#1a1405;font-weight:700;font-size:14px;text-decoration:none;white-space:nowrap}
+.gs-item.cta:hover{filter:brightness(1.08)}
+
+/* ── 每个 section 变成一张卡 ── */
+.block{border:1px solid var(--line);background:var(--panel);border-radius:10px;padding:18px;margin-bottom:16px}
+/* .prompt 里那串 "PS C:\0x000000000>" 用 font-size:0 收掉，只把命令名留成卡片标题 */
+.prompt{font-size:0;margin:0 0 14px;line-height:0}
+.prompt .cmd{font-family:var(--mono);font-size:15px;line-height:1.5;color:var(--gold-b);letter-spacing:.02em}
+.out{display:block}
+
+/* ── 表格 ── */
+.tblwrap{overflow-x:auto;margin:0 -4px}
+table{width:100%;border-collapse:collapse;font-size:13.5px}
+th{text-align:left;font-family:var(--mono);font-size:11px;font-weight:500;color:var(--faint);
+  text-transform:uppercase;letter-spacing:.08em;padding:0 10px 10px;border-bottom:1px solid var(--line)}
+td{padding:11px 10px;border-bottom:1px solid var(--line);color:var(--text)}
+tbody tr:hover{background:rgba(255,255,255,.02)}
+tr:last-child td{border-bottom:0}
+td.num,th.num{text-align:right;font-family:var(--mono)}
+td.price{color:var(--gold-b);font-weight:600}
+td .pos{color:var(--dim)}
+td .tier{color:var(--faint);font-size:12px}
+td .eta{font-family:var(--mono);color:var(--dim)}
+.note{margin-top:14px;font-size:12.5px;color:var(--faint);line-height:1.6}
+
+/* ── 输入区 ── */
+.inputline{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin-bottom:14px}
+.inputline .p{font-family:var(--mono);font-size:13px;color:var(--faint)}
+.inputline .lbl{font-size:12.5px;color:var(--dim)}
+input,select{background:#0a0d14;border:1px solid var(--line2);border-radius:6px;color:var(--text);
+  font-family:var(--mono);font-size:13px;padding:9px 10px}
+input{min-width:170px}
+input:focus,select:focus{outline:0;border-color:var(--gold-d);box-shadow:0 0 0 2px rgba(201,162,39,.12)}
+button.run{background:linear-gradient(135deg,#ebc65c,#c9a227);color:#1a1405;border:0;border-radius:6px;
+  font-family:var(--sans);font-size:13px;font-weight:700;padding:9px 16px;cursor:pointer}
+button.run:hover{filter:brightness(1.1)}
+button.run:disabled{opacity:.45;cursor:not-allowed;filter:none}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
+.chip{background:var(--panel2);color:var(--dim);border:1px solid var(--line2);border-radius:999px;
+  font-family:var(--mono);font-size:12px;padding:5px 13px;cursor:pointer}
+.chip:hover{border-color:var(--gold-d);color:var(--text)}
+.chip.active{background:rgba(201,162,39,.14);color:var(--gold-b);border-color:var(--gold-d)}
+.calc-out{font-family:var(--mono);font-size:12.5px;color:var(--dim);background:#0a0d14;
+  border:1px solid var(--line);border-radius:8px;padding:12px 14px;margin:0;white-space:pre-wrap;line-height:1.7}
+.calc-out:empty{display:none}
+.calc-out .k{color:var(--faint)}
+.calc-out .v{color:var(--text)}
+.calc-out .v.gold{color:var(--gold-b)}
+.calc-out .err{color:var(--down)}
+.calc-out .warn{color:var(--warn)}
+
+/* ── 承诺条（tool.html 的 .oath 同一套） ── */
+.zone{border:1px solid var(--line2);background:linear-gradient(180deg,#121722,#0e1118);
+  border-radius:10px;padding:14px 16px;margin-bottom:18px;font-size:13.5px;color:var(--dim)}
+.zone.safe{border-color:rgba(47,191,143,.35)}
+.zone.safe .zt{color:var(--up);font-weight:700;font-size:13px;letter-spacing:.02em}
+.zone.danger{border-color:rgba(229,72,77,.35)}
+.zone.danger .zt{color:var(--down);font-weight:700}
+
+/* ── 六步流程：一步一张小卡 ── */
+.steps{list-style:none;margin:0;padding:0}
+.steps li{border:1px solid var(--line);background:var(--panel2);border-radius:10px;padding:14px 16px;margin-bottom:12px}
+.step-head{font-size:14px;font-weight:600;color:var(--text)}
+.step-head .no{font-family:var(--mono);font-size:11.5px;color:var(--gold-b);margin-right:8px}
+.step-cmd{margin:10px 0 6px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.step-cmd code{font-family:var(--mono);font-size:12.5px;color:var(--dim);
+  background:#0a0d14;border:1px solid var(--line);border-radius:6px;padding:6px 10px}
+.step-desc{font-size:12.5px;color:var(--faint);line-height:1.6}
+.step-desc.warn{color:var(--warn)}
+a.toolink{font-family:var(--sans);font-size:13px;font-weight:700;color:#1a1405;text-decoration:none;
+  background:linear-gradient(135deg,#ebc65c,#c9a227);border:1px solid var(--gold-d);border-radius:8px;
+  padding:8px 15px;white-space:nowrap;order:-1}
+a.toolink:hover{filter:brightness(1.12)}
+.cmdalt{font-family:var(--sans);font-size:11.5px;color:var(--faint)}
+button.copy{font-family:var(--sans);font-size:11.5px;color:var(--info);background:transparent;border:0;
+  padding:0;cursor:pointer;text-decoration:underline;text-underline-offset:3px}
+.step-out{margin:10px 0 0;padding:10px 12px;background:#0a0d14;border:1px solid var(--line);border-radius:8px;
+  font-family:var(--mono);font-size:12px;color:var(--dim);white-space:pre-wrap;line-height:1.65}
+.step-out .ok{color:var(--up)}
+.step-out .dim{color:var(--faint)}
+/* STEPERR0X_20260923：六步里所有 outLine(...,'err') 原来都落在 .step-out 的默认灰色上 ——
+   包括第 5 步那句「⛔ 合出来的地址对不上，先别导出」。最该醒目的警告反而最不显眼。 */
+.step-out .err{color:var(--down);font-weight:600}
+.step-out .warn{color:var(--warn)}
+
+/* ── 状态 ── */
+.statusline{margin-top:12px;font-size:12.5px;color:var(--faint)}
+.statusline span,td .st{font-family:var(--mono);font-size:11.5px;border:1px solid var(--line2);
+  border-radius:999px;padding:2px 10px;color:var(--dim)}
+.st-created{color:var(--dim)}
+.st-share{color:var(--info);border-color:rgba(106,169,255,.4)}
+.st-paid{color:var(--gold-b);border-color:var(--gold-d)}
+.st-mining{color:var(--warn);border-color:rgba(232,161,60,.4)}
+.st-delivered{color:var(--up);border-color:rgba(47,191,143,.4)}
+.st-refunded{color:var(--faint)}
+.st-expired{color:var(--down);border-color:rgba(229,72,77,.4)}
+
+/* ── 交付控件 ── */
+.flow-ctl{margin-top:12px}
+.flow-ctl .lbl{display:block;font-size:12.5px;color:var(--dim);margin:10px 0 5px}
+.flow-ctl code.chal{display:inline-block;font-family:var(--mono);font-size:12px;color:var(--gold-b);
+  background:#0a0d14;border:1px solid var(--line);border-radius:6px;padding:6px 10px;word-break:break-all}
+.flow-ctl textarea,.flow-ctl input{width:100%;background:#0a0d14;border:1px solid var(--line2);border-radius:6px;
+  color:var(--text);font-family:var(--mono);font-size:12.5px;padding:9px 10px}
+.flow-ctl textarea{min-height:86px;resize:vertical;line-height:1.55}
+.flow-ctl textarea:focus,.flow-ctl input:focus{outline:0;border-color:var(--gold-d);box-shadow:0 0 0 2px rgba(201,162,39,.12)}
+.flow-ctl button.run{margin-top:10px}
+
+/* ── 页脚 ── */
+.foot{margin-top:28px;padding-top:18px;border-top:1px solid var(--line);font-size:12.5px;color:var(--faint);line-height:1.8}
+.foot a{color:var(--dim);text-decoration:none;border-bottom:1px solid var(--line2)}
+.foot a:hover{color:var(--gold-b);border-color:var(--gold-d)}
+.foot .warnline{margin-top:8px;color:var(--warn)}
+.caret{display:none}
+
+@media (max-width:640px){
+  body{padding:16px 12px 48px}
+  .hero-brand{font-size:26px}
+  .gs-item{min-width:calc(50% - 6px);flex:1 1 calc(50% - 6px)}
+  .gs-item.cta{flex:1 1 100%}
+  .block{padding:14px}
+}
+
+/* ── CHAINSEL0X_20260923 两条链 ── */
+td.chainhead,.chainhead{font-family:var(--mono);font-size:12px;color:var(--gold-b);
+  letter-spacing:.06em;padding-top:16px;border-bottom:1px solid var(--line2)}
+.chainhead .works{display:block;font-size:11px;color:var(--faint);letter-spacing:0;margin-top:3px}
+tr.unpriced td{opacity:.72}
+.soon{color:var(--warn);font-family:var(--sans);font-size:12.5px;font-weight:400}
+.chip .dim{color:var(--faint);font-family:var(--mono);font-size:11px}
+.chip.active .dim{color:var(--gold-d)}
+#patHint{min-height:1.4em;margin-top:2px}
+#patHint.warn{color:var(--warn)}
+
+
+/* CATMODAL0X_20260923 价目表弹窗 —— 正中间弹出，点背景或 ✕ 关，Esc 也关 */
+/* ★ .prompt 用 font-size:0 吃掉行内空白 —— 这里写 em 会被乘成 0，按钮变成一条 20x4 的空条。
+   20260923 实测：文字在 DOM 里、颜色也对，就是字号 0。层叠撞车不会报错，只会静静地不见。 */
+.peek{margin-left:10px;background:transparent;border:1px solid var(--line2,#2b3240);color:var(--gold-b,#ebc65c);
+  font-family:inherit;font-size:13px;line-height:1.5;padding:2px 10px;border-radius:4px;cursor:pointer;
+  vertical-align:middle}
+.peek:hover{border-color:var(--gold,#c9a227)}
+.peek:focus-visible{outline:2px solid var(--gold-b,#ebc65c);outline-offset:2px}
+.modal{position:fixed;inset:0;z-index:90;display:grid;place-items:center;padding:20px}
+.modal[hidden]{display:none}
+.modal-back{position:absolute;inset:0;background:rgba(0,0,0,.72)}
+.modal-box{position:relative;width:min(760px,100%);max-height:min(82vh,760px);display:flex;flex-direction:column;
+  background:var(--panel,#0e1118);border:1px solid var(--line2,#2b3240);border-radius:10px;
+  box-shadow:0 24px 70px rgba(0,0,0,.6)}
+.modal-head{display:flex;align-items:center;justify-content:space-between;gap:12px;
+  padding:13px 16px;border-bottom:1px solid var(--line,#1d222d);font-weight:700}
+.modal-x{background:transparent;border:0;color:var(--dim,#9aa0ab);font-size:17px;line-height:1;cursor:pointer;padding:3px 6px}
+.modal-x:hover{color:var(--text,#e9e5d9)}
+.modal-body{padding:14px 16px 18px;overflow:auto}
+
+/* TRUST0X_20260923：「为什么平台拿不到你的私钥」—— 每一条都是用户自己能核对的事实 */
+.zone .proof { margin: 10px 0 6px; padding-left: 1.2em; font-size: 13px; line-height: 1.7; }
+.zone .proof li { margin: 2px 0; }
+.zone .proof-links { font-size: 13px; }
+.zone .proof-links a { color: var(--gold-b); }
+/* SENTLOG0X_20260923：这一页发给平台的全部内容 */
+.sentlog { margin: 12px 0 4px; font-size: 13px; }
+.sentlog > summary { cursor: pointer; }
+.sentlog ol { margin: 6px 0 0; padding-left: 1.6em; line-height: 1.7; }
+.sentlog li details { display: inline-block; margin-left: 8px; }
+.sentlog li details summary { cursor: pointer; opacity: .7; font-size: 12px; }
+.sentlog pre { white-space: pre-wrap; word-break: break-all; font-size: 12px; margin: 4px 0; opacity: .85; }
