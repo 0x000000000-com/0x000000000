@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>0x000000000 — Vanity Address Foundry</title>
+<link rel="icon" href="data:,">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div class="cosmos" aria-hidden="true">
+  <canvas id="space"></canvas>
+</div>
+<main class="term">
+  <div class="titlebar">
+    <span class="dots" aria-hidden="true"><i class="d r"></i><i class="d y"></i><i class="d g"></i></span>
+    <span class="ttl">0x000000000 — Vanity Address Foundry</span>
+    <span class="utc" id="utcClock">--:--:-- UTC</span>
+    <span class="lang">
+      <button id="btnZh" data-lang="zh">中文</button>
+      <button id="btnEn" data-lang="en">EN</button>
+    </span>
+  </div>
+
+  <div class="body" id="body">
+
+    <pre class="boot" id="boot" aria-label="boot sequence"></pre>
+
+    <section class="hero">
+      <div class="hero-brand">0x000000000</div>
+      <div class="hero-tag" data-i18n="heroTag">靓号地址铸造台 · SPLIT-KEY 无托管</div>
+      <div class="hero-mission" data-i18n="heroMission">用 USDT 付款。你先在自己电脑上造一半钥匙，我们替你铸另一半——完整私钥只有你拼得出。</div>
+      <!-- HEROSYNC0X_20260923：这三张卡曾经写死成【已经取消的档位】(前缀8位 15-35 USDT),
+           在公网上卖了不存在的产品。静态这份是【兜底】,必须是真在卖的;
+           页面一拿到 /api/catalog 就由 renderHero() 覆盖它,从此不会再跟目录分叉。
+           出包前 _mk0xdep.py 的 HEROSYNC 闸会把下面每个 data-pat 拿去跟价目表对一遍,对不上就不许出包。 -->
+      <div class="gold-strip" id="goldStrip">
+        <div class="gs-item" data-pat="0000000000" data-chain="evm"><span class="gs-l">0x0000000000 · 前缀10位</span><span class="gs-v">100 USDT</span></div>
+        <div class="gs-item" data-pat="8888888888" data-chain="evm"><span class="gs-l">0x8888888888 · 前缀10位</span><span class="gs-v">100 USDT</span></div>
+        <div class="gs-item" data-pat="TXooooo" data-chain="tron"><span class="gs-l">TXooooo… · TRON 前缀6位</span><span class="gs-v">100 USDT</span></div>
+        <div class="gs-item cta"><a href="#secOrder" data-i18n="heroCta">开始下单 →</a></div>
+        <div class="gs-item cta"><a href="tool.html" target="_blank" rel="noopener" data-i18n="heroTool">离线版密钥工具 ↗</a></div>
+      </div>
+    </section>
+
+    <!-- CATMODAL0X_20260923：DSJ 原话「把 Get-VanityCatalog 收起来，用户想看的时候点开，
+         点开的时候正中间弹出窗口」。价目表 18 行原来一直摊在首页上，把下单流程推到很下面。 -->
+    <section class="block" id="secCatalog">
+      <div class="prompt">PS C:\0x000000000&gt; <span class="cmd">Get-VanityCatalog</span>
+        <button type="button" class="peek" id="btnCatalog" data-i18n="catalogOpen">查看全部价格 ▸</button></div>
+      <div class="out">
+        <div class="note" id="catalogTeaser"></div>
+      </div>
+    </section>
+
+    <div class="modal" id="catalogModal" hidden>
+      <div class="modal-back" data-close-catalog></div>
+      <div class="modal-box" role="dialog" aria-modal="true" aria-labelledby="catalogTitle">
+        <div class="modal-head">
+          <span id="catalogTitle" data-i18n="catalogTitle">价目表</span>
+          <button type="button" class="modal-x" data-close-catalog aria-label="close">✕</button>
+        </div>
+        <div class="modal-body">
+          <div class="tblwrap">
+            <table>
+              <thead>
+                <tr>
+                  <th data-i18n="thType">类型 Type</th>
+                  <th class="num" data-i18n="thPrice">价格 USDT</th>
+                  <th data-i18n="thEta">铸造耗时</th>
+                </tr>
+              </thead>
+              <tbody id="catalogBody"></tbody>
+            </table>
+          </div>
+          <div class="note" data-i18n="noteHot">热门模式 (9999/8888/0000/dead/beef/c0ffee/666…) 溢价 30-100%；0x9999 与 0xabcd 难度相同——定价按位数不按字符。</div>
+        </div>
+      </div>
+    </div>
+
+    <section class="block" id="secCalc">
+      <div class="prompt">PS C:\0x000000000&gt; <span class="cmd">Measure-VanityPattern</span></div>
+      <div class="out">
+        <div class="inputline">
+          <span class="p">PS&gt;</span>
+          <input id="pat1" value="0000000000" maxlength="20" spellcheck="false" aria-label="pattern">
+          <label for="pos" class="lbl" data-i18n="lblPos">-位置 Position</label>
+          <select id="pos">
+            <option value="prefix" data-i18n="posPrefix">前缀 Prefix</option>
+            <option value="suffix" data-i18n="posSuffix">后缀 Suffix</option>
+            <option value="both" data-i18n="posBoth">前+后 Both ends</option>
+          </select>
+          <input id="pat2" value="0000000000" maxlength="20" spellcheck="false" aria-label="suffix pattern" hidden>
+          <button class="run" id="calcBtn" data-i18n="run">运行 Run</button>
+        </div>
+        <div class="chips" id="chips">
+          <button class="chip" data-pat="0000000000" data-chain="evm">0x0000000000</button>
+          <button class="chip" data-pat="8888888888" data-chain="evm">0x8888888888</button>
+          <button class="chip" data-pat="deadbeef0000" data-chain="evm">0xdeadbeef0000</button>
+          <button class="chip" data-pat="c0ffeec0ffee" data-chain="evm">0xc0ffeec0ffee</button>
+        </div>
+        <pre class="calc-out" id="calcOut" aria-live="polite"></pre>
+      </div>
+    </section>
+
+    <section class="block" id="secOrder">
+      <div class="prompt">PS C:\0x000000000&gt; <span class="cmd">New-VanityOrder -Zone Custom</span></div>
+      <div class="out">
+        <div class="zone safe">
+          <span class="zt" data-i18n="safeTitle">[SAFE] 定制区 · 无托管模式 NON-CUSTODIAL</span><br>
+          <span data-i18n="safeBody">我们全程只拿到影子 A 和另外半把钥匙 b —— 这两样加起来也推不出你的私钥。完整私钥只在你自己的电脑上拼出来。</span>
+          <!-- TRUST0X_20260923：每一条都是用户自己能核对的事实 -->
+          <ul class="proof">
+            <li data-i18n="proof1">你的那一半钥匙在你自己的浏览器里生成，只存在你自己的电脑上。平台收到的只有公钥（公开的，像银行卡号）和签名（证明你手里有那一半，但不暴露它）—— 下面「发给平台的全部内容」逐条列着，你自己看。</li>
+            <li data-i18n="proof2">「造钥匙」这一步不需要联网：你可以先关掉 Wi-Fi 再点，照样做完。</li>
+            <li><span data-i18n="proof3">这个页面就是一个文件，跟 GitHub 上公开的那份逐字节相同。GitHub 的机器每小时自动下载一次网站上的页面核对指纹，还会在每个新版本上用真浏览器走完全程、查私钥有没有被发出去 —— 这两项检查我们插不上手。</span> <span class="dim"><span data-i18n="proofVer">页面版本</span> <span id="buildId"><!--BUILD_ID--></span></span></li>
+          </ul>
+          <div class="proof-links"><a id="dlPage" href="0x000000000.html" download="0x000000000.html" data-i18n="proofDl">下载这个页面到自己电脑上用</a> · <a href="https://github.com/0x000000000-com/0x000000000" target="_blank" rel="noopener" data-i18n="proofGh">到 GitHub 核对</a></div>
+        </div>
+        <ol class="steps" id="steps"></ol>
+        <div class="statusline" id="statusLine" aria-live="polite"></div>
+        <!-- SENTLOG0X_20260923：这一页发给平台的每一次通信，用人话列出来 -->
+        <details class="sentlog" id="sentLog">
+          <summary><span data-i18n="sentHead">这一页发给平台的全部内容</span> <span id="sentCount"></span></summary>
+          <div class="step-desc" id="sentVerdict"></div>
+          <ol id="sentList"></ol>
+        </details>
+        <div class="note" data-i18n="noteProto">原型说明：本页已对接真后端（订单/签名验证/铸造/交付）；仅支付为模拟。s 的生成与签名由本地工具完成。</div>
+      </div>
+    </section>
+
+    <section class="block" id="secOrders">
+      <div class="prompt">PS C:\0x000000000&gt; <span class="cmd">Get-MyOrders</span></div>
+      <div class="out">
+        <div class="tblwrap">
+          <table>
+            <thead>
+              <tr>
+                <th data-i18n="thOrder">订单 Order</th>
+                <th data-i18n="thPattern">模式 Pattern</th>
+                <th data-i18n="thStatus">状态 Status</th>
+                <th class="num" data-i18n="thPrice2">价格 USDT</th>
+                <th data-i18n="thAction">操作</th>
+              </tr>
+            </thead>
+            <tbody id="ordersBody"></tbody>
+          </table>
+        </div>
+        <!-- RESUME0X_20260923：换了电脑/浏览器（本机记的订单号不在了）也能续 -->
+        <div class="flow-ctl">
+          <span class="lbl" data-i18n="ordersIdLbl">换了电脑或浏览器？输入订单号接着做：</span>
+          <input id="resumeId" maxlength="8" spellcheck="false" aria-label="order number" data-i18n-ph="ordersIdPh" placeholder="订单号（8 位）">
+          <button class="run" id="resumeBtn" data-i18n="ordersIdBtn">接着做这一单</button>
+        </div>
+        <div class="step-desc" id="resumeMsg"></div>
+      </div>
+    </section>
+
+    <div class="prompt cursor-line">PS C:\0x000000000&gt;<span class="caret" aria-hidden="true">█</span></div>
+
+    <footer class="foot">
+      <div><a href="tool.html">密钥工具 Key tool</a> · <a href="faq.html">FAQ</a> · <a href="track.html">订单查询 Track</a> · <a href="admin.html">Admin</a> · <span data-i18n="foot1">页面代码公开在 GitHub，可逐字节核对 · 定制区无托管 · 收款支持 TRON / BSC 上的 USDT</span></div>
+      <div class="warnline" data-i18n="foot2">平台永远不会索要你的 s 或私钥——任何索要私钥的消息都是钓鱼。</div>
+    </footer>
+  </div>
+</main>
+<!-- KEYCORE0X_20260923：密钥运算的唯一事实来源。工具页 tool.html 打包时把这两份
+     原样内联成单文件（可下载离线用），首页直接引 —— 同一套算法，不会分叉。 -->
+<script src="js/noble.js"></script>
+<script src="js/keycore.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
