@@ -77,31 +77,6 @@
       </div>
     </div>
 
-    <section class="block" id="secCalc">
-      <div class="prompt">PS C:\0x000000000&gt; <span class="cmd">Measure-VanityPattern</span></div>
-      <div class="out">
-        <div class="inputline">
-          <span class="p">PS&gt;</span>
-          <input id="pat1" value="0000000000" maxlength="20" spellcheck="false" aria-label="pattern">
-          <label for="pos" class="lbl" data-i18n="lblPos">-位置 Position</label>
-          <select id="pos">
-            <option value="prefix" data-i18n="posPrefix">前缀 Prefix</option>
-            <option value="suffix" data-i18n="posSuffix">后缀 Suffix</option>
-            <option value="both" data-i18n="posBoth">前+后 Both ends</option>
-          </select>
-          <input id="pat2" value="0000000000" maxlength="20" spellcheck="false" aria-label="suffix pattern" hidden>
-          <button class="run" id="calcBtn" data-i18n="run">运行 Run</button>
-        </div>
-        <div class="chips" id="chips">
-          <button class="chip" data-pat="0000000000" data-chain="evm">0x0000000000</button>
-          <button class="chip" data-pat="8888888888" data-chain="evm">0x8888888888</button>
-          <button class="chip" data-pat="deadbeef0000" data-chain="evm">0xdeadbeef0000</button>
-          <button class="chip" data-pat="c0ffeec0ffee" data-chain="evm">0xc0ffeec0ffee</button>
-        </div>
-        <pre class="calc-out" id="calcOut" aria-live="polite"></pre>
-      </div>
-    </section>
-
     <section class="block" id="secOrder">
       <div class="prompt">PS C:\0x000000000&gt; <span class="cmd">New-VanityOrder -Zone Custom</span></div>
       <div class="out">
