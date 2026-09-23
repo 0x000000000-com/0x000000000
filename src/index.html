@@ -38,8 +38,7 @@
         <div class="gs-item" data-pat="0000000000" data-chain="evm"><span class="gs-l">0x0000000000 · 前缀10位</span><span class="gs-v">100 USDT</span></div>
         <div class="gs-item" data-pat="8888888888" data-chain="evm"><span class="gs-l">0x8888888888 · 前缀10位</span><span class="gs-v">100 USDT</span></div>
         <div class="gs-item" data-pat="TXooooo" data-chain="tron"><span class="gs-l">TXooooo… · TRON 前缀6位</span><span class="gs-v">100 USDT</span></div>
-        <div class="gs-item cta"><a href="#secOrder" data-i18n="heroCta">开始下单 →</a></div>
-        <div class="gs-item cta"><a href="tool.html" target="_blank" rel="noopener" data-i18n="heroTool">离线版密钥工具 ↗</a></div>
+        <div class="gs-item cta"><a href="#secOrder" data-i18n="heroCta">开始铸造 →</a></div>
       </div>
     </section>
 
@@ -111,21 +110,47 @@
           <span data-i18n="safeBody">我们全程只拿到影子 A 和另外半把钥匙 b —— 这两样加起来也推不出你的私钥。完整私钥只在你自己的电脑上拼出来。</span>
           <!-- TRUST0X_20260923：每一条都是用户自己能核对的事实 -->
           <ul class="proof">
-            <li data-i18n="proof1">你的那一半钥匙在你自己的浏览器里生成，只存在你自己的电脑上。平台收到的只有公钥（公开的，像银行卡号）和签名（证明你手里有那一半，但不暴露它）—— 下面「发给平台的全部内容」逐条列着，你自己看。</li>
+            <li data-i18n="proof1">你的那一半钥匙在你自己的电脑上生成，也只存在你自己的电脑上。平台收到的只有公钥（公开的，像银行卡号）和签名（证明你手里有那一半，但不暴露它）—— 铸造页最下面「这一页跟平台说过的每一句话」逐条列着，你自己看。</li>
             <li data-i18n="proof2">「造钥匙」这一步不需要联网：你可以先关掉 Wi-Fi 再点，照样做完。</li>
             <li><span data-i18n="proof3">这个页面就是一个文件，跟 GitHub 上公开的那份逐字节相同。GitHub 的机器每小时自动下载一次网站上的页面核对指纹，还会在每个新版本上用真浏览器走完全程、查私钥有没有被发出去 —— 这两项检查我们插不上手。</span> <span class="dim"><span data-i18n="proofVer">页面版本</span> <span id="buildId"><!--BUILD_ID--></span></span></li>
           </ul>
-          <div class="proof-links"><a id="dlPage" href="0x000000000.html" download="0x000000000.html" data-i18n="proofDl">下载这个页面到自己电脑上用</a> · <a href="https://github.com/0x000000000-com/0x000000000" target="_blank" rel="noopener" data-i18n="proofGh">到 GitHub 核对</a></div>
+          <div class="proof-links"><a id="dlPage" href="0x000000000.html" download="0x000000000.html" data-i18n="proofDl">下载铸造页面到自己电脑上</a> · <a href="https://github.com/0x000000000-com/0x000000000" target="_blank" rel="noopener" data-i18n="proofGh">到 GitHub 核对</a></div>
         </div>
-        <ol class="steps" id="steps"></ol>
-        <div class="statusline" id="statusLine" aria-live="polite"></div>
-        <!-- SENTLOG0X_20260923：这一页发给平台的每一次通信，用人话列出来 -->
-        <details class="sentlog" id="sentLog">
-          <summary><span data-i18n="sentHead">这一页发给平台的全部内容</span> <span id="sentCount"></span></summary>
-          <div class="step-desc" id="sentVerdict"></div>
-          <ol id="sentList"></ol>
-        </details>
-        <div class="note" data-i18n="noteProto">原型说明：本页已对接真后端（订单/签名验证/铸造/交付）；仅支付为模拟。s 的生成与签名由本地工具完成。</div>
+        <!-- DLONLY0X_20260924：DSJ「直接改成全下载到电脑模式，网站上的6个步骤也直接撤掉，6个步骤只显示在下载到电脑页面」。
+             同一个文件、同一个指纹：在 0x000000000.com 上打开只显示下面这块「下载」；下载到电脑上双击打开才显示 6 步。 -->
+        <div class="dlgate" id="dlGate" hidden>
+          <div class="zt" data-i18n="dlHead">在你自己的电脑上铸造</div>
+          <div data-i18n="dlWhy">铸造靓号要用到你的私钥。为了让私钥从头到尾只出现在你自己的电脑上，造钥匙、下单、取货、合成钥匙都在一个下载到你电脑上的页面里做 —— 网站上不做。</div>
+          <ol>
+            <li data-i18n="dlStep1">点下面的按钮，把铸造页面（就一个文件：0x000000000.html）下载到你的电脑。</li>
+            <li data-i18n="dlStep2">在电脑上双击打开它（用 Chrome 或 Edge）。</li>
+            <li data-i18n="dlStep3">跟着里面的 6 步走。哪一步要断网、哪一步要联网，每一步都会用人话告诉你，还会说为什么。</li>
+          </ol>
+          <a class="dlbtn" id="dlPage2" href="0x000000000.html" download="0x000000000.html" data-i18n="dlGetBtn">下载铸造页面</a>
+          <div class="dlnote" data-i18n="dlNote">下载下来的这个文件在你自己手里，我们以后改不了它。它跟 GitHub 上公开的那份一个字节都不差，你可以自己核对（上面「到 GitHub 核对」）。</div>
+          <div class="step-desc warn" id="dlResumeMsg"></div>
+        </div>
+        <div id="flowWrap" hidden>
+          <div class="netguide" data-i18n="netGuide">你现在用的是下载到自己电脑上的铸造页。每一步都标了：🔌 = 这一步建议断网做，🌐 = 这一步要联网。每一步都写了为什么。</div>
+          <ol class="steps" id="steps"></ol>
+          <div class="statusline" id="statusLine" aria-live="polite"></div>
+          <!-- SENTLOG0X_20260923 / SENTPLAIN0X_20260924：这一页跟平台说过的每一句话 —— 人话一行一句；原样内容收在最下面；GitHub 两项检查就放在这里 -->
+          <details class="sentlog" id="sentLog">
+            <summary><span data-i18n="sentHead">这一页跟平台说过的每一句话</span> <span id="sentCount"></span></summary>
+            <div class="step-desc" id="sentVerdict"></div>
+            <ol id="sentList"></ol>
+            <div class="sentgh">
+              <div data-i18n="sentGhHead">不信这一页自己说的？GitHub 上有两项检查，是 GitHub 的机器在跑，我们碰不到：</div>
+              <ul>
+                <li data-i18n="sentGh1">① 私钥外发检查：每次改这个页面，GitHub 的机器都用真浏览器把 6 步走一遍，逐个核对页面发出去的每一句话。绿色 ✓ = 没有把钥匙发出去。</li>
+                <li data-i18n="sentGh2">② 防篡改巡检：GitHub 的机器每小时下载一次网站上的页面，跟公开的那份逐字节比。绿色 ✓ = 网站上的就是公开的那份，没被偷偷改过。</li>
+              </ul>
+              <div class="proof-links"><a href="https://github.com/0x000000000-com/0x000000000/actions" target="_blank" rel="noopener" data-i18n="sentGhRuns">看 GitHub 的检查记录 ↗</a> · <a href="https://github.com/0x000000000-com/0x000000000" target="_blank" rel="noopener" data-i18n="sentGhRepo">看公开的页面代码 ↗</a> · <span class="dim"><span data-i18n="proofVer">页面版本</span> <span class="buildIdCopy"></span></span></div>
+            </div>
+            <details class="sentraw"><summary data-i18n="sentTech">懂技术的人看这里：每一次发了什么，原样列出</summary><pre id="sentRawAll"></pre></details>
+          </details>
+          <div class="note" data-i18n="noteProto">原型说明：这一页连的是真平台，只有付款是模拟的。你的那一半钥匙只在你自己的电脑上生成和使用。</div>
+        </div>
       </div>
     </section>
 
@@ -159,8 +184,8 @@
     <div class="prompt cursor-line">PS C:\0x000000000&gt;<span class="caret" aria-hidden="true">█</span></div>
 
     <footer class="foot">
-      <div><a href="tool.html">密钥工具 Key tool</a> · <a href="faq.html">FAQ</a> · <a href="track.html">订单查询 Track</a> · <a href="admin.html">Admin</a> · <span data-i18n="foot1">页面代码公开在 GitHub，可逐字节核对 · 定制区无托管 · 收款支持 TRON / BSC 上的 USDT</span></div>
-      <div class="warnline" data-i18n="foot2">平台永远不会索要你的 s 或私钥——任何索要私钥的消息都是钓鱼。</div>
+      <div><a href="faq.html">FAQ</a> · <a href="track.html">订单查询 Track</a> · <a href="admin.html">Admin</a> · <span data-i18n="foot1">页面代码公开在 GitHub，可逐字节核对 · 定制区无托管 · 收款支持 TRON / BSC 上的 USDT</span></div>
+      <div class="warnline" data-i18n="foot2">平台永远不会索要你的私钥或备份文件 —— 任何索要私钥的消息都是钓鱼。</div>
     </footer>
   </div>
 </main>
