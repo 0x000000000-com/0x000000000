@@ -1,0 +1,1909 @@
+<!doctype html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>0x000000000 — Vanity Address Foundry</title>
+<link rel="icon" href="data:,">
+<style>
+/* 0x000000000 · UIFLIP_20260922
+   把站从「PowerShell 终端皮肤」换成 tool.html 那一套：深色卡片 · 圆角 · 金色主按钮。
+   ★ 设计令牌逐字取自 web/tool.html 的 :root —— 两边必须是同一套，不是「差不多」。
+   ★★ 结构一个字没改：index/faq/track/admin 的每一个类名都还在，app.js 用的 id 全没动。
+      只换外观，所以功能不可能被它弄坏。 */
+:root{
+  --bg0:#06070c; --panel:#0e1118; --panel2:#141824; --line:#1d222d; --line2:#2b3240;
+  --text:#e9e5d9; --dim:#9aa0ab; --faint:#5d6470;
+  --gold:#c9a227; --gold-b:#ebc65c; --gold-d:#8f6f1a;
+  --up:#2fbf8f; --down:#e5484d; --warn:#e8a13c; --info:#6aa9ff;
+  --sans:system-ui,"PingFang SC","Microsoft YaHei","Noto Sans SC",sans-serif;
+  --mono:"Cascadia Mono",Consolas,"Courier New",ui-monospace,monospace;
+  --metal-text:linear-gradient(180deg,#f0d98c,#c9a227 55%,#8f6f1a);
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+html,body{margin:0;padding:0}
+body{background:var(--bg0);color:var(--text);font-family:var(--sans);font-size:15px;line-height:1.65;
+     padding:24px 16px 64px}
+body::before,body::after{content:none}
+
+/* 终端皮肤的三件套：星空 / 开机字 / 光标行 —— 这次要的就是没有它们 */
+.cosmos,#space,.boot,.cursor-line{display:none!important}
+
+.term{max-width:900px;margin:0 auto}
+
+/* ── 顶栏：留标题+时钟+语言，去掉 mac 三个点 ── */
+.titlebar{display:flex;align-items:center;gap:12px;padding:0 2px 18px;border-bottom:1px solid var(--line);margin-bottom:22px}
+.dots,.dots .d,.d.r,.d.y,.d.g{display:none}
+.ttl{font-family:var(--mono);font-size:13px;color:var(--dim);letter-spacing:.02em}
+.utc{margin-left:auto;font-family:var(--mono);font-size:11.5px;color:var(--faint)}
+.lang button{background:transparent;color:var(--dim);border:1px solid var(--line2);border-radius:6px;
+  font-family:var(--sans);font-size:12px;padding:4px 10px;margin-left:6px;cursor:pointer}
+.lang button.active{background:rgba(201,162,39,.14);color:var(--gold-b);border-color:var(--gold-d)}
+.body{display:block}
+
+/* ── Hero ── */
+.hero{margin:0 0 22px}
+.hero-brand{font-family:var(--mono);font-size:34px;font-weight:700;letter-spacing:.06em;line-height:1.2;
+  background:var(--metal-text);-webkit-background-clip:text;background-clip:text;color:transparent}
+.hero-tag{font-family:var(--mono);font-size:12px;color:var(--faint);margin-top:6px;letter-spacing:.06em;text-transform:uppercase}
+.hero-mission{color:var(--dim);font-size:14px;margin-top:12px;max-width:62ch}
+.gold-strip{display:flex;flex-wrap:wrap;gap:12px;margin-top:20px}
+.gs-item{background:linear-gradient(180deg,#121722,#0e1118);border:1px solid var(--line2);
+  border-radius:10px;padding:12px 16px;min-width:180px}
+.gs-l{display:block;font-family:var(--mono);font-size:12px;color:var(--dim)}
+.gs-v{display:block;margin-top:4px;font-family:var(--mono);font-size:16px;font-weight:700;
+  background:var(--metal-text);-webkit-background-clip:text;background-clip:text;color:transparent}
+.gs-item.cta{display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#ebc65c,#c9a227);
+  border-color:var(--gold-d);min-width:0;padding:0}
+.gs-item.cta a{display:block;padding:14px 22px;color:#1a1405;font-weight:700;font-size:14px;text-decoration:none;white-space:nowrap}
+.gs-item.cta:hover{filter:brightness(1.08)}
+
+/* ── 每个 section 变成一张卡 ── */
+.block{border:1px solid var(--line);background:var(--panel);border-radius:10px;padding:18px;margin-bottom:16px}
+/* .prompt 里那串 "PS C:\0x000000000>" 用 font-size:0 收掉，只把命令名留成卡片标题 */
+.prompt{font-size:0;margin:0 0 14px;line-height:0}
+.prompt .cmd{font-family:var(--mono);font-size:15px;line-height:1.5;color:var(--gold-b);letter-spacing:.02em}
+.out{display:block}
+
+/* ── 表格 ── */
+.tblwrap{overflow-x:auto;margin:0 -4px}
+table{width:100%;border-collapse:collapse;font-size:13.5px}
+th{text-align:left;font-family:var(--mono);font-size:11px;font-weight:500;color:var(--faint);
+  text-transform:uppercase;letter-spacing:.08em;padding:0 10px 10px;border-bottom:1px solid var(--line)}
+td{padding:11px 10px;border-bottom:1px solid var(--line);color:var(--text)}
+tbody tr:hover{background:rgba(255,255,255,.02)}
+tr:last-child td{border-bottom:0}
+td.num,th.num{text-align:right;font-family:var(--mono)}
+td.price{color:var(--gold-b);font-weight:600}
+td .pos{color:var(--dim)}
+td .tier{color:var(--faint);font-size:12px}
+td .eta{font-family:var(--mono);color:var(--dim)}
+.note{margin-top:14px;font-size:12.5px;color:var(--faint);line-height:1.6}
+
+/* ── 输入区 ── */
+.inputline{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin-bottom:14px}
+.inputline .p{font-family:var(--mono);font-size:13px;color:var(--faint)}
+.inputline .lbl{font-size:12.5px;color:var(--dim)}
+input,select{background:#0a0d14;border:1px solid var(--line2);border-radius:6px;color:var(--text);
+  font-family:var(--mono);font-size:13px;padding:9px 10px}
+input{min-width:170px}
+input:focus,select:focus{outline:0;border-color:var(--gold-d);box-shadow:0 0 0 2px rgba(201,162,39,.12)}
+button.run{background:linear-gradient(135deg,#ebc65c,#c9a227);color:#1a1405;border:0;border-radius:6px;
+  font-family:var(--sans);font-size:13px;font-weight:700;padding:9px 16px;cursor:pointer}
+button.run:hover{filter:brightness(1.1)}
+button.run:disabled{opacity:.45;cursor:not-allowed;filter:none}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
+.chip{background:var(--panel2);color:var(--dim);border:1px solid var(--line2);border-radius:999px;
+  font-family:var(--mono);font-size:12px;padding:5px 13px;cursor:pointer}
+.chip:hover{border-color:var(--gold-d);color:var(--text)}
+.chip.active{background:rgba(201,162,39,.14);color:var(--gold-b);border-color:var(--gold-d)}
+.calc-out{font-family:var(--mono);font-size:12.5px;color:var(--dim);background:#0a0d14;
+  border:1px solid var(--line);border-radius:8px;padding:12px 14px;margin:0;white-space:pre-wrap;line-height:1.7}
+.calc-out:empty{display:none}
+.calc-out .k{color:var(--faint)}
+.calc-out .v{color:var(--text)}
+.calc-out .v.gold{color:var(--gold-b)}
+.calc-out .err{color:var(--down)}
+.calc-out .warn{color:var(--warn)}
+
+/* ── 承诺条（tool.html 的 .oath 同一套） ── */
+.zone{border:1px solid var(--line2);background:linear-gradient(180deg,#121722,#0e1118);
+  border-radius:10px;padding:14px 16px;margin-bottom:18px;font-size:13.5px;color:var(--dim)}
+.zone.safe{border-color:rgba(47,191,143,.35)}
+.zone.safe .zt{color:var(--up);font-weight:700;font-size:13px;letter-spacing:.02em}
+.zone.danger{border-color:rgba(229,72,77,.35)}
+.zone.danger .zt{color:var(--down);font-weight:700}
+
+/* ── 六步流程：一步一张小卡 ── */
+.steps{list-style:none;margin:0;padding:0}
+.steps li{border:1px solid var(--line);background:var(--panel2);border-radius:10px;padding:14px 16px;margin-bottom:12px}
+.step-head{font-size:14px;font-weight:600;color:var(--text)}
+.step-head .no{font-family:var(--mono);font-size:11.5px;color:var(--gold-b);margin-right:8px}
+.step-cmd{margin:10px 0 6px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.step-cmd code{font-family:var(--mono);font-size:12.5px;color:var(--dim);
+  background:#0a0d14;border:1px solid var(--line);border-radius:6px;padding:6px 10px}
+.step-desc{font-size:12.5px;color:var(--faint);line-height:1.6}
+.step-desc.warn{color:var(--warn)}
+a.toolink{font-family:var(--sans);font-size:13px;font-weight:700;color:#1a1405;text-decoration:none;
+  background:linear-gradient(135deg,#ebc65c,#c9a227);border:1px solid var(--gold-d);border-radius:8px;
+  padding:8px 15px;white-space:nowrap;order:-1}
+a.toolink:hover{filter:brightness(1.12)}
+.cmdalt{font-family:var(--sans);font-size:11.5px;color:var(--faint)}
+button.copy{font-family:var(--sans);font-size:11.5px;color:var(--info);background:transparent;border:0;
+  padding:0;cursor:pointer;text-decoration:underline;text-underline-offset:3px}
+.step-out{margin:10px 0 0;padding:10px 12px;background:#0a0d14;border:1px solid var(--line);border-radius:8px;
+  font-family:var(--mono);font-size:12px;color:var(--dim);white-space:pre-wrap;line-height:1.65}
+.step-out .ok{color:var(--up)}
+.step-out .dim{color:var(--faint)}
+/* STEPERR0X_20260923：六步里所有 outLine(...,'err') 原来都落在 .step-out 的默认灰色上 ——
+   包括第 5 步那句「⛔ 合出来的地址对不上，先别导出」。最该醒目的警告反而最不显眼。 */
+.step-out .err{color:var(--down);font-weight:600}
+.step-out .warn{color:var(--warn)}
+
+/* ── 状态 ── */
+.statusline{margin-top:12px;font-size:12.5px;color:var(--faint)}
+.statusline span,td .st{font-family:var(--mono);font-size:11.5px;border:1px solid var(--line2);
+  border-radius:999px;padding:2px 10px;color:var(--dim)}
+.st-created{color:var(--dim)}
+.st-share{color:var(--info);border-color:rgba(106,169,255,.4)}
+.st-paid{color:var(--gold-b);border-color:var(--gold-d)}
+.st-mining{color:var(--warn);border-color:rgba(232,161,60,.4)}
+.st-delivered{color:var(--up);border-color:rgba(47,191,143,.4)}
+.st-refunded{color:var(--faint)}
+.st-expired{color:var(--down);border-color:rgba(229,72,77,.4)}
+
+/* ── 交付控件 ── */
+.flow-ctl{margin-top:12px}
+.flow-ctl .lbl{display:block;font-size:12.5px;color:var(--dim);margin:10px 0 5px}
+.flow-ctl code.chal{display:inline-block;font-family:var(--mono);font-size:12px;color:var(--gold-b);
+  background:#0a0d14;border:1px solid var(--line);border-radius:6px;padding:6px 10px;word-break:break-all}
+.flow-ctl textarea,.flow-ctl input{width:100%;background:#0a0d14;border:1px solid var(--line2);border-radius:6px;
+  color:var(--text);font-family:var(--mono);font-size:12.5px;padding:9px 10px}
+.flow-ctl textarea{min-height:86px;resize:vertical;line-height:1.55}
+.flow-ctl textarea:focus,.flow-ctl input:focus{outline:0;border-color:var(--gold-d);box-shadow:0 0 0 2px rgba(201,162,39,.12)}
+.flow-ctl button.run{margin-top:10px}
+
+/* ── 页脚 ── */
+.foot{margin-top:28px;padding-top:18px;border-top:1px solid var(--line);font-size:12.5px;color:var(--faint);line-height:1.8}
+.foot a{color:var(--dim);text-decoration:none;border-bottom:1px solid var(--line2)}
+.foot a:hover{color:var(--gold-b);border-color:var(--gold-d)}
+.foot .warnline{margin-top:8px;color:var(--warn)}
+.caret{display:none}
+
+@media (max-width:640px){
+  body{padding:16px 12px 48px}
+  .hero-brand{font-size:26px}
+  .gs-item{min-width:calc(50% - 6px);flex:1 1 calc(50% - 6px)}
+  .gs-item.cta{flex:1 1 100%}
+  .block{padding:14px}
+}
+
+/* ── CHAINSEL0X_20260923 两条链 ── */
+td.chainhead,.chainhead{font-family:var(--mono);font-size:12px;color:var(--gold-b);
+  letter-spacing:.06em;padding-top:16px;border-bottom:1px solid var(--line2)}
+.chainhead .works{display:block;font-size:11px;color:var(--faint);letter-spacing:0;margin-top:3px}
+tr.unpriced td{opacity:.72}
+.soon{color:var(--warn);font-family:var(--sans);font-size:12.5px;font-weight:400}
+.chip .dim{color:var(--faint);font-family:var(--mono);font-size:11px}
+.chip.active .dim{color:var(--gold-d)}
+#patHint{min-height:1.4em;margin-top:2px}
+#patHint.warn{color:var(--warn)}
+
+
+/* CATMODAL0X_20260923 价目表弹窗 —— 正中间弹出，点背景或 ✕ 关，Esc 也关 */
+/* ★ .prompt 用 font-size:0 吃掉行内空白 —— 这里写 em 会被乘成 0，按钮变成一条 20x4 的空条。
+   20260923 实测：文字在 DOM 里、颜色也对，就是字号 0。层叠撞车不会报错，只会静静地不见。 */
+.peek{margin-left:10px;background:transparent;border:1px solid var(--line2,#2b3240);color:var(--gold-b,#ebc65c);
+  font-family:inherit;font-size:13px;line-height:1.5;padding:2px 10px;border-radius:4px;cursor:pointer;
+  vertical-align:middle}
+.peek:hover{border-color:var(--gold,#c9a227)}
+.peek:focus-visible{outline:2px solid var(--gold-b,#ebc65c);outline-offset:2px}
+.modal{position:fixed;inset:0;z-index:90;display:grid;place-items:center;padding:20px}
+.modal[hidden]{display:none}
+.modal-back{position:absolute;inset:0;background:rgba(0,0,0,.72)}
+.modal-box{position:relative;width:min(760px,100%);max-height:min(82vh,760px);display:flex;flex-direction:column;
+  background:var(--panel,#0e1118);border:1px solid var(--line2,#2b3240);border-radius:10px;
+  box-shadow:0 24px 70px rgba(0,0,0,.6)}
+.modal-head{display:flex;align-items:center;justify-content:space-between;gap:12px;
+  padding:13px 16px;border-bottom:1px solid var(--line,#1d222d);font-weight:700}
+.modal-x{background:transparent;border:0;color:var(--dim,#9aa0ab);font-size:17px;line-height:1;cursor:pointer;padding:3px 6px}
+.modal-x:hover{color:var(--text,#e9e5d9)}
+.modal-body{padding:14px 16px 18px;overflow:auto}
+
+/* TRUST0X_20260923：「为什么平台拿不到你的私钥」—— 每一条都是用户自己能核对的事实 */
+.zone .proof { margin: 10px 0 6px; padding-left: 1.2em; font-size: 13px; line-height: 1.7; }
+.zone .proof li { margin: 2px 0; }
+.zone .proof-links { font-size: 13px; }
+.zone .proof-links a { color: var(--gold-b); }
+/* SENTLOG0X_20260923：这一页发给平台的全部内容 */
+.sentlog { margin: 12px 0 4px; font-size: 13px; }
+.sentlog > summary { cursor: pointer; }
+.sentlog ol { margin: 6px 0 0; padding-left: 1.6em; line-height: 1.7; }
+.sentlog li details { display: inline-block; margin-left: 8px; }
+.sentlog li details summary { cursor: pointer; opacity: .7; font-size: 12px; }
+.sentlog pre { white-space: pre-wrap; word-break: break-all; font-size: 12px; margin: 4px 0; opacity: .85; }
+</style>
+</head>
+<body>
+<div class="cosmos" aria-hidden="true">
+  <canvas id="space"></canvas>
+</div>
+<main class="term">
+  <div class="titlebar">
+    <span class="dots" aria-hidden="true"><i class="d r"></i><i class="d y"></i><i class="d g"></i></span>
+    <span class="ttl">0x000000000 — Vanity Address Foundry</span>
+    <span class="utc" id="utcClock">--:--:-- UTC</span>
+    <span class="lang">
+      <button id="btnZh" data-lang="zh">中文</button>
+      <button id="btnEn" data-lang="en">EN</button>
+    </span>
+  </div>
+
+  <div class="body" id="body">
+
+    <pre class="boot" id="boot" aria-label="boot sequence"></pre>
+
+    <section class="hero">
+      <div class="hero-brand">0x000000000</div>
+      <div class="hero-tag" data-i18n="heroTag">靓号地址铸造台 · SPLIT-KEY 无托管</div>
+      <div class="hero-mission" data-i18n="heroMission">用 USDT 付款。你先在自己电脑上造一半钥匙，我们替你铸另一半——完整私钥只有你拼得出。</div>
+      <!-- HEROSYNC0X_20260923：这三张卡曾经写死成【已经取消的档位】(前缀8位 15-35 USDT),
+           在公网上卖了不存在的产品。静态这份是【兜底】,必须是真在卖的;
+           页面一拿到 /api/catalog 就由 renderHero() 覆盖它,从此不会再跟目录分叉。
+           出包前 _mk0xdep.py 的 HEROSYNC 闸会把下面每个 data-pat 拿去跟价目表对一遍,对不上就不许出包。 -->
+      <div class="gold-strip" id="goldStrip">
+        <div class="gs-item" data-pat="0000000000" data-chain="evm"><span class="gs-l">0x0000000000 · 前缀10位</span><span class="gs-v">100 USDT</span></div>
+        <div class="gs-item" data-pat="8888888888" data-chain="evm"><span class="gs-l">0x8888888888 · 前缀10位</span><span class="gs-v">100 USDT</span></div>
+        <div class="gs-item" data-pat="TXooooo" data-chain="tron"><span class="gs-l">TXooooo… · TRON 前缀6位</span><span class="gs-v">100 USDT</span></div>
+        <div class="gs-item cta"><a href="#secOrder" data-i18n="heroCta">开始下单 →</a></div>
+        <div class="gs-item cta"><a href="tool.html" target="_blank" rel="noopener" data-i18n="heroTool">离线版密钥工具 ↗</a></div>
+      </div>
+    </section>
+
+    <!-- CATMODAL0X_20260923：DSJ 原话「把 Get-VanityCatalog 收起来，用户想看的时候点开，
+         点开的时候正中间弹出窗口」。价目表 18 行原来一直摊在首页上，把下单流程推到很下面。 -->
+    <section class="block" id="secCatalog">
+      <div class="prompt">PS C:\0x000000000&gt; <span class="cmd">Get-VanityCatalog</span>
+        <button type="button" class="peek" id="btnCatalog" data-i18n="catalogOpen">查看全部价格 ▸</button></div>
+      <div class="out">
+        <div class="note" id="catalogTeaser"></div>
+      </div>
+    </section>
+
+    <div class="modal" id="catalogModal" hidden>
+      <div class="modal-back" data-close-catalog></div>
+      <div class="modal-box" role="dialog" aria-modal="true" aria-labelledby="catalogTitle">
+        <div class="modal-head">
+          <span id="catalogTitle" data-i18n="catalogTitle">价目表</span>
+          <button type="button" class="modal-x" data-close-catalog aria-label="close">✕</button>
+        </div>
+        <div class="modal-body">
+          <div class="tblwrap">
+            <table>
+              <thead>
+                <tr>
+                  <th data-i18n="thType">类型 Type</th>
+                  <th class="num" data-i18n="thPrice">价格 USDT</th>
+                  <th data-i18n="thEta">铸造耗时</th>
+                </tr>
+              </thead>
+              <tbody id="catalogBody"></tbody>
+            </table>
+          </div>
+          <div class="note" data-i18n="noteHot">热门模式 (9999/8888/0000/dead/beef/c0ffee/666…) 溢价 30-100%；0x9999 与 0xabcd 难度相同——定价按位数不按字符。</div>
+        </div>
+      </div>
+    </div>
+
+    <section class="block" id="secCalc">
+      <div class="prompt">PS C:\0x000000000&gt; <span class="cmd">Measure-VanityPattern</span></div>
+      <div class="out">
+        <div class="inputline">
+          <span class="p">PS&gt;</span>
+          <input id="pat1" value="0000000000" maxlength="20" spellcheck="false" aria-label="pattern">
+          <label for="pos" class="lbl" data-i18n="lblPos">-位置 Position</label>
+          <select id="pos">
+            <option value="prefix" data-i18n="posPrefix">前缀 Prefix</option>
+            <option value="suffix" data-i18n="posSuffix">后缀 Suffix</option>
+            <option value="both" data-i18n="posBoth">前+后 Both ends</option>
+          </select>
+          <input id="pat2" value="0000000000" maxlength="20" spellcheck="false" aria-label="suffix pattern" hidden>
+          <button class="run" id="calcBtn" data-i18n="run">运行 Run</button>
+        </div>
+        <div class="chips" id="chips">
+          <button class="chip" data-pat="0000000000" data-chain="evm">0x0000000000</button>
+          <button class="chip" data-pat="8888888888" data-chain="evm">0x8888888888</button>
+          <button class="chip" data-pat="deadbeef0000" data-chain="evm">0xdeadbeef0000</button>
+          <button class="chip" data-pat="c0ffeec0ffee" data-chain="evm">0xc0ffeec0ffee</button>
+        </div>
+        <pre class="calc-out" id="calcOut" aria-live="polite"></pre>
+      </div>
+    </section>
+
+    <section class="block" id="secOrder">
+      <div class="prompt">PS C:\0x000000000&gt; <span class="cmd">New-VanityOrder -Zone Custom</span></div>
+      <div class="out">
+        <div class="zone safe">
+          <span class="zt" data-i18n="safeTitle">[SAFE] 定制区 · 无托管模式 NON-CUSTODIAL</span><br>
+          <span data-i18n="safeBody">我们全程只拿到影子 A 和另外半把钥匙 b —— 这两样加起来也推不出你的私钥。完整私钥只在你自己的电脑上拼出来。</span>
+          <!-- TRUST0X_20260923：每一条都是用户自己能核对的事实 -->
+          <ul class="proof">
+            <li data-i18n="proof1">你的那一半钥匙在你自己的浏览器里生成，只存在你自己的电脑上。平台收到的只有公钥（公开的，像银行卡号）和签名（证明你手里有那一半，但不暴露它）—— 下面「发给平台的全部内容」逐条列着，你自己看。</li>
+            <li data-i18n="proof2">「造钥匙」这一步不需要联网：你可以先关掉 Wi-Fi 再点，照样做完。</li>
+            <li><span data-i18n="proof3">这个页面就是一个文件，跟 GitHub 上公开的那份逐字节相同。GitHub 的机器每小时自动下载一次网站上的页面核对指纹，还会在每个新版本上用真浏览器走完全程、查私钥有没有被发出去 —— 这两项检查我们插不上手。</span> <span class="dim"><span data-i18n="proofVer">页面版本</span> <span id="buildId">3a10e678891a</span></span></li>
+          </ul>
+          <div class="proof-links"><a id="dlPage" href="0x000000000.html" download="0x000000000.html" data-i18n="proofDl">下载这个页面到自己电脑上用</a> · <a href="https://github.com/0x000000000-com/0x000000000" target="_blank" rel="noopener" data-i18n="proofGh">到 GitHub 核对</a></div>
+        </div>
+        <ol class="steps" id="steps"></ol>
+        <div class="statusline" id="statusLine" aria-live="polite"></div>
+        <!-- SENTLOG0X_20260923：这一页发给平台的每一次通信，用人话列出来 -->
+        <details class="sentlog" id="sentLog">
+          <summary><span data-i18n="sentHead">这一页发给平台的全部内容</span> <span id="sentCount"></span></summary>
+          <div class="step-desc" id="sentVerdict"></div>
+          <ol id="sentList"></ol>
+        </details>
+        <div class="note" data-i18n="noteProto">原型说明：本页已对接真后端（订单/签名验证/铸造/交付）；仅支付为模拟。s 的生成与签名由本地工具完成。</div>
+      </div>
+    </section>
+
+    <section class="block" id="secOrders">
+      <div class="prompt">PS C:\0x000000000&gt; <span class="cmd">Get-MyOrders</span></div>
+      <div class="out">
+        <div class="tblwrap">
+          <table>
+            <thead>
+              <tr>
+                <th data-i18n="thOrder">订单 Order</th>
+                <th data-i18n="thPattern">模式 Pattern</th>
+                <th data-i18n="thStatus">状态 Status</th>
+                <th class="num" data-i18n="thPrice2">价格 USDT</th>
+                <th data-i18n="thAction">操作</th>
+              </tr>
+            </thead>
+            <tbody id="ordersBody"></tbody>
+          </table>
+        </div>
+        <!-- RESUME0X_20260923：换了电脑/浏览器（本机记的订单号不在了）也能续 -->
+        <div class="flow-ctl">
+          <span class="lbl" data-i18n="ordersIdLbl">换了电脑或浏览器？输入订单号接着做：</span>
+          <input id="resumeId" maxlength="8" spellcheck="false" aria-label="order number" data-i18n-ph="ordersIdPh" placeholder="订单号（8 位）">
+          <button class="run" id="resumeBtn" data-i18n="ordersIdBtn">接着做这一单</button>
+        </div>
+        <div class="step-desc" id="resumeMsg"></div>
+      </div>
+    </section>
+
+    <div class="prompt cursor-line">PS C:\0x000000000&gt;<span class="caret" aria-hidden="true">█</span></div>
+
+    <footer class="foot">
+      <div><a href="tool.html">密钥工具 Key tool</a> · <a href="faq.html">FAQ</a> · <a href="track.html">订单查询 Track</a> · <a href="admin.html">Admin</a> · <span data-i18n="foot1">页面代码公开在 GitHub，可逐字节核对 · 定制区无托管 · 收款支持 TRON / BSC 上的 USDT</span></div>
+      <div class="warnline" data-i18n="foot2">平台永远不会索要你的 s 或私钥——任何索要私钥的消息都是钓鱼。</div>
+    </footer>
+  </div>
+</main>
+<!-- KEYCORE0X_20260923：密钥运算的唯一事实来源。工具页 tool.html 打包时把这两份
+     原样内联成单文件（可下载离线用），首页直接引 —— 同一套算法，不会分叉。 -->
+<script>
+// 由 @noble/secp256k1 + @noble/hashes 打包而来，原样搬运，不做任何改动。
+// KEYCORE0X_20260923：从 tool.html 里抽出来，首页和工具页共用同一份。
+var NOBLE=(()=>{var Tt=Object.defineProperty;var Be=Object.getOwnPropertyDescriptor;var He=Object.getOwnPropertyNames;var Se=Object.prototype.hasOwnProperty;var Ie=(e,t)=>{for(var n in t)Tt(e,n,{get:t[n],enumerable:!0})},_e=(e,t,n,s)=>{if(t&&typeof t=="object"||typeof t=="function")for(let o of He(t))!Se.call(e,o)&&o!==n&&Tt(e,o,{get:()=>t[o],enumerable:!(s=Be(t,o))||s.enumerable});return e};var Ue=e=>_e(Tt({},"__esModule",{value:!0}),e);var on={};Ie(on,{CURVE:()=>kt,ProjectivePoint:()=>S,etc:()=>nt,getPublicKey:()=>ee,keccak_256:()=>me,scryptAsync:()=>Ae,sha256:()=>ot,sign:()=>oe,verify:()=>re});var Rt=2n**256n,P=Rt-0x1000003d1n,L=Rt-0x14551231950b75fc4402da1732fc9bebfn,Yt=0x79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798n,$t=0x483ada7726a3c4655da4fbfc0e1108a8fd17b448a68554199c47d08ffb10d4b8n,kt={p:P,n:L,a:0n,b:7n,Gx:Yt,Gy:$t},H=32,Dt=e=>l(l(e*e)*e+kt.b),w=(e="")=>{throw new Error(e)},Lt=e=>typeof e=="bigint",Qt=e=>typeof e=="string",vt=e=>Lt(e)&&0n<e&&e<P,lt=e=>Lt(e)&&0n<e&&e<L,Ee=e=>e instanceof Uint8Array||e!=null&&typeof e=="object"&&e.constructor.name==="Uint8Array",Ct=(e,t)=>!Ee(e)||typeof t=="number"&&t>0&&e.length!==t?w("Uint8Array expected"):e,I=e=>new Uint8Array(e),E=(e,t)=>Ct(Qt(e)?dt(e):I(Ct(e)),t),l=(e,t=P)=>{let n=e%t;return n>=0n?n:t+n},Zt=e=>e instanceof S?e:w("Point expected"),S=class e{constructor(t,n,s){this.px=t,this.py=n,this.pz=s}static fromAffine(t){return t.x===0n&&t.y===0n?e.ZERO:new e(t.x,t.y,1n)}static fromHex(t){t=E(t);let n,s=t[0],o=t.subarray(1),i=wt(o,0,H),r=t.length;if(r===33&&[2,3].includes(s)){vt(i)||w("Point hex invalid: x not FE");let c=Oe(Dt(i)),u=(c&1n)===1n;(s&1)===1!==u&&(c=l(-c)),n=new e(i,c,1n)}return r===65&&s===4&&(n=new e(i,wt(o,H,2*H),1n)),n?n.ok():w("Point is not on curve")}static fromPrivateKey(t){return T.mul(te(t))}get x(){return this.aff().x}get y(){return this.aff().y}equals(t){let{px:n,py:s,pz:o}=this,{px:i,py:r,pz:c}=Zt(t),u=l(n*c),f=l(i*o),h=l(s*c),a=l(r*o);return u===f&&h===a}negate(){return new e(this.px,l(-this.py),this.pz)}double(){return this.add(this)}add(t){let{px:n,py:s,pz:o}=this,{px:i,py:r,pz:c}=Zt(t),{a:u,b:f}=kt,h=0n,a=0n,d=0n,y=l(f*3n),x=l(n*i),p=l(s*r),g=l(o*c),k=l(n+s),m=l(i+r);k=l(k*m),m=l(x+p),k=l(k-m),m=l(n+o);let A=l(i+c);return m=l(m*A),A=l(x+g),m=l(m-A),A=l(s+o),h=l(r+c),A=l(A*h),h=l(p+g),A=l(A-h),d=l(u*m),h=l(y*g),d=l(h+d),h=l(p-d),d=l(p+d),a=l(h*d),p=l(x+x),p=l(p+x),g=l(u*g),m=l(y*m),p=l(p+g),g=l(x-g),g=l(u*g),m=l(m+g),x=l(p*m),a=l(a+x),x=l(A*m),h=l(k*h),h=l(h-x),x=l(k*p),d=l(A*d),d=l(d+x),new e(h,a,d)}mul(t,n=!0){if(!n&&t===0n)return gt;if(lt(t)||w("invalid scalar"),this.equals(T))return Re(t).p;let s=gt,o=T;for(let i=this;t>0n;i=i.double(),t>>=1n)t&1n?s=s.add(i):n&&(o=o.add(i));return s}mulAddQUns(t,n,s){return this.mul(n,!1).add(t.mul(s,!1)).ok()}toAffine(){let{px:t,py:n,pz:s}=this;if(this.equals(gt))return{x:0n,y:0n};if(s===1n)return{x:t,y:n};let o=xt(s);return l(s*o)!==1n&&w("invalid inverse"),{x:l(t*o),y:l(n*o)}}assertValidity(){let{x:t,y:n}=this.aff();return(!vt(t)||!vt(n))&&w("Point invalid: x or y"),l(n*n)===Dt(t)?this:w("Point invalid: not on curve")}multiply(t){return this.mul(t)}aff(){return this.toAffine()}ok(){return this.assertValidity()}toHex(t=!0){let{x:n,y:s}=this.aff();return(t?(s&1n)===0n?"02":"03":"04")+ft(n)+(t?"":ft(s))}toRawBytes(t=!0){return dt(this.toHex(t))}};S.BASE=new S(Yt,$t,1n);S.ZERO=new S(0n,1n,0n);var{BASE:T,ZERO:gt}=S,Jt=(e,t)=>e.toString(16).padStart(t,"0"),Ft=e=>Array.from(e).map(t=>Jt(t,2)).join(""),dt=e=>{let t=e.length;(!Qt(e)||t%2)&&w("hex invalid 1");let n=I(t/2);for(let s=0;s<n.length;s++){let o=s*2,i=e.slice(o,o+2),r=Number.parseInt(i,16);(Number.isNaN(r)||r<0)&&w("hex invalid 2"),n[s]=r}return n},pt=e=>BigInt("0x"+(Ft(e)||"0")),wt=(e,t,n)=>pt(e.slice(t,n)),At=e=>Lt(e)&&e>=0n&&e<Rt?dt(Jt(e,2*H)):w("bigint expected"),ft=e=>Ft(At(e)),Nt=(...e)=>{let t=I(e.reduce((s,o)=>s+Ct(o).length,0)),n=0;return e.forEach(s=>{t.set(s,n),n+=s.length}),t},xt=(e,t=P)=>{(e===0n||t<=0n)&&w("no inverse n="+e+" mod="+t);let n=l(e,t),s=t,o=0n,i=1n,r=1n,c=0n;for(;n!==0n;){let u=s/n,f=s%n,h=o-r*u,a=i-c*u;s=n,n=f,o=r,i=c,r=h,c=a}return s===1n?l(o,t):w("no inverse")},Oe=e=>{let t=1n;for(let n=e,s=(P+1n)/4n;s>0n;s>>=1n)s&1n&&(t=t*n%P),n=n*n%P;return l(t*t)===e?t:w("sqrt invalid")},te=e=>(Lt(e)||(e=pt(E(e,H))),lt(e)?e:w("private key out of range")),Vt=e=>e>L>>1n,ee=(e,t=!0)=>S.fromPrivateKey(e).toRawBytes(t),ut=class e{constructor(t,n,s){this.r=t,this.s=n,this.recovery=s,this.assertValidity()}static fromCompact(t){return t=E(t,64),new e(wt(t,0,H),wt(t,H,2*H))}assertValidity(){return lt(this.r)&&lt(this.s)?this:w()}addRecoveryBit(t){return new e(this.r,this.s,t)}hasHighS(){return Vt(this.s)}normalizeS(){return this.hasHighS()?new e(this.r,l(this.s,L),this.recovery):this}recoverPublicKey(t){let{r:n,s,recovery:o}=this;[0,1,2,3].includes(o)||w("recovery id invalid");let i=jt(E(t,H)),r=o===2||o===3?n+L:n;r>=P&&w("q.x invalid");let c=(o&1)===0?"02":"03",u=S.fromHex(c+ft(r)),f=xt(r,L),h=l(-i*f,L),a=l(s*f,L);return T.mulAddQUns(u,h,a)}toCompactRawBytes(){return dt(this.toCompactHex())}toCompactHex(){return ft(this.r)+ft(this.s)}},ne=e=>{let t=e.length*8-256,n=pt(e);return t>0?n>>BigInt(t):n},jt=e=>l(ne(e),L),qt=e=>At(e),Gt=()=>typeof globalThis=="object"&&"crypto"in globalThis?globalThis.crypto:void 0,ht,se={lowS:!0},Pe={lowS:!0},Te=(e,t,n=se)=>{["der","recovered","canonical"].some(a=>a in n)&&w("sign() legacy options not supported");let{lowS:s}=n;s==null&&(s=!0);let o=jt(E(e)),i=qt(o),r=te(t),c=[qt(r),i],u=n.extraEntropy;if(u){u===!0&&(u=nt.randomBytes(H));let a=E(u);a.length!==H&&w(),c.push(a)}let f=o,h=a=>{let d=ne(a);if(!lt(d))return;let y=xt(d,L),x=T.mul(d).aff(),p=l(x.x,L);if(p===0n)return;let g=l(y*l(f+l(r*p,L),L),L);if(g===0n)return;let k=g,m=(x.x===p?0:2)|Number(x.y&1n);return s&&Vt(g)&&(k=l(-g,L),m^=1),new ut(p,k,m)};return{seed:Nt(...c),k2sig:h}};function ve(e){let t=I(H),n=I(H),s=0,o=()=>{t.fill(1),n.fill(0),s=0},i="drbg: tried 1000 values";if(e){let r=(...f)=>nt.hmacSha256Async(n,t,...f),c=async(f=I())=>{n=await r(I([0]),f),t=await r(),f.length!==0&&(n=await r(I([1]),f),t=await r())},u=async()=>(s++>=1e3&&w(i),t=await r(),t);return async(f,h)=>{o(),await c(f);let a;for(;!(a=h(await u()));)await c();return o(),a}}else{let r=(...f)=>{let h=ht;return h||w("etc.hmacSha256Sync not set"),h(n,t,...f)},c=(f=I())=>{n=r(I([0]),f),t=r(),f.length!==0&&(n=r(I([1]),f),t=r())},u=()=>(s++>=1e3&&w(i),t=r(),t);return(f,h)=>{o(),c(f);let a;for(;!(a=h(u()));)c();return o(),a}}}var oe=(e,t,n=se)=>{let{seed:s,k2sig:o}=Te(e,t,n);return ve(!1)(s,o)},re=(e,t,n,s=Pe)=>{let{lowS:o}=s;o==null&&(o=!0),"strict"in s&&w("verify() legacy options not supported");let i,r,c,u=e&&typeof e=="object"&&"r"in e;!u&&E(e).length!==2*H&&w("signature must be 64 bytes");try{i=u?new ut(e.r,e.s).assertValidity():ut.fromCompact(e),r=jt(E(t)),c=n instanceof S?n.ok():S.fromHex(n)}catch{return!1}if(!i)return!1;let{r:f,s:h}=i;if(o&&Vt(h))return!1;let a;try{let y=xt(h,L),x=l(r*y,L),p=l(f*y,L);a=T.mulAddQUns(c,x,p).aff()}catch{return!1}return a?l(a.x,L)===f:!1};var Ce=e=>{e=E(e);let t=H+8;(e.length<t||e.length>1024)&&w("expected proper params");let n=l(pt(e),L-1n)+1n;return At(n)},nt={hexToBytes:dt,bytesToHex:Ft,concatBytes:Nt,bytesToNumberBE:pt,numberToBytesBE:At,mod:l,invert:xt,hmacSha256Async:async(e,...t)=>{let n=Gt(),s=n&&n.subtle;if(!s)return w("etc.hmacSha256Async not set");let o=await s.importKey("raw",e,{name:"HMAC",hash:{name:"SHA-256"}},!1,["sign"]);return I(await s.sign("HMAC",o,Nt(...t)))},hmacSha256Sync:ht,hashToPrivateKey:Ce,randomBytes:(e=32)=>{let t=Gt();return(!t||!t.getRandomValues)&&w("crypto.getRandomValues must be defined"),t.getRandomValues(I(e))}};Object.defineProperties(nt,{hmacSha256Sync:{configurable:!1,get(){return ht},set(e){ht||(ht=e)}}});var et=8,Ne=()=>{let e=[],t=256/et+1,n=T,s=n;for(let o=0;o<t;o++){s=n,e.push(s);for(let i=1;i<2**(et-1);i++)s=s.add(n),e.push(s);n=s.double()}return e},Wt,Re=e=>{let t=Wt||(Wt=Ne()),n=(h,a)=>{let d=a.negate();return h?d:a},s=gt,o=T,i=1+256/et,r=2**(et-1),c=BigInt(2**et-1),u=2**et,f=BigInt(et);for(let h=0;h<i;h++){let a=h*r,d=Number(e&c);e>>=f,d>r&&(d-=u,e+=1n);let y=a,x=a+Math.abs(d)-1,p=h%2!==0,g=d<0;d===0?o=o.add(n(p,t[y])):s=s.add(n(g,t[x]))}return{p:s,f:o}};function B(e){if(!Number.isSafeInteger(e)||e<0)throw new Error(`positive integer expected, not ${e}`)}function Fe(e){return e instanceof Uint8Array||e!=null&&typeof e=="object"&&e.constructor.name==="Uint8Array"}function st(e,...t){if(!Fe(e))throw new Error("Uint8Array expected");if(t.length>0&&!t.includes(e.length))throw new Error(`Uint8Array expected of length ${t}, not of length=${e.length}`)}function Bt(e){if(typeof e!="function"||typeof e.create!="function")throw new Error("Hash should be wrapped by utils.wrapConstructor");B(e.outputLen),B(e.blockLen)}function O(e,t=!0){if(e.destroyed)throw new Error("Hash instance has been destroyed");if(t&&e.finished)throw new Error("Hash#digest() has already been called")}function Ht(e,t){st(e);let n=t.outputLen;if(e.length<n)throw new Error(`digestInto() expects output buffer of length at least ${n}`)}var St=BigInt(4294967295),ie=BigInt(32);function Ve(e,t=!1){return t?{h:Number(e&St),l:Number(e>>ie&St)}:{h:Number(e>>ie&St)|0,l:Number(e&St)|0}}function ce(e,t=!1){let n=new Uint32Array(e.length),s=new Uint32Array(e.length);for(let o=0;o<e.length;o++){let{h:i,l:r}=Ve(e[o],t);[n[o],s[o]]=[i,r]}return[n,s]}var ae=(e,t,n)=>e<<n|t>>>32-n,fe=(e,t,n)=>t<<n|e>>>32-n,he=(e,t,n)=>t<<n-32|e>>>64-n,le=(e,t,n)=>e<<n-32|t>>>64-n;var rt=e=>new Uint32Array(e.buffer,e.byteOffset,Math.floor(e.byteLength/4)),it=e=>new DataView(e.buffer,e.byteOffset,e.byteLength),_=(e,t)=>e<<32-t|e>>>t,b=(e,t)=>e<<t|e>>>32-t>>>0,ct=new Uint8Array(new Uint32Array([287454020]).buffer)[0]===68,je=e=>e<<24&4278190080|e<<8&16711680|e>>>8&65280|e>>>24&255;function at(e){for(let t=0;t<e.length;t++)e[t]=je(e[t])}var Me=async()=>{};async function It(e,t,n){let s=Date.now();for(let o=0;o<e;o++){n(o);let i=Date.now()-s;i>=0&&i<t||(await Me(),s+=i)}}function ze(e){if(typeof e!="string")throw new Error(`utf8ToBytes expected string, got ${typeof e}`);return new Uint8Array(new TextEncoder().encode(e))}function U(e){return typeof e=="string"&&(e=ze(e)),st(e),e}var v=class{clone(){return this._cloneInto()}},Ke={}.toString;function _t(e,t){if(t!==void 0&&Ke.call(t)!=="[object Object]")throw new Error("Options should be object or undefined");return Object.assign(e,t)}function Ut(e){let t=s=>e().update(U(s)).digest(),n=e();return t.outputLen=n.outputLen,t.blockLen=n.blockLen,t.create=()=>e(),t}function ue(e){let t=(s,o)=>e(o).update(U(s)).digest(),n=e({});return t.outputLen=n.outputLen,t.blockLen=n.blockLen,t.create=s=>e(s),t}var xe=[],ye=[],be=[],Xe=BigInt(0),yt=BigInt(1),De=BigInt(2),Ze=BigInt(7),qe=BigInt(256),Ge=BigInt(113);for(let e=0,t=yt,n=1,s=0;e<24;e++){[n,s]=[s,(2*n+3*s)%5],xe.push(2*(5*s+n)),ye.push((e+1)*(e+2)/2%64);let o=Xe;for(let i=0;i<7;i++)t=(t<<yt^(t>>Ze)*Ge)%qe,t&De&&(o^=yt<<(yt<<BigInt(i))-yt);be.push(o)}var[We,Ye]=ce(be,!0),de=(e,t,n)=>n>32?he(e,t,n):ae(e,t,n),pe=(e,t,n)=>n>32?le(e,t,n):fe(e,t,n);function $e(e,t=24){let n=new Uint32Array(10);for(let s=24-t;s<24;s++){for(let r=0;r<10;r++)n[r]=e[r]^e[r+10]^e[r+20]^e[r+30]^e[r+40];for(let r=0;r<10;r+=2){let c=(r+8)%10,u=(r+2)%10,f=n[u],h=n[u+1],a=de(f,h,1)^n[c],d=pe(f,h,1)^n[c+1];for(let y=0;y<50;y+=10)e[r+y]^=a,e[r+y+1]^=d}let o=e[2],i=e[3];for(let r=0;r<24;r++){let c=ye[r],u=de(o,i,c),f=pe(o,i,c),h=xe[r];o=e[h],i=e[h+1],e[h]=u,e[h+1]=f}for(let r=0;r<50;r+=10){for(let c=0;c<10;c++)n[c]=e[r+c];for(let c=0;c<10;c++)e[r+c]^=~n[(c+2)%10]&n[(c+4)%10]}e[0]^=We[s],e[1]^=Ye[s]}n.fill(0)}var Et=class e extends v{constructor(t,n,s,o=!1,i=24){if(super(),this.blockLen=t,this.suffix=n,this.outputLen=s,this.enableXOF=o,this.rounds=i,this.pos=0,this.posOut=0,this.finished=!1,this.destroyed=!1,B(s),0>=this.blockLen||this.blockLen>=200)throw new Error("Sha3 supports only keccak-f1600 function");this.state=new Uint8Array(200),this.state32=rt(this.state)}keccak(){ct||at(this.state32),$e(this.state32,this.rounds),ct||at(this.state32),this.posOut=0,this.pos=0}update(t){O(this);let{blockLen:n,state:s}=this;t=U(t);let o=t.length;for(let i=0;i<o;){let r=Math.min(n-this.pos,o-i);for(let c=0;c<r;c++)s[this.pos++]^=t[i++];this.pos===n&&this.keccak()}return this}finish(){if(this.finished)return;this.finished=!0;let{state:t,suffix:n,pos:s,blockLen:o}=this;t[s]^=n,(n&128)!==0&&s===o-1&&this.keccak(),t[o-1]^=128,this.keccak()}writeInto(t){O(this,!1),st(t),this.finish();let n=this.state,{blockLen:s}=this;for(let o=0,i=t.length;o<i;){this.posOut>=s&&this.keccak();let r=Math.min(s-this.posOut,i-o);t.set(n.subarray(this.posOut,this.posOut+r),o),this.posOut+=r,o+=r}return t}xofInto(t){if(!this.enableXOF)throw new Error("XOF is not possible for this instance");return this.writeInto(t)}xof(t){return B(t),this.xofInto(new Uint8Array(t))}digestInto(t){if(Ht(t,this),this.finished)throw new Error("digest() was already called");return this.writeInto(t),this.destroy(),t}digest(){return this.digestInto(new Uint8Array(this.outputLen))}destroy(){this.destroyed=!0,this.state.fill(0)}_cloneInto(t){let{blockLen:n,suffix:s,outputLen:o,rounds:i,enableXOF:r}=this;return t||(t=new e(n,s,o,r,i)),t.state32.set(this.state32),t.pos=this.pos,t.posOut=this.posOut,t.finished=this.finished,t.rounds=i,t.suffix=s,t.outputLen=o,t.enableXOF=r,t.destroyed=this.destroyed,t}},C=(e,t,n)=>Ut(()=>new Et(t,e,n)),xn=C(6,144,224/8),yn=C(6,136,256/8),bn=C(6,104,384/8),mn=C(6,72,512/8),gn=C(1,144,224/8),me=C(1,136,256/8),wn=C(1,104,384/8),kn=C(1,72,512/8),ge=(e,t,n)=>ue((s={})=>new Et(t,e,s.dkLen===void 0?n:s.dkLen,!0)),Ln=ge(31,168,128/8),An=ge(31,136,256/8);var Ot=class extends v{constructor(t,n){super(),this.finished=!1,this.destroyed=!1,Bt(t);let s=U(n);if(this.iHash=t.create(),typeof this.iHash.update!="function")throw new Error("Expected instance of class which extends utils.Hash");this.blockLen=this.iHash.blockLen,this.outputLen=this.iHash.outputLen;let o=this.blockLen,i=new Uint8Array(o);i.set(s.length>o?t.create().update(s).digest():s);for(let r=0;r<i.length;r++)i[r]^=54;this.iHash.update(i),this.oHash=t.create();for(let r=0;r<i.length;r++)i[r]^=106;this.oHash.update(i),i.fill(0)}update(t){return O(this),this.iHash.update(t),this}digestInto(t){O(this),st(t,this.outputLen),this.finished=!0,this.iHash.digestInto(t),this.oHash.update(t),this.oHash.digestInto(t),this.destroy()}digest(){let t=new Uint8Array(this.oHash.outputLen);return this.digestInto(t),t}_cloneInto(t){t||(t=Object.create(Object.getPrototypeOf(this),{}));let{oHash:n,iHash:s,finished:o,destroyed:i,blockLen:r,outputLen:c}=this;return t=t,t.finished=o,t.destroyed=i,t.blockLen=r,t.outputLen=c,t.oHash=n._cloneInto(t.oHash),t.iHash=s._cloneInto(t.iHash),t}destroy(){this.destroyed=!0,this.oHash.destroy(),this.iHash.destroy()}},bt=(e,t,n)=>new Ot(e,t).update(n).digest();bt.create=(e,t)=>new Ot(e,t);function Qe(e,t,n,s){if(typeof e.setBigUint64=="function")return e.setBigUint64(t,n,s);let o=BigInt(32),i=BigInt(4294967295),r=Number(n>>o&i),c=Number(n&i),u=s?4:0,f=s?0:4;e.setUint32(t+u,r,s),e.setUint32(t+f,c,s)}var we=(e,t,n)=>e&t^~e&n,ke=(e,t,n)=>e&t^e&n^t&n,Pt=class extends v{constructor(t,n,s,o){super(),this.blockLen=t,this.outputLen=n,this.padOffset=s,this.isLE=o,this.finished=!1,this.length=0,this.pos=0,this.destroyed=!1,this.buffer=new Uint8Array(t),this.view=it(this.buffer)}update(t){O(this);let{view:n,buffer:s,blockLen:o}=this;t=U(t);let i=t.length;for(let r=0;r<i;){let c=Math.min(o-this.pos,i-r);if(c===o){let u=it(t);for(;o<=i-r;r+=o)this.process(u,r);continue}s.set(t.subarray(r,r+c),this.pos),this.pos+=c,r+=c,this.pos===o&&(this.process(n,0),this.pos=0)}return this.length+=t.length,this.roundClean(),this}digestInto(t){O(this),Ht(t,this),this.finished=!0;let{buffer:n,view:s,blockLen:o,isLE:i}=this,{pos:r}=this;n[r++]=128,this.buffer.subarray(r).fill(0),this.padOffset>o-r&&(this.process(s,0),r=0);for(let a=r;a<o;a++)n[a]=0;Qe(s,o-8,BigInt(this.length*8),i),this.process(s,0);let c=it(t),u=this.outputLen;if(u%4)throw new Error("_sha2: outputLen should be aligned to 32bit");let f=u/4,h=this.get();if(f>h.length)throw new Error("_sha2: outputLen bigger than state");for(let a=0;a<f;a++)c.setUint32(4*a,h[a],i)}digest(){let{buffer:t,outputLen:n}=this;this.digestInto(t);let s=t.slice(0,n);return this.destroy(),s}_cloneInto(t){t||(t=new this.constructor),t.set(...this.get());let{blockLen:n,buffer:s,length:o,finished:i,destroyed:r,pos:c}=this;return t.length=o,t.pos=c,t.finished=i,t.destroyed=r,o%n&&t.buffer.set(s),t}};var Je=new Uint32Array([1116352408,1899447441,3049323471,3921009573,961987163,1508970993,2453635748,2870763221,3624381080,310598401,607225278,1426881987,1925078388,2162078206,2614888103,3248222580,3835390401,4022224774,264347078,604807628,770255983,1249150122,1555081692,1996064986,2554220882,2821834349,2952996808,3210313671,3336571891,3584528711,113926993,338241895,666307205,773529912,1294757372,1396182291,1695183700,1986661051,2177026350,2456956037,2730485921,2820302411,3259730800,3345764771,3516065817,3600352804,4094571909,275423344,430227734,506948616,659060556,883997877,958139571,1322822218,1537002063,1747873779,1955562222,2024104815,2227730452,2361852424,2428436474,2756734187,3204031479,3329325298]),N=new Uint32Array([1779033703,3144134277,1013904242,2773480762,1359893119,2600822924,528734635,1541459225]),R=new Uint32Array(64),Mt=class extends Pt{constructor(){super(64,32,8,!1),this.A=N[0]|0,this.B=N[1]|0,this.C=N[2]|0,this.D=N[3]|0,this.E=N[4]|0,this.F=N[5]|0,this.G=N[6]|0,this.H=N[7]|0}get(){let{A:t,B:n,C:s,D:o,E:i,F:r,G:c,H:u}=this;return[t,n,s,o,i,r,c,u]}set(t,n,s,o,i,r,c,u){this.A=t|0,this.B=n|0,this.C=s|0,this.D=o|0,this.E=i|0,this.F=r|0,this.G=c|0,this.H=u|0}process(t,n){for(let a=0;a<16;a++,n+=4)R[a]=t.getUint32(n,!1);for(let a=16;a<64;a++){let d=R[a-15],y=R[a-2],x=_(d,7)^_(d,18)^d>>>3,p=_(y,17)^_(y,19)^y>>>10;R[a]=p+R[a-7]+x+R[a-16]|0}let{A:s,B:o,C:i,D:r,E:c,F:u,G:f,H:h}=this;for(let a=0;a<64;a++){let d=_(c,6)^_(c,11)^_(c,25),y=h+d+we(c,u,f)+Je[a]+R[a]|0,p=(_(s,2)^_(s,13)^_(s,22))+ke(s,o,i)|0;h=f,f=u,u=c,c=r+y|0,r=i,i=o,o=s,s=y+p|0}s=s+this.A|0,o=o+this.B|0,i=i+this.C|0,r=r+this.D|0,c=c+this.E|0,u=u+this.F|0,f=f+this.G|0,h=h+this.H|0,this.set(s,o,i,r,c,u,f,h)}roundClean(){R.fill(0)}destroy(){this.set(0,0,0,0,0,0,0,0),this.buffer.fill(0)}};var ot=Ut(()=>new Mt);function tn(e,t,n,s){Bt(e);let o=_t({dkLen:32,asyncTick:10},s),{c:i,dkLen:r,asyncTick:c}=o;if(B(i),B(r),B(c),i<1)throw new Error("PBKDF2: iterations (c) should be >= 1");let u=U(t),f=U(n),h=new Uint8Array(r),a=bt.create(e,u),d=a._cloneInto().update(f);return{c:i,dkLen:r,asyncTick:c,DK:h,PRF:a,PRFSalt:d}}function en(e,t,n,s,o){return e.destroy(),t.destroy(),s&&s.destroy(),o.fill(0),n}function zt(e,t,n,s){let{c:o,dkLen:i,DK:r,PRF:c,PRFSalt:u}=tn(e,t,n,s),f,h=new Uint8Array(4),a=it(h),d=new Uint8Array(c.outputLen);for(let y=1,x=0;x<i;y++,x+=c.outputLen){let p=r.subarray(x,x+c.outputLen);a.setInt32(0,y,!1),(f=u._cloneInto(f)).update(h).digestInto(d),p.set(d.subarray(0,p.length));for(let g=1;g<o;g++){c._cloneInto(f).update(d).digestInto(d);for(let k=0;k<p.length;k++)p[k]^=d[k]}}return en(c,u,r,f,d)}function Le(e,t,n,s,o,i){let r=e[t++]^n[s++],c=e[t++]^n[s++],u=e[t++]^n[s++],f=e[t++]^n[s++],h=e[t++]^n[s++],a=e[t++]^n[s++],d=e[t++]^n[s++],y=e[t++]^n[s++],x=e[t++]^n[s++],p=e[t++]^n[s++],g=e[t++]^n[s++],k=e[t++]^n[s++],m=e[t++]^n[s++],A=e[t++]^n[s++],mt=e[t++]^n[s++],F=e[t++]^n[s++],V=r,j=c,M=u,z=f,K=h,X=a,D=d,Z=y,q=x,G=p,W=g,Y=k,$=m,Q=A,J=mt,tt=F;for(let Xt=0;Xt<8;Xt+=2)K^=b(V+$|0,7),q^=b(K+V|0,9),$^=b(q+K|0,13),V^=b($+q|0,18),G^=b(X+j|0,7),Q^=b(G+X|0,9),j^=b(Q+G|0,13),X^=b(j+Q|0,18),J^=b(W+D|0,7),M^=b(J+W|0,9),D^=b(M+J|0,13),W^=b(D+M|0,18),z^=b(tt+Y|0,7),Z^=b(z+tt|0,9),Y^=b(Z+z|0,13),tt^=b(Y+Z|0,18),j^=b(V+z|0,7),M^=b(j+V|0,9),z^=b(M+j|0,13),V^=b(z+M|0,18),D^=b(X+K|0,7),Z^=b(D+X|0,9),K^=b(Z+D|0,13),X^=b(K+Z|0,18),Y^=b(W+G|0,7),q^=b(Y+W|0,9),G^=b(q+Y|0,13),W^=b(G+q|0,18),$^=b(tt+J|0,7),Q^=b($+tt|0,9),J^=b(Q+$|0,13),tt^=b(J+Q|0,18);o[i++]=r+V|0,o[i++]=c+j|0,o[i++]=u+M|0,o[i++]=f+z|0,o[i++]=h+K|0,o[i++]=a+X|0,o[i++]=d+D|0,o[i++]=y+Z|0,o[i++]=x+q|0,o[i++]=p+G|0,o[i++]=g+W|0,o[i++]=k+Y|0,o[i++]=m+$|0,o[i++]=A+Q|0,o[i++]=mt+J|0,o[i++]=F+tt|0}function Kt(e,t,n,s,o){let i=s+0,r=s+16*o;for(let c=0;c<16;c++)n[r+c]=e[t+(2*o-1)*16+c];for(let c=0;c<o;c++,i+=16,t+=16)Le(n,r,e,t,n,i),c>0&&(r+=16),Le(n,i,e,t+=16,n,r)}function nn(e,t,n){let s=_t({dkLen:32,asyncTick:10,maxmem:1073742848},n),{N:o,r:i,p:r,dkLen:c,asyncTick:u,maxmem:f,onProgress:h}=s;if(B(o),B(i),B(r),B(c),B(u),B(f),h!==void 0&&typeof h!="function")throw new Error("progressCb should be function");let a=128*i,d=a/4;if(o<=1||(o&o-1)!==0||o>=2**(a/8)||o>2**32)throw new Error("Scrypt: N must be larger than 1, a power of 2, less than 2^(128 * r / 8) and less than 2^32");if(r<0||r>(2**32-1)*32/a)throw new Error("Scrypt: p must be a positive integer less than or equal to ((2^32 - 1) * 32) / (128 * r)");if(c<0||c>(2**32-1)*32)throw new Error("Scrypt: dkLen should be positive integer less than or equal to (2^32 - 1) * 32");let y=a*(o+r);if(y>f)throw new Error(`Scrypt: parameters too large, ${y} (128 * r * (N + p)) > ${f} (maxmem)`);let x=zt(ot,e,t,{c:1,dkLen:a*r}),p=rt(x),g=rt(new Uint8Array(a*o)),k=rt(new Uint8Array(a)),m=()=>{};if(h){let A=2*o*r,mt=Math.max(Math.floor(A/1e4),1),F=0;m=()=>{F++,h&&(!(F%mt)||F===A)&&h(F/A)}}return{N:o,r:i,p:r,dkLen:c,blockSize32:d,V:g,B32:p,B:x,tmp:k,blockMixCb:m,asyncTick:u}}function sn(e,t,n,s,o){let i=zt(ot,e,n,{c:1,dkLen:t});return n.fill(0),s.fill(0),o.fill(0),i}async function Ae(e,t,n){let{N:s,r:o,p:i,dkLen:r,blockSize32:c,V:u,B32:f,B:h,tmp:a,blockMixCb:d,asyncTick:y}=nn(e,t,n);ct||at(f);for(let x=0;x<i;x++){let p=c*x;for(let k=0;k<c;k++)u[k]=f[p+k];let g=0;await It(s-1,y,()=>{Kt(u,g,u,g+=c,o),d()}),Kt(u,(s-1)*c,f,p,o),d(),await It(s,y,()=>{let k=f[p+c-16]%s;for(let m=0;m<c;m++)a[m]=f[p+m]^u[k*c+m];Kt(a,0,f,p,o),d()})}return ct||at(f),sn(e,r,h,u,a)}nt.hmacSha256Sync=(e,...t)=>bt(ot,e,nt.concatBytes(...t));return Ue(on);})();
+/*! Bundled license information:
+
+@noble/secp256k1/index.js:
+  (*! noble-secp256k1 - MIT License (c) 2019 Paul Miller (paulmillr.com) *)
+
+@noble/hashes/esm/utils.js:
+  (*! noble-hashes - MIT License (c) 2022 Paul Miller (paulmillr.com) *)
+*/
+</script>
+<script>
+// KEYCORE0X_20260923 —— 密钥运算的【唯一事实来源】。
+//
+// 为什么要有这个文件：原来这一套只存在于 tool.html 里，于是首页想做同样的事
+//   就只能叫用户跳过去、来回切标签页。要让首页自己会做，只有两条路：
+//   把代码抄一份到 app.js（两份必然分叉，今天已经吃过三次同族的亏），
+//   或者抽成一份大家共用。这里选后者。
+//
+// 交付有两种形态，但源头只有这一个文件：
+//   · 首页  index.html  ->  <script src="js/keycore.js">
+//   · 工具页 tool.html  ->  打包时把这个文件【原样内联】进去（它必须是单文件、
+//     能下载下来离线双击打开，这是「私钥不出这台电脑」那条承诺的载体）
+//   _mk0xdep.py 的 KEYINLINE0X 闸会逐字节比对内联的那份跟这个文件，分叉就拒绝出包。
+//
+// 这个文件【不碰 DOM、不联网】。所有判据跟后端 chains.mjs 逐例对照，
+//   由 demo/tron-tool.test.mjs 把函数从本文件里抠出来跑。
+(function (root) {
+  'use strict';
+  var N = root.NOBLE;
+  var G = N.ProjectivePoint.BASE, n = N.CURVE.n;
+  var enc = new TextEncoder();
+
+  function hex(u) { var s = '', i; for (i = 0; i < u.length; i++) s += (u[i] < 16 ? '0' : '') + u[i].toString(16); return s; }
+
+  function u8(h) { h = h.replace(/^0x/i, ''); var a = new Uint8Array(h.length / 2), i;
+    for (i = 0; i < a.length; i++) a[i] = parseInt(h.substr(i * 2, 2), 16); return a; }
+
+  function pad64(x) { var s = x.toString(16); while (s.length < 64) s = '0' + s; return s; }
+
+  function rnd(k) { return crypto.getRandomValues(new Uint8Array(k)); }
+
+  var B58 = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz';
+
+  function b58enc(bytes) {
+    var num = 0n, i;
+    for (i = 0; i < bytes.length; i++) num = num * 256n + BigInt(bytes[i]);
+    var out = '';
+    while (num > 0n) { out = B58[Number(num % 58n)] + out; num = num / 58n; }
+    for (i = 0; i < bytes.length && bytes[i] === 0; i++) out = '1' + out;   // 前导零 -> '1'
+    return out;
+  }
+
+  function tronFromHash20(h20) {
+    var body = new Uint8Array(21); body[0] = 0x41; body.set(h20, 1);
+    var chk = N.sha256(N.sha256(body)).subarray(0, 4);
+    var full = new Uint8Array(25); full.set(body, 0); full.set(chk, 21);
+    return b58enc(full);
+  }
+
+  function hash20FromPriv(k) {
+    return N.keccak_256(N.getPublicKey(u8(pad64(k)), false).subarray(1)).subarray(12);
+  }
+
+  function addrFromPriv(k) { return '0x' + hex(N.keccak_256(N.getPublicKey(u8(pad64(k)), false).subarray(1)).subarray(12)); }
+
+  function addrOf(chain, k) {
+    return chain === 'tron' ? tronFromHash20(hash20FromPriv(k)) : addrFromPriv(k);
+  }
+
+  function addrBody(chain, addr) { return chain === 'tron' ? addr : addr.replace(/^0x/i, ''); }
+
+  function addrHit(chain, pre, suf, addr) {
+    var body = addrBody(chain, addr);
+    if (!pre && !suf) return false;
+    if (pre && body.indexOf(pre) !== 0) return false;
+    if (suf && body.slice(body.length - suf.length) !== suf) return false;
+    return true;
+  }
+
+  function secShape(sec) {
+    return {
+      chain:  sec.chain  || 'evm',
+      prefix: sec.prefix !== undefined ? sec.prefix : (sec.pattern || ''),
+      suffix: sec.suffix || ''
+    };
+  }
+
+  // b 的格式跟 CLI 一模一样：纯数字=十进制，0x 开头或带 a-f 字母=十六进制
+  function parseB(t) {
+    t = String(t || '').trim();
+    if (!t) throw new Error('b 是空的');
+    var isHex = /^0x/i.test(t) || /[a-f]/i.test(t);
+    if (!isHex && !/^[0-9]+$/.test(t)) throw new Error('b 里有不认识的字符');
+    if (isHex && !/^(0x)?[0-9a-f]+$/i.test(t)) throw new Error('b 里有不认识的字符');
+    return BigInt(isHex ? (/^0x/i.test(t) ? t : '0x' + t) : t);
+  }
+
+  var TOOL_CHAINS = {
+    evm:  { label: 'EVM 地址', alphabet: '0123456789abcdef', pos: [],
+            addrLen: 40, lower: true,
+            rule: '十六进制，只能用 0-9 a-f（开头的 0x 不用写）' },
+    tron: { label: 'TRON 地址', alphabet: '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz',
+            pos: ['T', '9ABCDEFGHJKLMNPQRSTUVWXYZ'], addrLen: 34, lower: false,
+            rule: '第 1 位一定是 T，第 2 位只能是 9 或 A-Z（没有 I O 0），其余用 base58（没有 0 O I l）' }
+  };
+
+  // ---------- GLV 变体（GLV0X_20260923）----------
+  // GPU 内核用 GLV 自同态，一个点派生 6 个候选地址。命中来自哪一个，还原公式就不一样：
+  //   k = variantK((s+b) mod n, variant)，variant ∈ 0..5，不是恒等的 (s+b)。
+  // 这里【不让你选】变体 —— 六个全算出来，用「地址对不对得上」自己挑。挑不出就拒，不猜。
+  var GLV_LAM = BigInt('0x5363AD4CC05C30E0A5261C028812645A122E22EA20816678DF02967C1B23BD72');
+  function variantK(base, v) {
+    var t = base % n;
+    if (v % 3 === 1) t = (t * GLV_LAM) % n;
+    else if (v % 3 === 2) t = ((t * GLV_LAM) % n * GLV_LAM) % n;
+    return v >= 3 ? (n - t) % n : t;
+  }
+  function mergeCandidates(sv, b, chain) {
+    var base = (sv + b) % n, out = [], v;
+    for (v = 0; v < 6; v++) { var k = variantK(base, v); out.push({ v: v, k: k, addr: addrOf(chain || 'evm', k) }); }
+    return out;
+  }
+  function pickByOracle(cands, test) {
+    for (var i = 0; i < cands.length; i++) if (test(cands[i].addr)) return cands[i];
+    return null;
+  }
+  function candList(cands) {
+    return cands.map(function (c) { return '  变体 ' + c.v + ': ' + c.addr; }).join('\n');
+  }
+
+  // ── 链元数据：跟后端 chains.mjs 同一套 ──────────────────────────────
+  var CHAINS = TOOL_CHAINS;
+
+  function patProblem(chain, pre, suf) {
+    var c = CHAINS[chain] || CHAINS.evm, i;
+    if (!pre && !suf) return '前缀和后缀都是空的 —— 至少要钉一头。';
+    if (pre.length + suf.length > c.addrLen)
+      return c.label + '一共 ' + c.addrLen + ' 位，前 ' + pre.length + ' + 后 ' + suf.length + ' 放不下。';
+    for (i = 0; i < pre.length; i++) {
+      var allowed = c.pos[i] || c.alphabet;
+      if (allowed.indexOf(pre[i]) < 0)
+        return c.label + '的第 ' + (i + 1) + ' 位不可能是「' + pre[i] + '」—— 这一位只可能是：' + allowed;
+    }
+    for (i = 0; i < suf.length; i++)
+      if (c.alphabet.indexOf(suf[i]) < 0)
+        return c.label + '的后缀里不可能有「' + suf[i] + '」—— 只能用：' + c.alphabet;
+    return null;
+  }
+
+  // ── 上面是判据，下面是四件事：造钥匙 / 签挑战 / 合钥匙 / 签回执 ──────
+  // 每一件都是纯函数：进什么出什么，不读页面、不写页面。
+
+  // ① 造钥匙：随机一个 s，算出影子 A，顺便把两个要保存的 JSON 也拼好
+  function makeShare(chain, pre, suf) {
+    var why = patProblem(chain, pre, suf);
+    if (why) throw new Error(why);
+    var s;
+    do { s = BigInt('0x' + hex(rnd(32))); } while (s === 0n || s >= n);
+    var A = hex(G.multiply(s).toRawBytes(false));
+    return {
+      s: s, A: A, chain: chain, prefix: pre, suffix: suf,
+      secret: JSON.stringify({
+        warning: '这是你的秘密份额(第一半)。丢了=靓号永久死亡, 平台无法找回。绝不外传, 离线备份。',
+        chain: chain, prefix: pre, suffix: suf,
+        pattern: pre,
+        s: pad64(s)
+      }, null, 2),
+      upload: JSON.stringify({ chain: chain, prefix: pre, suffix: suf, A: A }, null, 2)
+    };
+  }
+
+  // 读 my-secret-s.json 的文本。老文件只有 pattern（一定是 EVM 小写），
+  // 所以只在【没写 chain】的时候才沿用小写那套 —— TRON 的 base58 区分大小写。
+  function readSecretJson(text) {
+    var j = JSON.parse(text);
+    if (!j.s || !/^[0-9a-f]{64}$/i.test(j.s)) throw new Error('这个文件里没有合法的 s —— 选错文件了？');
+    var s = BigInt('0x' + j.s);
+    if (s <= 0n || s >= n) throw new Error('文件里的 s 不在合法范围内');
+    var ch = j.chain === 'tron' ? 'tron' : 'evm';
+    var keep = function (v) { var x = String(v || ''); return ch === 'tron' ? x : x.toLowerCase(); };
+    return {
+      s: s, chain: ch,
+      prefix: keep(j.prefix !== undefined ? j.prefix : j.pattern),
+      suffix: keep(j.suffix),
+      pattern: keep(j.pattern !== undefined ? j.pattern : j.prefix)
+    };
+  }
+
+  // ② 签挑战：用 s 给挑战串签名，证明 s 在你手上（防白嫖算力）
+  function signChallenge(s, challenge) {
+    var msg = String(challenge || '').trim();
+    if (!msg) throw new Error('挑战串是空的。');
+    return {
+      sig: hex(N.sign(N.keccak_256(enc.encode(msg)), u8(pad64(s))).toCompactRawBytes()),
+      A: hex(G.multiply(s).toRawBytes(false))
+    };
+  }
+
+  // ③ 合钥匙：六个 GLV 变体里，按地址挑出对的那一个
+  function merge(sec, b) {
+    var sh = secShape(sec);
+    var cands = mergeCandidates(sec.s, b, sh.chain);
+    var hit = (sh.prefix || sh.suffix)
+      ? pickByOracle(cands, function (a) { return addrHit(sh.chain, sh.prefix, sh.suffix, a); })
+      : cands[0];
+    var want = (sh.prefix || '') + (sh.suffix ? '…' + sh.suffix : '');
+    if (!hit) return { ok: false, want: want, chain: sh.chain, cands: cands };
+    return { ok: true, k: hit.k, addr: hit.addr, variant: hit.v, want: want, chain: sh.chain, cands: cands };
+  }
+
+  // ④ 签回执：用合出来的完整 k 给回执原文签名。平台没有 s，造不出这个签名。
+  function signReceipt(sec, b, message) {
+    var msg = String(message || '').replace(/\r\n/g, '\n').replace(/\s+$/, '');
+    if (!msg) throw new Error('回执原文是空的。');
+    var cands = mergeCandidates(sec.s, b, secShape(sec).chain);
+    var hit = pickByOracle(cands, function (a) { return msg.indexOf(a) >= 0; });
+    if (!hit) return { ok: false, cands: cands };
+    return { ok: true, addr: hit.addr,
+             sig: hex(N.sign(N.keccak_256(enc.encode(msg)), u8(pad64(hit.k))).toCompactRawBytes()) };
+  }
+
+  // keystore v3（web3 secret storage）。故意算得慢：暴力猜密码也得这么慢。
+  // ★ address 那一栏按链分开 —— 原来一律 addr.slice(2)，TRON 地址会被啃掉开头的两位。
+  function keystore(k, addr, chain, pw, onp) {
+    var salt = rnd(32), iv = rnd(16);
+    return N.scryptAsync(enc.encode(pw), salt, { N: 131072, r: 8, p: 1, dkLen: 32, maxmem: 300 * 1024 * 1024, onProgress: onp })
+      .then(function (dk) {
+        return crypto.subtle.importKey('raw', dk.slice(0, 16), { name: 'AES-CTR' }, false, ['encrypt'])
+          .then(function (key) {
+            return crypto.subtle.encrypt({ name: 'AES-CTR', counter: iv, length: 128 }, key, u8(pad64(k)));
+          })
+          .then(function (buf) {
+            var ct = new Uint8Array(buf);
+            var macIn = new Uint8Array(16 + ct.length);
+            macIn.set(dk.subarray(16, 32), 0); macIn.set(ct, 16);
+            return {
+              version: 3,
+              id: (crypto.randomUUID ? crypto.randomUUID() : hex(rnd(16))),
+              address: chain === 'tron' ? addr : addr.replace(/^0x/i, '').toLowerCase(),
+              chain: chain,
+              crypto: {
+                cipher: 'aes-128-ctr',
+                cipherparams: { iv: hex(iv) },
+                ciphertext: hex(ct),
+                kdf: 'scrypt',
+                kdfparams: { dklen: 32, n: 131072, r: 8, p: 1, salt: hex(salt) },
+                mac: hex(N.keccak_256(macIn))
+              }
+            };
+          });
+      });
+  }
+
+  root.KeyCore = {
+    CHAINS: CHAINS, n: n,
+    hex: hex, u8: u8, pad64: pad64, rnd: rnd,
+    addrOf: addrOf, addrBody: addrBody, addrHit: addrHit,
+    secShape: secShape, patProblem: patProblem, parseB: parseB,
+    variantK: variantK, mergeCandidates: mergeCandidates, pickByOracle: pickByOracle, candList: candList,
+    makeShare: makeShare, readSecretJson: readSecretJson,
+    signChallenge: signChallenge, merge: merge, signReceipt: signReceipt,
+    keystore: keystore
+  };
+})(window);
+</script>
+<script>
+// 0x000000000 — 前端原型逻辑（终端风）
+'use strict';
+
+const dict = {
+  zh: {
+    run: '运行 Run', lblPos: '-位置 Position', posPrefix: '前缀 Prefix', posSuffix: '后缀 Suffix', posBoth: '前+后 Both ends',
+    thType: '类型 Type', thPrice: '价格 USDT', thEta: '铸造耗时',
+    catalogOpen: '查看全部价格 ▸', catalogTitle: '价目表',
+    catalogTeaser: (on, off) => '两条链 · ' + on + ' 档在售' + (off ? '（另有 ' + off + ' 档铸造机暂不支持）' : '') + '，点上面那个按钮看完整价目表。', 
+    catalogDown: '价目表暂时取不到 —— 宁可不显示，也不给你看一张可能过期的表。',
+    kindPrefix: '前缀', digits: '位',
+    onlyKinds: (k) => '目前只卖：' + k + '。后缀、前后缀组合、按图案定价都还没实现 —— 不在这张表里的一律不可售。',
+    calcNotSellable: '不可售（后端目前不支持这一类）',
+    calcNoCatalog: '价目表取不到，暂不报价',
+    noteHot: '热门模式 (9999/8888/0000/dead/beef/c0ffee/666…) 溢价 30-100%；0x9999 与 0xabcd 难度相同——定价按位数不按字符。',
+    safeTitle: '[SAFE] 定制区 · 无托管模式 NON-CUSTODIAL',
+    safeBody: '我们全程只拿到影子 A 和另外半把钥匙 b —— 这两样加起来也推不出你的私钥。完整私钥只在你自己的电脑上拼出来。',
+    noteProto: '原型说明：本页已对接真后端（订单/签名验证/铸造/交付）；仅支付为模拟。s 的生成与签名由本地工具完成。',
+    // LIVEPAY0X：切了真收款之后上面那句就是假话了。liveSwap 会用下面这句顶替它。
+    noteProtoLive: '本页对接的是真后端：下单、签名验证、铸造、交付、以及【真实链上收款】。s 的生成与签名全部在你自己的浏览器/电脑上完成，平台看不到。',
+    heroTag: '靓号地址铸造台 · SPLIT-KEY 无托管',
+    heroMission: '用 USDT 付款。你先在自己电脑上造一半钥匙，我们替你铸另一半——完整私钥只有你拼得出。',
+    heroCta: '开始下单 →',
+    heroTool: '离线版密钥工具 ↗',
+    toolCta: '离线版密钥工具 ↗',
+    // TRUST0X_20260923：原来还写着「OFAC 制裁筛查 · 大额阈值 KYC」—— 代码里一行都没有（grep 0 处），
+    //   「开源工具可审计」那时也还没公开。页面上每一句都得是真的，假话比没话更伤信任。
+    foot1: '页面代码公开在 GitHub，可逐字节核对 · 定制区无托管 · 收款支持 TRON / BSC 上的 USDT',
+    // TRUST0X_20260923：DSJ「两半都在我们的平台合成，用户会不会怀疑我们拿得到私钥？」
+    //   说「拿不到」没用，要让用户自己能核对。每一条都是能验的事实，不是口号。
+    proof1: '你的那一半钥匙在你自己的浏览器里生成，只存在你自己的电脑上。平台收到的只有公钥（公开的，像银行卡号）和签名（证明你手里有那一半，但不暴露它）—— 下面「发给平台的全部内容」逐条列着，你自己看。',
+    proof2: '「造钥匙」这一步不需要联网：你可以先关掉 Wi-Fi 再点，照样做完。',
+    proof3: '这个页面就是一个文件，跟 GitHub 上公开的那份逐字节相同。GitHub 的机器每小时自动下载一次网站上的页面核对指纹，还会在每个新版本上用真浏览器走完全程、查私钥有没有被发出去 —— 这两项检查我们插不上手。',
+    proofVer: '页面版本',
+    proofDl: '下载这个页面到自己电脑上用',
+    proofGh: '到 GitHub 核对',
+    sentHead: '这一页发给平台的全部内容',
+    sentNone: '还没有发过任何东西。',
+    sentCheck: (n, sHit, kHit, hasS, hasK) => '一共 ' + n + ' 次。' + (hasS ? '你的那一半钥匙在里面出现 ' + sHit + ' 次' : '你还没造钥匙') + '；' + (hasK ? '完整私钥出现 ' + kHit + ' 次。' : '完整私钥还没合出来。'),
+    sentRaw: '原样内容',
+    sent: {
+      catalog: '读价目表 —— 什么都没发',
+      health: '看平台在不在线 —— 什么都没发',
+      create: '下单 —— 发了：哪条链、图案、用哪条链付款',
+      share: '发了公钥 A（公开的）和一个签名（证明你手里有那一半，不暴露它）',
+      payment: '要收款地址 —— 什么都没发',
+      status: '查订单进度 —— 什么都没发',
+      paysim: '测试用的模拟付款 —— 什么都没发',
+      download: '取货 —— 发了一个签名（证明是你本人来取）',
+      receipt: '交收条 —— 发了一个签名',
+      other: '其他请求',
+    },
+    foot2: '平台永远不会索要你的 s 或私钥——任何索要私钥的消息都是钓鱼。',
+    thOrder: '订单 Order', thPattern: '模式 Pattern', thStatus: '状态 Status', thPrice2: '价格 USDT',
+    boot: [
+      'Windows PowerShell',
+      'Copyright (C) 0x000000000. All rights reserved.',
+      '',
+      '0x000000000 — VANITY ADDRESS MINER',
+      '靓号地址铸造台 · split-key 无托管铸造',
+      '航次: 0x000000000 · 任务: 铸造靓号私钥 · 轨道: 近地',
+      '',
+      '加载模块: [ok] keccak256   [ok] secp256k1   [ok] TRC20 watcher',
+      'GPU 铸造队列: 待命 (Vast.ai / RunPod · 订单驱动扩缩容)',
+      '',
+      '命令: Get-VanityCatalog | Measure-VanityPattern | New-VanityOrder | Get-MyOrders',
+    ],
+    calcHeader: (p, pos) => 'PATTERN   : 0x' + p + '  (' + pos + ')',
+    calcTries: (n, t) => 'TRIES     : ' + t + ' 期望次数 (16^' + n + ')',
+    calcRate: 'HASHRATE  : 1.0 GKey/s 每卡 (RTX 4090 估算; 以实测为准)',
+    calcEta: (s) => 'ETA       : ' + s,
+    calcPrice: 'PRICE     : ',
+    calcWarn: 'WARNINGS  : ',
+    errHex: '错误: 模式必须是 hex 字符 (0-9 a-f)',
+    errEmpty: '错误: 请至少输入 1 位模式',
+    warnFarm: '≥13 位：目前不可售（后端最多到 12 位）。真要做得上 GPU 集群，得先谈。',
+    warnImpossible: '40 位 (全9) 数学上不可行: 16^40 ≈ 1.46e48',
+    warnEip55: '匹配忽略大小写 (EIP-55 校验和由地址自动派生)',
+    ordersEmpty: '还没有订单', ordersDown: '订单暂时取不到，刷新一下再试',
+    ordersResume: '接着做', thAction: '操作', ordersIdPh: '订单号（8 位）', ordersIdBtn: '接着做这一单',
+    ordersIdLbl: '换了电脑或浏览器？输入订单号接着做：',
+    statusTxt: (s) => '订单 ' + (orderState.orderId || '-') + ' · 状态: ' + s,
+    flow: {
+      // ALLINONE0X_20260923：全部改成人话。DSJ 原话「每个步骤必须人话解释，容易让用户明白」。
+      // 规矩：不出现 P=A+b·G、ECDLP、变体、挖矿这类词；说清楚【这一步在谁的机器上算】。
+      chainLbl: '要哪条链的地址', posLbl: '漂亮的部分放哪',
+      prePh: '开头', sufPh: '结尾',
+      s1head: '造一把只有你有的钥匙',
+      s1desc: '这一步全部在你自己的浏览器里算完，我们一个字节都收不到。它会把一把钥匙劈成两半：一半留在你这儿（叫 s），另一半交给我们（叫影子 A）。我们拿着 A 也推不回 s —— 所以从头到尾，完整私钥只可能出现在你的电脑上。',
+      genBtn: '造钥匙',
+      genOk: '钥匙造好了。备份文件已经下载：my-secret-s.json',
+      genKeep: '这个文件一定要留好。丢了这个靓号就永久没了，我们也找不回来 —— 建议再存一份到 U 盘或另一台电脑。',
+      reloadLbl: '刷新过页面？选回你的 my-secret-s.json',
+      fileOk: (pat, ch) => '读到了你之前的备份：' + pat + '（' + ch + '），可以接着下单。',
+      fileBad: '这个文件读不了，换一个试试。',
+      noCore: '密钥模块没加载起来，刷新一下页面再试。',
+      noTier: '这个长度目前没有定价，换一个长度。',
+      suggest: '建议',
+      soon: '这一档还没定价，暂时不接单',
+      posSoon: '铸造机暂不支持',
+      cantMint: '这一种铸造机暂时还做不了，先不接单 —— 收了钱却交不出货，比不卖糟得多。',
+      patOk2: (usdt, t) => '可以做 · ' + usdt + ' USDT · 大约 ' + t + '铸好',
+
+      s2head: '下单',
+      s2desc: '点一下就好，下面三件事页面自己做完：① 建单，拿到我们给的一句随机的话；② 用你刚才那半把钥匙给它签个名，证明 s 真在你手上（防止有人白嫖我们的算力）；③ 把影子 A 和签名交上来。签名也是在你的浏览器里算的。',
+      create: '下单',
+      created: '订单建好了，编号',
+      signing: '正在用你的那半把钥匙签名…（在本机算）',
+      shareOk: '签名通过。我们收到的只有影子 A —— 你的那一半没有离开这台电脑。',
+      needGen: '先做上一步，把钥匙造出来。',
+
+      s3head: '付款',
+      s3desc: '原型模式：点一下就当付过了，不用真转账。',
+      s3descLive: '下面这个收款地址是这一单专用的。用你自己的钱包，按上面写的那条链，转【正好这个金额】的 USDT 过去就行。',
+      payChainLbl: '你想用哪条链付款',
+      payInfo2: (a, amt, c, net) => '用 ' + net + ' 转 ' + amt + ' USDT 到  ' + a + '   · 到账后还要等 ' + c + ' 个确认',
+      copyAddr: '复制地址',
+      pay: '就当已付款（原型）', payLive: '我转好了，开始盯',
+      payNote: '每一单的收款地址都不一样，我们靠地址认单，所以别用别的单子的地址。转完这一页会自己往下走，不用刷新；也可以直接关掉，回头在下面「我的订单」里找回来。',
+      paying: '正在模拟到账…', payingLive: '正在盯这个地址（每 2.5 秒看一眼）…',
+      watching: '开始盯链上这个地址…',
+      stPaidWait: '钱收到了，正在排队等机器', stMining: '钱收到了，机器正在做',
+
+      s4head: '我们开做',
+      s4desc: '我们拿着你的影子 A 一直试，直到试出一个地址，它的开头或结尾正好是你要的那串。整个过程我们手上只有 A，做不出你的私钥。',
+      mineHit: '做出来了：', readyToTake: '可以取货了。',
+
+      s5head: '取货：把两半合起来',
+      s5desc: '我们把另外半把钥匙（叫 b）交给你。下面这一下会在你的浏览器里把 s 和 b 合成完整私钥，并且当场核对算出来的地址跟你买的那个一不一样 —— 对不上就不让你往下导出。',
+      dlBtn: '取货并合成我的钥匙',
+      gotB: '拿到 b 了，正在本机合成…',
+      mergeOk: '合成成功，地址已核对。完整私钥现在只在这台电脑上。',
+      hitWord: '命中',
+      addrMatch: '跟你买的那个地址一致 ✓',
+      addrDiff: (a) => '★ 对不上！我们给的是 ' + a + ' —— 先别导出，把这一屏截给我们。',
+      mergeBad: (want, ch) => '⛔ 合出来的地址没有一个是你要的 ' + want + '（' + ch + '）—— 我们给的 b 有问题。先别导出，把这一屏截给我们。',
+      pwLbl: '给钱包文件设个密码', pwPh: '至少 8 位',
+      ksBtn: '导出钱包文件', plainBtn: '导出明文私钥（不建议）',
+      pwShort: '密码至少 8 位。这个密码丢了，导出来的文件就再也打不开了。',
+      noSubtle: '这个浏览器不给用加密接口，换个浏览器，或者用下面的明文导出并自己保管好。',
+      ksWork: '正在加密…（故意算得慢，别人暴力猜密码也得这么慢）',
+      ksOk: '导好了：my-keystore.json。导进 MetaMask：账户 → 导入账户 → 选 JSON 文件 → 输这个密码。',
+      ksOkTron: '导好了：my-keystore.json —— 这是加密备份，留好。TRON 地址不要导进 MetaMask（它不认 TRON，只会显示同一把钥匙的 0x 写法）。导进 TRON 钱包（如 TronLink）请用下面「导出明文私钥」，选「导入私钥」，导完立刻删掉那个文件。',
+      ksFail: '加密失败：',
+      plainWarn: '明文私钥已下载（my-key.txt）。任何人拿到这个文件就拿到了这个地址 —— 导进钱包后请立刻删掉它。',
+
+      s6head: '交个收条',
+      s6desc: '用刚合成的完整钥匙给一句话签个名交回来。我们手上没有你的 s，这个签名我们自己造不出来 —— 收到就等于双方都认这一单交付完成了。',
+      receiptBtn: '签收条并提交',
+      receiptSkip: '可以不交，不影响你已经拿到的钥匙。交了这一单算结清，结清之后你仍然可以随时免费重新下载同一个 b。',
+      receiptOk: '收条收到了，这一单结清。',
+      receiptBad: '签不出来 —— 手上的 b 跟这张收条对不上。',
+      noReceipt: '还没有收条可签，先完成上一步。',
+      copied: '已复制 ✓',
+      keepId: (id) => '记下订单号 ' + id + '：关了页面也能在下面「我的订单」里接着做，换电脑就输这个号。',
+      needSecForTake: '取货要用你那半把钥匙签名 —— 请先在第 1 步选回你的 my-secret-s.json。',
+      secBack: '钥匙装回来了，可以取货。',
+      resuming: (id, pat, ch) => '正在接着做订单 ' + id + '（' + pat + ' · ' + ch + '）。第 1、2 步已经做过了。',
+      pickSecForResume: '你那半把钥匙不在这个页面里了（关过页面就会这样）。取货之前，请在下面「刷新过页面？」那里选回 my-secret-s.json。',
+      watchingAgain: '继续盯着到账 / 铸造进度…',
+      orderClosed: (st) => '这一单已经是「' + st + '」，不能再往下做了。',
+      badId: '订单号是 8 位（0-9 和 a-f）。',
+      noSuchOrder: '找不到这个订单号。',
+      resumeHint: (pat, amt) => '这张单：' + pat + ' · ' + amt + ' USDT',
+    },
+    // 难度/价格表
+  },
+  en: {
+    run: 'Run', lblPos: '-Position', posPrefix: 'Prefix', posSuffix: 'Suffix', posBoth: 'Both ends',
+    thType: 'Type', thPrice: 'Price USDT', thEta: 'Mint time',
+    catalogOpen: 'See all prices',  catalogTitle: 'Price list',
+    catalogTeaser: (on, off) => 'Two chains, ' + on + ' tiers on sale' + (off ? ' (' + off + ' more not supported by the minter yet)' : '') + ' - open the full list with the button above.', 
+    catalogDown: 'Price list unavailable right now — better to show nothing than a table that may be out of date.',
+    kindPrefix: 'Prefix', digits: 'digits',
+    onlyKinds: (k) => 'Currently on sale: ' + k + '. Suffix, both-ends and pattern-based pricing are not implemented — anything not in this table cannot be ordered.',
+    calcNotSellable: 'Not for sale (backend does not support this kind yet)',
+    calcNoCatalog: 'Price list unavailable — no quote',
+    noteHot: 'Hot patterns (9999/8888/0000/dead/beef/c0ffee/666…) +30-100%. 0x9999 is as hard as 0xabcd — price by length, not by characters.',
+    safeTitle: '[SAFE] CUSTOM ZONE · NON-CUSTODIAL',
+    safeBody: 'All we ever hold is your shadow A and the other half, b. Those two together still cannot produce your private key - it only ever gets assembled on your own computer.',
+    noteProto: 'Prototype note: this page is wired to the real backend (order / signature verification / minting / delivery); only payment is simulated. s generation and signing happen in the local tools.',
+    noteProtoLive: 'This page is wired to the real backend: ordering, signature verification, minting, delivery, and real on-chain payment. s is generated and signed only on your own machine.',
+    heroTag: 'VANITY ADDRESS MINER · NON-CUSTODIAL SPLIT-KEY',
+    heroMission: 'Pay in USDT. You make half the key on your own machine, we mint the other half - the full key can only be assembled by you.',
+    heroCta: 'Start an order →',
+    heroTool: 'Offline key tool ↗',
+    toolCta: 'Do this step in your browser (nothing to install) ↗',
+    foot1: 'page code published on GitHub, verifiable byte for byte · custom zone non-custodial · USDT on TRON / BSC',
+    proof1: 'Your half of the key is generated in your own browser and only ever stored on your own computer. The platform only receives a public key (public, like a bank account number) and signatures (proof that you hold your half, without revealing it). Every single thing this page sends is listed below under "Everything this page sent" - check it yourself.',
+    proof2: '"Make key" needs no network: switch off Wi-Fi before clicking and it still works.',
+    proof3: 'This page is a single file, byte-for-byte identical to the copy published on GitHub. GitHub\'s machines download the live page every hour and compare fingerprints, and run the whole flow in a real browser on every new version to check that no private key is sent - we cannot touch either check.',
+    proofVer: 'page version',
+    proofDl: 'Download this page and use it on your own computer',
+    proofGh: 'Verify on GitHub',
+    sentHead: 'Everything this page sent to the platform',
+    sentNone: 'Nothing sent yet.',
+    sentCheck: (n, sHit, kHit, hasS, hasK) => n + ' requests. ' + (hasS ? 'Your half of the key appears ' + sHit + ' times' : 'No key made yet') + '; ' + (hasK ? 'the full private key appears ' + kHit + ' times.' : 'full key not assembled yet.'),
+    sentRaw: 'raw',
+    sent: {
+      catalog: 'read the price list - nothing sent',
+      health: 'checked the platform is online - nothing sent',
+      create: 'order - sent: chain, pattern, payment chain',
+      share: 'sent public key A (public) and a signature (proves you hold your half without revealing it)',
+      payment: 'asked for the payment address - nothing sent',
+      status: 'checked order progress - nothing sent',
+      paysim: 'test-only simulated payment - nothing sent',
+      download: 'collect - sent a signature (proves it is you)',
+      receipt: 'receipt - sent a signature',
+      other: 'other request',
+    },
+    foot2: 'The platform will never ask for your s or private key — any message asking for keys is phishing.',
+    thOrder: 'Order', thPattern: 'Pattern', thStatus: 'Status', thPrice2: 'Price USDT',
+    boot: [
+      'Windows PowerShell',
+      'Copyright (C) 0x000000000. All rights reserved.',
+      '',
+      '0x000000000 — VANITY ADDRESS MINER',
+      'split-key non-custodial vanity minting',
+      'vessel: 0x000000000 · mission: mint vanity keys · orbit: LEO',
+      '',
+      'loading: [ok] keccak256   [ok] secp256k1   [ok] TRC20 watcher',
+      'GPU pool: standby (Vast.ai / RunPod · order-driven scaling)',
+      '',
+      'commands: Get-VanityCatalog | Measure-VanityPattern | New-VanityOrder | Get-MyOrders',
+    ],
+    calcHeader: (p, pos) => 'PATTERN   : 0x' + p + '  (' + pos + ')',
+    calcTries: (n, t) => 'TRIES     : ' + t + ' expected (16^' + n + ')',
+    calcRate: 'HASHRATE  : 1.0 GKey/s per GPU (RTX 4090 estimate; calibrate with benchmark)',
+    calcEta: (s) => 'ETA       : ' + s,
+    calcPrice: 'PRICE     : ',
+    calcWarn: 'WARNINGS  : ',
+    errHex: 'error: pattern must be hex characters (0-9 a-f)',
+    errEmpty: 'error: enter at least 1 hex digit',
+    warnFarm: '>=13 digits: not for sale (the backend tops out at 12). Doing it for real needs a GPU cluster — talk to us first.',
+    warnImpossible: '40 digits (all-9) is mathematically impossible: 16^40 ≈ 1.46e48',
+    warnEip55: 'matching ignores case (EIP-55 checksum is derived automatically)',
+    ordersEmpty: 'No orders yet', ordersDown: 'Could not load your orders - refresh to try again',
+    ordersResume: 'Continue', thAction: 'Action', ordersIdPh: 'order number (8 chars)', ordersIdBtn: 'Continue this order',
+    ordersIdLbl: 'On another computer or browser? Enter the order number to continue:',
+    statusTxt: (s) => 'order ' + (orderState.orderId || '-') + ' · status: ' + s,
+    flow: {
+      chainLbl: 'Which chain', posLbl: 'Where the pattern goes',
+      prePh: 'start', sufPh: 'end',
+      s1head: 'Make a key only you hold',
+      s1desc: 'This runs entirely in your own browser; we receive none of it. It splits one key in two: one half stays with you (called s), the other goes to us (called shadow A). A cannot be turned back into s, so the complete private key only ever exists on your machine.',
+      genBtn: 'Make my key',
+      genOk: 'Key created. Your backup has been downloaded: my-secret-s.json',
+      genKeep: 'Keep that file. Lose it and this address is gone for good - we cannot recover it either. Put a second copy on a USB stick or another machine.',
+      reloadLbl: 'Reloaded the page? Pick your my-secret-s.json back',
+      fileOk: (pat, ch) => 'Loaded your backup: ' + pat + ' (' + ch + '). You can order now.',
+      fileBad: 'That file could not be read. Try another one.',
+      noCore: 'The key module did not load. Refresh the page and try again.',
+      noTier: 'That length has no price yet - pick another length.',
+      suggest: 'suggested',
+      soon: 'this tier has no price yet - not taking orders',
+      posSoon: 'not supported yet',
+      cantMint: 'The minting machine cannot make this kind yet, so it is not on sale - taking payment without being able to deliver is worse than not selling.',
+      patOk2: (usdt, t) => 'Available - ' + usdt + ' USDT - ready in about ' + t,
+
+      s2head: 'Place the order',
+      s2desc: 'One click. The page does three things for you: creates the order and receives a random phrase from us; signs that phrase with your half of the key to prove you really hold s (this stops people burning our machines for free); and submits shadow A plus that signature. The signing also happens in your browser.',
+      create: 'Place order',
+      created: 'Order created, number',
+      signing: 'Signing with your half of the key (on this machine)...',
+      shareOk: 'Signature accepted. All we received is shadow A - your half never left this computer.',
+      needGen: 'Do the step above first and make your key.',
+
+      s3head: 'Pay',
+      s3desc: 'Prototype mode: one click counts as paid, no real transfer.',
+      s3descLive: 'The address below belongs to this order only. Send exactly that amount of USDT from your own wallet, on the chain named above.',
+      payChainLbl: 'Which chain do you want to pay on',
+      payInfo2: (a, amt, c, net) => 'Send ' + amt + ' USDT over ' + net + ' to  ' + a + '   - then ' + c + ' confirmations',
+      copyAddr: 'Copy address',
+      pay: 'Count it as paid (prototype)', payLive: 'Sent it - start watching',
+      payNote: 'Every order gets its own address and that is how we match payments, so never reuse another order\'s address. The page moves on by itself - no refresh needed. You can also close it and come back through "My orders" below.',
+      paying: 'Simulating payment...', payingLive: 'Watching that address (every 2.5s)...',
+      watching: 'Watching that address on-chain...',
+      stPaidWait: 'Paid - queued for a machine', stMining: 'Paid - the machine is working',
+
+      s4head: 'We do the work',
+      s4desc: 'We take your shadow A and keep trying until an address turns up whose start or end is exactly what you asked for. All we hold throughout is A, which cannot produce your private key.',
+      mineHit: 'Found: ', readyToTake: 'Ready to collect.',
+
+      s5head: 'Collect: join the two halves',
+      s5desc: 'We hand you the other half (called b). The button below joins s and b into the complete private key inside your browser, and checks the resulting address against the one you bought - if they differ, it will not let you export.',
+      dlBtn: 'Collect and build my key',
+      gotB: 'Got b - joining locally...',
+      mergeOk: 'Joined, address verified. The complete private key now exists only on this computer.',
+      hitWord: 'matched',
+      addrMatch: 'Matches the address you bought.',
+      addrDiff: (a) => 'Mismatch. We delivered ' + a + ' - do not export; send us a screenshot of this.',
+      mergeBad: (want, ch) => 'None of the candidates match your ' + want + ' (' + ch + ') - the b we sent is wrong. Do not export; send us a screenshot of this.',
+      pwLbl: 'Password for the wallet file', pwPh: 'at least 8 characters',
+      ksBtn: 'Export wallet file', plainBtn: 'Export plain private key (not advised)',
+      pwShort: 'At least 8 characters. Lose this password and the exported file can never be opened.',
+      noSubtle: 'This browser will not allow the crypto API. Use another browser, or the plain export below and keep it safe yourself.',
+      ksWork: 'Encrypting... (deliberately slow, so brute-forcing the password is slow too) ',
+      ksOk: 'Exported: my-keystore.json. In MetaMask: Account - Import account - JSON file - this password.',
+      ksOkTron: 'Exported: my-keystore.json - keep it as your encrypted backup. Do not import a TRON address into MetaMask (it does not support TRON and would only show the 0x form of the same key). For a TRON wallet such as TronLink, use "Export plain private key" below, choose import by private key, then delete that file right away.',
+      ksFail: 'Encryption failed: ',
+      plainWarn: 'Plain private key downloaded (my-key.txt). Anyone who gets this file owns the address - delete it right after importing.',
+
+      s6head: 'Send a receipt',
+      s6desc: 'Sign one phrase with the key you just built. We do not hold your s, so we could not forge this signature - receiving it means both sides agree the order was delivered.',
+      receiptBtn: 'Sign and send receipt',
+      receiptSkip: 'Optional. Skipping it does not affect the key you already hold. Filing it settles the order, and you can still re-download the same b for free afterwards.',
+      receiptOk: 'Receipt filed - order settled.',
+      receiptBad: 'Cannot sign - the b on hand does not match this receipt.',
+      noReceipt: 'No receipt to sign yet - finish the step above.',
+      copied: 'Copied',
+      keepId: (id) => 'Keep your order number ' + id + ': you can close this page and continue from "My orders" below, or enter this number on another computer.',
+      needSecForTake: 'Collecting needs a signature from your half of the key - pick your my-secret-s.json in step 1 first.',
+      secBack: 'Your key half is loaded - you can collect now.',
+      resuming: (id, pat, ch) => 'Continuing order ' + id + ' (' + pat + ' - ' + ch + '). Steps 1 and 2 are already done.',
+      pickSecForResume: 'Your half of the key is no longer in this page (closing it does that). Before collecting, pick your my-secret-s.json under "Reloaded the page?" below.',
+      watchingAgain: 'Watching for payment / minting progress again...',
+      orderClosed: (st) => 'This order is "' + st + '" and cannot go any further.',
+      badId: 'Order numbers are 8 characters (0-9 and a-f).',
+      noSuchOrder: 'No order with that number.',
+      resumeHint: (pat, amt) => 'This order: ' + pat + ' - ' + amt + ' USDT',
+    },
+  },
+};
+
+const savedLang = (() => { try { return localStorage.getItem('0xlang'); } catch (e) { return null; } })();
+let lang = savedLang || (typeof navigator !== 'undefined' && navigator.language && navigator.language.toLowerCase().startsWith('zh') ? 'zh' : 'en');
+const t = (k) => (dict[lang][k] !== undefined ? dict[lang][k] : k);
+const $ = (s) => document.querySelector(s);
+const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/* ---- LIVEPAY0X_20260922：真收款模式 ----
+   后端 TRON_MODE=live 之后,「模拟支付」那条路会被服务端 400 掉（platform-server.mjs:436）,
+   而轮询原本只在模拟支付成功后才启动 —— 于是真转了账页面会一直干等。
+   这里做两件事：把 xxxLive 文案顶上去、让「我已转账」直接启动轮询。 */
+let IS_LIVE = false;
+function liveSwap(o) {
+  if (!o || typeof o !== 'object') return;
+  for (const k of Object.keys(o)) {
+    const base = k.endsWith('Live') && k.slice(0, -4);
+    if (base && Object.prototype.hasOwnProperty.call(o, base)) o[base] = o[k];
+    else liveSwap(o[k]);
+  }
+}
+
+/* ---- 语言切换 ---- */
+function applyLang() {
+  try { localStorage.setItem('0xlang', lang); } catch (e) {}
+  document.documentElement.lang = lang;
+  document.querySelectorAll('[data-i18n]').forEach((el) => { el.textContent = t(el.dataset.i18n); });
+  document.querySelectorAll('[data-i18n-ph]').forEach((el) => { el.placeholder = t(el.dataset.i18nPh); });
+  $('#btnZh').classList.toggle('active', lang === 'zh');
+  $('#btnEn').classList.toggle('active', lang === 'en');
+  renderBoot(true);
+  renderCatalog();
+  renderTeaser();
+  renderOrders();
+  renderSteps();
+  if (lastCalc) renderCalc();
+}
+$('#btnZh').addEventListener('click', () => { lang = 'zh'; applyLang(); });
+$('#btnEn').addEventListener('click', () => { lang = 'en'; applyLang(); });
+
+/* ---- 开机自举 ---- */
+const bootEl = $('#boot');
+let bootDone = false;
+function renderBoot(instant) {
+  bootDone = true;
+  bootEl.innerHTML = '';
+  const lines = t('boot');
+  if (instant || reducedMotion) {
+    bootEl.innerHTML = lines.map(l => esc(l).replace(/\[ok\]/g, '<span class="ok">[ok]</span>')).join('\n');
+    return;
+  }
+  let li = 0;
+  const typeLine = () => {
+    if (li >= lines.length) return;
+    if (li > 0) bootEl.appendChild(document.createTextNode('\n'));
+    const div = document.createElement('span');
+    bootEl.appendChild(div);
+    const txt = lines[li];
+    li += 1;
+    let i = 0;
+    const step = () => {
+      if (i < txt.length) {
+        div.textContent = txt.slice(0, i + 1);
+        i += 1;
+        setTimeout(step, li === 1 || li === 2 ? 14 : 2);
+      } else { div.innerHTML = esc(txt).replace(/\[ok\]/g, '<span class="ok">[ok]</span>'); setTimeout(typeLine, 40); }
+    };
+    step();
+  };
+  typeLine();
+}
+// ESCNULL0X_20260923：原来是 s.replace(...)，喂进 undefined 就抛 TypeError。
+// 后果不是少显示一格，是【renderCatalog 整个挂掉，价目表一行都画不出来】——
+// 线上就这么坏着，页面写「价目表暂时取不到」，看起来像后端的锅，其实是前端一个字段没接上。
+// 少一个字段就该少显示一格，不该连累整张表。
+function esc(s) { return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+
+/* ---- 目录表 ---- */
+// 唯一价目来源是后端 /api/catalog。前端【不留表】—— 留了就会分叉（PRICECONTRA0X_20260921）。
+let CATALOG = null;      // null = 还没取到
+let catalogPending = false;
+function catalogLookup(kind, len) {
+  if (!CATALOG) return null;                                   // 取不到
+  if (!CATALOG.sellableKinds.includes(kind)) return false;     // 这一类根本不卖
+  return CATALOG.rows.find((r) => r.kind === kind && r.length === len) || false;
+}
+async function loadCatalog() {
+  const r = await api('/api/catalog');
+  CATALOG = (r.code === 200 && r.body && Array.isArray(r.body.rows)) ? r.body : null;
+  renderCatalog();
+  renderTeaser();
+}
+// TEASER0X_20260923：首页那行「N 档在售」原来写死 18,暂停 6 档之后立刻就成了错的。
+//   从目录实时数 —— 在卖的看 orderable,暂停的是「定了价但铸造机做不了」那几档。
+function renderTeaser() {
+  const el = $('#catalogTeaser'); if (!el) return;
+  if (!CATALOG) { el.textContent = ''; return; }
+  const on = CATALOG.rows.filter((r) => r.orderable).length;
+  const off = CATALOG.rows.filter((r) => r.priceUsdt != null && !r.orderable).length;
+  el.textContent = t('catalogTeaser')(on, off);
+}
+function renderCatalog() {
+  const body = $('#catalogBody');
+  if (!body) return;
+  if (!CATALOG && !catalogPending) { catalogPending = true; loadCatalog(); }
+  if (!CATALOG) {
+    body.innerHTML = '<tr><td colspan="3">' + esc(t('catalogDown')) + '</td></tr>';
+    return;
+  }
+  // CHAINSEL0X_20260923：两条链分组显示。价目和字母表全部来自后端,前端不留任何一份表。
+  const chains = CATALOG.chains || [{ id: 'evm', label: 'EVM', example: '' }];
+  const f2 = dict[lang].flow || {};
+  body.innerHTML = chains.map((c) => {
+    const rows = CATALOG.rows.filter((r) => (r.chain || 'evm') === c.id);
+    if (!rows.length) return '';
+    const head = '<tr><td colspan="3" class="chainhead">' + esc(c.label + '  ' + c.example)
+      + (c.worksOn && c.worksOn.length > 1 ? '<span class="works">' + esc(c.worksOn.join(' · ')) + '</span>' : '')
+      + '</td></tr>';
+    return head + rows.map((r) => {
+      const priced = r.priceUsdt != null;
+      const price = priced ? esc(String(r.priceUsdt))
+        : '<span class="soon">' + esc(f2.notPriced || '待定价')
+          + (r.suggestedUsdt != null ? ' · ' + esc((f2.suggest || '建议') + ' ' + r.suggestedUsdt) : '') + '</span>';
+      // CATFIELD0X_20260923：后端目录行现在给的是 kindLabel / pinned / mintTimeText。
+      //   etaText 按 DSJ 死令【不给客户看期望耗时】已删；slaText 早改名成 mintTimeText。
+      //   这里原来还硬写 t('kindPrefix')，后缀档也会被标成「前缀」—— 一起修掉。
+      return '<tr' + (priced && r.mintable !== false ? '' : ' class="unpriced"') + '><td class="tier">'
+        + esc((r.pattern || '') + '  ')
+        + esc((r.kindLabel || t('kindPrefix')) + ' ' + (r.pinned != null ? r.pinned : r.length) + ' ' + t('digits')) + '</td>'
+        + '<td class="price">' + price + '</td>'
+        // MINTABLE0X_20260923：定了价但铸造机做不了的,价格照写（DSJ 定的价不动）,耗时那格写明为什么不卖
+        + '<td class="eta">' + (r.mintable === false
+            ? '<span class="soon">' + esc(f2.posSoon || '铸造机暂不支持') + '</span>'
+            : esc(r.mintTimeText)) + '</td></tr>';
+    }).join('');
+  }).join('') + '<tr><td colspan="3">' + esc(CATALOG.note || t('onlyKinds')(CATALOG.sellableKinds.join(' / '))) + '</td></tr>';
+}
+
+/* ---- 难度计算器 ---- */
+// PRICECONTRA0X_20260921: 这里原本有 PRICE_PREFIX / PRICE_SUFFIX 两张写死的表，
+// 和后端真正收钱的那张对不上，还给后端根本不能卖的后缀报价。已删 —— 价目只有一个来源。
+let lastCalc = null;
+let PICKED = 'evm';                 // 客户选的是【要哪条链的靓号地址】，不是用哪条链付款
+
+function fmtTries(b) { return b.toLocaleString('en-US'); }
+function etaStr(tries) {
+  const secs = Number(tries / 10n ** 9n);
+  if (secs < 1) return '<1s / 卡';
+  if (secs < 60) return '~' + Math.round(secs) + 's / 卡';
+  if (secs < 3600) return '~' + Math.round(secs / 60) + ' 分钟 / 卡';
+  if (secs < 86400) return '~' + (secs / 3600).toFixed(1) + ' 小时 / 卡';
+  return '~' + (secs / 86400).toFixed(1) + ' 天 / 卡';
+}
+function renderCalc() {
+  const out = $('#calcOut');
+  if (!lastCalc) { out.innerHTML = ''; return; }
+  const { p1, p2, pos, lines } = lastCalc;
+  out.innerHTML = lines;
+  void p1; void p2; void pos;
+}
+function runCalc() {
+  const pos = $('#pos').value;
+  const p1 = $('#pat1').value.trim().toLowerCase().replace(/^0x/, '');
+  const p2 = pos === 'both' ? $('#pat2').value.trim().toLowerCase().replace(/^0x/, '') : '';
+  const out = $('#calcOut');
+  const bad = (msg) => out.innerHTML = '<span class="err">' + msg + '</span>';
+  if (!p1 || (pos === 'both' && !p2)) return bad(t('errEmpty'));
+  if (!/^[0-9a-f]+$/.test(p1) || (pos === 'both' && !/^[0-9a-f]+$/.test(p2))) return bad(t('errHex'));
+  const total = p1.length + p2.length;
+  if (total >= 40) {
+    out.innerHTML = '<span class="warn">' + t('warnImpossible') + '</span>';
+    lastCalc = { p1, p2, pos, lines: out.innerHTML };
+    return;
+  }
+  const tries = 16n ** BigInt(total);
+  const L = [];
+  L.push('<span class="k">' + esc(t('calcHeader')(pos === 'both' ? p1 + '…' + p2 : (pos === 'suffix' ? '…' + p1 : p1), t('pos' + pos.charAt(0).toUpperCase() + pos.slice(1)))) + '</span>');
+  L.push('<span class="k">' + esc(t('calcTries')(total, fmtTries(tries))) + '</span>');
+  L.push('<span class="k">' + esc(t('calcRate')) + '</span>');
+  L.push('<span class="k">' + esc(t('calcEta')(etaStr(tries))) + '</span>');
+  // 定价只认后端目录。不在目录里的一律写【不可售】——
+  // 以前这里对后缀/前后缀报「面议」，而那种单子后端一定 400。
+  const kind = pos === 'both' ? 'both' : (pos === 'suffix' ? 'suffix' : 'prefix');
+  const hit = catalogLookup(kind, total);
+  const price = hit === null ? t('calcNoCatalog')
+    : (hit === false ? t('calcNotSellable') : hit.priceUsdt + ' USDT');
+  L.push('<span class="k">' + esc(t('calcPrice')) + '</span><span class="v gold">' + esc(price) + '</span>');
+  const warns = [];
+  if (total >= 13) warns.push(t('warnFarm'));
+  warns.push(t('warnEip55'));
+  L.push('<span class="k">' + esc(t('calcWarn')) + '</span><span class="' + (total >= 13 ? 'warn' : 'v') + '">' + esc(warns.join('; ')) + '</span>');
+  out.innerHTML = L.join('\n');
+  lastCalc = { p1, p2, pos, lines: out.innerHTML };
+}
+$('#calcBtn').addEventListener('click', runCalc);
+$('#pos').addEventListener('change', () => { $('#pat2').hidden = $('#pos').value !== 'both'; if (lastCalc) runCalc(); });
+$('#pat1').addEventListener('keydown', (e) => { if (e.key === 'Enter') runCalc(); });
+$('#pat2').addEventListener('keydown', (e) => { if (e.key === 'Enter') runCalc(); });
+
+/* ---- 下单流程（对接真后端） ---- */
+// 本地开发走独立后端端口; 生产同域反代(nginx /api/) → 同源
+// ONEFILE0X_20260923：页面可以下载到自己电脑上双击打开（file://），那时要连回平台的网址。
+const API_BASE = location.protocol === 'file:' ? 'https://0x000000000.com'
+  : (location.hostname === '127.0.0.1' || location.hostname === 'localhost') ? 'http://127.0.0.1:8787' : '';
+const STATUS_CLASS = { created: 'st-created', share_uploaded: 'st-share', paid: 'st-paid', mining: 'st-minting', delivered: 'st-delivered', found: 'st-delivered', settled: 'st-delivered', expired: 'st-expired', refunded: 'st-refunded' };
+// STATUSLBL0X_20260923：按真状态字符串查,查不到就原样印状态 —— 绝不印拼出来的假键名
+const STATUS_LABEL = {
+  zh: { created: '已建单', share_uploaded: '影子已上传', paid: '已付款', mining: '铸造中',
+        found: '已铸出', delivered: '已交货', settled: '已交回执', expired: '已过期', refunded: '已退款' },
+  en: { created: 'created', share_uploaded: 'shadow uploaded', paid: 'paid', mining: 'minting',
+        found: 'minted', delivered: 'delivered', settled: 'receipt filed', expired: 'expired', refunded: 'refunded' },
+};
+const statusLabel = (st) => (STATUS_LABEL[lang] || STATUS_LABEL.zh)[st] || String(st || '');
+const stepsEl = $('#steps');
+const statusEl = $('#statusLine');
+// CLIREACH/BROWSERKEY_20260922: 浏览器版密钥工具入口（tool.html，不联网、无需装 node）
+// ★★★★ ENTRYFLIP_20260922 —— 把默认那条路翻过来。
+//   DSJ 20260922 原话：「新的UI我没看见你上线啊？」。上线的是【文件】，没上线的是【入口】：
+//   首页唯一一个链接在 <footer>（全页 6208 字节里的第 5678 字节 = 91% 处），
+//   而流程里这个入口挂在一条 PowerShell 命令【后面】—— 页面仍然先叫人复制命令。
+//   他的死令是「如果中间你发代码给我叫我贴，我是不会管你的」。台账 E24：我做了 ≠ 他看得见。
+//   所以：浏览器按钮在前，命令行降成「或者用命令行：」。
+const toolink = () => '<a class="toolink" data-i18n="toolCta" href="tool.html" target="_blank" rel="noopener">' + esc(t('toolCta')) + '</a>';
+// CLI404_20260923：命令行脚本还没发布（四个全 404），所以只给浏览器工具那条路。
+//   cmd 这个参数先留着 —— 脚本真发出去的那天,把下面那行注释掉的写法换回来即可。
+const altcmd = (cmd) => { void cmd; return toolink(); };
+const orderState = { orderId: null, challenge: null, A: null, b: null, address: null };
+// MYORDERS0X_20260923：「我的订单」= 这个浏览器自己下过的单。平台没有账号,服务器不该、也不再
+//   把全库的单列给任何人。这里存的只是订单号（丢了也不要紧,订单号页面上写着、用订单号就能续）。
+const MY_KEY = '0x_myorders';
+function myOrders() {
+  try { const v = JSON.parse(localStorage.getItem(MY_KEY) || '[]'); return Array.isArray(v) ? v.filter((x) => /^[0-9a-f]{8}$/.test(x)) : []; }
+  catch (e) { return []; }
+}
+function rememberOrder(id) {
+  try { const l = myOrders().filter((x) => x !== id); l.unshift(id); localStorage.setItem(MY_KEY, JSON.stringify(l.slice(0, 50))); } catch (e) {}
+}
+function forgetOrder(id) {
+  try { localStorage.setItem(MY_KEY, JSON.stringify(myOrders().filter((x) => x !== id))); } catch (e) {}
+}
+let RESUME = null;   // 由 wireOrderFlow 挂上（它要用向导里的闭包）
+
+// SENTLOG0X_20260923：这一页发给平台的【每一次】通信都记下来，用人话摆在页面上（「发给平台的全部内容」）。
+//   这里是全页唯一的出网口 —— 页面上别处没有 fetch / XHR / WebSocket（打包闸会扫）。
+const SENT = [];
+function sentKind(method, path) {
+  const p = path.split('?')[0];
+  if (p === '/api/catalog') return 'catalog';
+  if (p === '/api/health') return 'health';
+  if (method === 'POST' && p === '/api/orders') return 'create';
+  if (/\/share$/.test(p)) return 'share';
+  if (/\/payment$/.test(p)) return 'payment';
+  if (/\/pay-sim$/.test(p)) return 'paysim';
+  if (/\/download$/.test(p)) return 'download';
+  if (/\/receipt$/.test(p)) return 'receipt';
+  if (/^\/api\/orders\/[0-9a-f]{8}$/.test(p)) return 'status';
+  return 'other';
+}
+function renderSent() {
+  const list = $('#sentList'); if (!list) return;
+  const f = t('sent');
+  // 连着好几次一模一样的（比如每几秒查一次进度）合成一行 ×N
+  const rows = [];
+  for (const x of SENT) {
+    const last = rows[rows.length - 1];
+    if (last && last.kind === x.kind && x.kind === 'status') { last.n++; continue; }
+    rows.push({ kind: x.kind, n: 1, raw: x.method + ' ' + x.url + (x.body ? '\n' + x.body : '') });
+  }
+  list.innerHTML = rows.map((r) => '<li>' + esc((f[r.kind] || f.other) + (r.n > 1 ? '  ×' + r.n : '')) +
+    '<details><summary>' + esc(t('sentRaw')) + '</summary><pre>' + esc(r.raw) + '</pre></details></li>').join('');
+  // 拿页面自己手上的 s 和合出来的 k，在发出去的全部内容里搜（十六进制大小写都搜）
+  const blob = SENT.map((x) => x.url + '\n' + (x.body || '')).join('\n').toLowerCase();
+  const sHex = orderState.sec && orderState.sec.s != null ? KC().pad64(orderState.sec.s).toLowerCase() : '';
+  const kHex = MERGED_K != null ? KC().pad64(MERGED_K).toLowerCase() : '';
+  const hits = (h) => (h ? blob.split(h).length - 1 : 0);
+  $('#sentCount').textContent = '(' + SENT.length + ')';
+  $('#sentVerdict').textContent = SENT.length ? t('sentCheck')(SENT.length, hits(sHex), hits(kHex), !!sHex, !!kHex) : t('sentNone');
+}
+let MERGED_K = null;   // 第 5 步合出来的完整私钥，只用来在上面那张清单里搜它有没有被发出去
+// 从自己电脑上打开的这份（file://）不需要「下载这个页面」那个链接 —— 它自己就是那个文件
+try { if (location.protocol === 'file:') { const a = document.getElementById('dlPage'); if (a) a.hidden = true; } } catch (e) {}
+async function api(path, method = 'GET', body) {
+  SENT.push({ method, url: path, kind: sentKind(method, path), body: body ? JSON.stringify(body) : '' });
+  try { renderSent(); } catch (e) {}
+  const r = await fetch(API_BASE + path, { method, headers: { 'Content-Type': 'application/json' }, body: body ? JSON.stringify(body) : undefined });
+  const j = await r.json();
+  return { code: r.status, body: j };
+}
+// STATUSLBL0X_20260923：t(st) 查不到 'share_uploaded' 这个键就原样返回键名,
+//   状态行直接印机器词。跟订单表用同一张 statusLabel 表,人话。
+function setStatus(st) { statusEl.innerHTML = '<span class="' + STATUS_CLASS[st] + '">' + esc(t('statusTxt')(statusLabel(st))) + '</span>'; }
+function outLine(container, text, cls) {
+  const d = document.createElement('div');
+  d.className = cls || '';
+  d.textContent = text;
+  container.appendChild(d);
+}
+// UIGUARD0X_20260918: 后端拒单时会带 reason / sellableLengths 回来（可售闸、收款未开放都会），
+// 而前端四个出口原来一律只印一行 "HTTP 400"，把后端已经说清楚的理由整段丢掉。
+// 四个出口共用这一个函数：以后后端再多返回一个字段，只改这一处，不会又只改好其中一个。
+function showApiError(container, res) {
+  const b = (res && res.body) || {};
+  outLine(container, 'HTTP ' + res.code + ' ' + (b.error || ''), 'err');
+  if (b.reason) outLine(container, b.reason, 'err');
+  if (Array.isArray(b.sellableLengths) && b.sellableLengths.length) {
+    outLine(container, (lang === 'en' ? 'sellable lengths: ' : '可售位数: ') + b.sellableLengths.join(' / '), 'err');
+  }
+}
+
+/* ────────────────────────────────────────────────────────────────────────
+   ALLINONE0X_20260923 —— 六步全部在这一页做完。
+
+   DSJ 原话：「不要来回切换，太麻烦！」「把每个步骤设计好，让用户跟着跑就行！」
+   原来的做法是：页面只负责下单，造钥匙/签名/合钥匙/签回执四件事要跳去 tool.html，
+   用户得在两个标签页之间来回七趟，中间还要手动复制粘贴 A、SIG、b、回执签名四样东西。
+   任何一样贴错、贴漏、贴串行，都表现为后端一句看不懂的报错。
+
+   现在：密钥运算由 js/keycore.js 提供（跟 tool.html 内联的是同一份），
+   页面自己调，用户只用点按钮。s 全程只在这个浏览器的内存里，一个字节都不上传。
+   tool.html 仍然保留 —— 它是「下载下来、断网、离线用」那条路，不是必经之路。
+   ──────────────────────────────────────────────────────────────────────── */
+
+const KC = () => window.KeyCore;
+
+function stepBox(no, head, desc) {
+  const li = document.createElement('li');
+  li.innerHTML =
+    '<div class="step-head"><span class="no">[' + no + '/6]</span>' + esc(head) + '</div>' +
+    '<div class="step-desc">' + esc(desc) + '</div>';
+  return li;
+}
+function note(text, cls) {
+  return '<div class="step-desc' + (cls ? ' ' + cls : '') + '">' + esc(text) + '</div>';
+}
+
+function renderSteps() {
+  const f = t('flow');
+  stepsEl.innerHTML = '';
+  if (orderState.poll) { clearInterval(orderState.poll); orderState.poll = null; }
+  orderState.orderId = null; orderState.challenge = null; orderState.A = null;
+  orderState.b = null; orderState.address = null; orderState.sec = null;
+
+  // ── [1/6] 造钥匙 ────────────────────────────────────────────────────
+  const li1 = stepBox(1, f.s1head, f.s1desc);
+  li1.innerHTML +=
+    '<div class="flow-ctl"><span class="lbl">' + esc(f.chainLbl) + '</span>' +
+      '<span class="chips" id="chainPick"></span></div>' +
+    '<div class="flow-ctl"><span class="lbl">' + esc(f.posLbl) + '</span>' +
+      '<select id="orderPos" aria-label="order position">' +
+      '<option value="prefix">' + esc(t('posPrefix')) + '</option>' +
+      '<option value="suffix">' + esc(t('posSuffix')) + '</option>' +
+      '<option value="both">' + esc(t('posBoth')) + '</option></select></div>' +
+    '<div class="flow-ctl"><input id="orderPat" maxlength="12" spellcheck="false" aria-label="prefix" placeholder="' + esc(f.prePh) + '">' +
+      '<input id="orderPat2" maxlength="12" spellcheck="false" aria-label="suffix" placeholder="' + esc(f.sufPh) + '" hidden>' +
+      '<button class="run" id="btnGen">' + esc(f.genBtn) + '</button></div>' +
+    '<div class="step-desc" id="patHint"></div>' +
+    '<pre class="step-out" id="out1" hidden></pre>' +
+    '<div class="flow-ctl" id="reloadBox"><span class="lbl">' + esc(f.reloadLbl) + '</span>' +
+      '<input type="file" id="secFile" accept=".json,application/json" aria-label="my-secret-s.json"></div>';
+  stepsEl.appendChild(li1);
+
+  // ── [2/6] 下单 ──────────────────────────────────────────────────────
+  const li2 = stepBox(2, f.s2head, f.s2desc);
+  li2.innerHTML +=
+    // PAYCHAIN0X_20260923：用哪条链付款。必须在建单之前选 —— 收款地址是建单时就发的。
+    '<div class="flow-ctl"><span class="lbl">' + esc(f.payChainLbl) + '</span>' +
+      '<select id="payChain" aria-label="payment chain"></select></div>' +
+    '<div class="step-desc" id="payChainNote"></div>' +
+    '<div class="flow-ctl"><button class="run" id="btnCreate" disabled>' + esc(f.create) + '</button></div>' +
+    '<pre class="step-out" id="out2" hidden></pre>';
+  stepsEl.appendChild(li2);
+
+  // ── [3/6] 付款 ──────────────────────────────────────────────────────
+  const li3 = stepBox(3, f.s3head, IS_LIVE ? f.s3descLive : f.s3desc);
+  li3.innerHTML +=
+    '<div class="flow-ctl" id="payInfo" hidden></div>' +
+    '<div class="flow-ctl"><button class="run" id="btnPay" disabled>' + esc(IS_LIVE ? f.payLive : f.pay) + '</button></div>' +
+    note(f.payNote, 'dim') +
+    '<pre class="step-out" id="out3" hidden></pre>';
+  stepsEl.appendChild(li3);
+
+  // ── [4/6] 铸造 ──────────────────────────────────────────────────────
+  const li4 = stepBox(4, f.s4head, f.s4desc);
+  li4.innerHTML += '<pre class="step-out" id="out4" hidden></pre>';
+  stepsEl.appendChild(li4);
+
+  // ── [5/6] 取货 + 当场合成 ───────────────────────────────────────────
+  const li5 = stepBox(5, f.s5head, f.s5desc);
+  li5.innerHTML +=
+    '<div class="flow-ctl"><button class="run" id="btnDownload" disabled>' + esc(f.dlBtn) + '</button></div>' +
+    '<pre class="step-out" id="out5" hidden></pre>' +
+    '<div class="flow-ctl" id="ksBox" hidden>' +
+      '<span class="lbl">' + esc(f.pwLbl) + '</span>' +
+      '<input type="password" id="ksPw" aria-label="keystore password" placeholder="' + esc(f.pwPh) + '">' +
+      '<button class="run" id="btnKs">' + esc(f.ksBtn) + '</button>' +
+      '<button class="copy" id="btnPlain">' + esc(f.plainBtn) + '</button></div>' +
+    '<div class="step-desc" id="ksMsg"></div>';
+  stepsEl.appendChild(li5);
+
+  // ── [6/6] 回执 ──────────────────────────────────────────────────────
+  const li6 = stepBox(6, f.s6head, f.s6desc);
+  li6.innerHTML +=
+    '<div class="flow-ctl"><button class="run" id="btnReceipt" disabled>' + esc(f.receiptBtn) + '</button></div>' +
+    note(f.receiptSkip, 'dim') +
+    '<pre class="step-out" id="out6" hidden></pre>';
+  stepsEl.appendChild(li6);
+
+  setStatus('created');
+  wireOrderFlow(f);
+}
+
+function wireOrderFlow(f) {
+  const chainMeta = () => (CATALOG && CATALOG.chains || []).find((c) => c.id === PICKED) || null;
+  const norm = (v) => { const c = chainMeta(); const x = String(v || '').trim();
+    return (!c || c.caseSensitive) ? x : x.replace(/^0x/i, '').toLowerCase(); };
+  const pinnedOf = (pre, suf) => pre.length + suf.length - ((PICKED === 'tron' && pre) ? 1 : 0);
+  const orderKind = (pre, suf) => (pre && suf) ? 'both' : (suf ? 'suffix' : 'prefix');
+  function readPat() {
+    const pos = ($('#orderPos') || {}).value || 'prefix';
+    const a = norm($('#orderPat').value), b = norm(($('#orderPat2') || {}).value);
+    return pos === 'suffix' ? { pre: '', suf: a }
+         : pos === 'both'   ? { pre: a, suf: b }
+         :                    { pre: a, suf: '' };
+  }
+  // 判据一律走 keycore —— 跟工具页、跟后端 patternProblem 是同一套
+  const patTrouble = (pre, suf) => KC() ? KC().patProblem(PICKED, pre, suf) : null;
+  const seedRow = (chain, kind) => (CATALOG && CATALOG.rows || []).find(
+    (r) => (r.chain || 'evm') === chain && r.kind === kind && r.orderable) || null;
+  function seedInputs() {
+    const pos = ($('#orderPos') || {}).value || 'prefix';
+    const row = seedRow(PICKED, pos); if (!row) return;
+    $('#orderPat').value  = pos === 'suffix' ? (row.suffix || '') : (row.prefix || '');
+    if ($('#orderPat2')) $('#orderPat2').value = row.suffix || '';
+  }
+  function refreshHint() {
+    const el = $('#patHint'); if (!el) return;
+    const { pre, suf } = readPat();
+    const why = patTrouble(pre, suf);
+    const kind = orderKind(pre, suf), pinned = pinnedOf(pre, suf);
+    const row = CATALOG && CATALOG.rows.find(
+      (r) => (r.chain || 'evm') === PICKED && r.kind === kind && r.pinned === pinned);
+    el.className = 'step-desc' + (why ? ' warn' : '');
+    el.textContent = why ? why
+      : !(pre || suf) ? ''
+      : row && row.mintable === false ? f.cantMint
+      : row && row.priceUsdt == null ? f.soon + (row.suggestedUsdt != null ? '（' + f.suggest + ' ' + row.suggestedUsdt + ' USDT）' : '')
+      // PLAINHINT0X_20260923：原来写「大约要试 1,099,511,627,776 次」—— 13 位数字对客户没有任何意义。
+      : row ? f.patOk2(row.priceUsdt, row.mintTimeText || '')
+      : f.noTier;
+  }
+  function renderChainPick() {
+    const box = $('#chainPick'); if (!box || !CATALOG || !CATALOG.chains) return;
+    box.innerHTML = CATALOG.chains.map((c) =>
+      '<button class="chip' + (c.id === PICKED ? ' active' : '') + '" data-chain="' + esc(c.id) + '">'
+      + esc(c.label) + ' <span class="dim">' + esc(c.example) + '</span></button>').join('');
+    box.querySelectorAll('[data-chain]').forEach((b) => b.addEventListener('click', () => {
+      PICKED = b.dataset.chain;
+      const c = chainMeta();
+      syncPosOptions();
+      seedInputs();
+      if (c) { $('#orderPat').maxLength = c.addrLen;
+               if ($('#orderPat2')) $('#orderPat2').maxLength = c.addrLen; }
+      renderChainPick(); refreshHint();
+    }));
+  }
+  $('#orderPat').addEventListener('input', refreshHint);
+  if ($('#orderPat2')) $('#orderPat2').addEventListener('input', refreshHint);
+  if ($('#orderPos')) $('#orderPos').addEventListener('change', () => {
+    $('#orderPat2').hidden = $('#orderPos').value !== 'both';
+    seedInputs(); refreshHint();
+  });
+  function renderPayChains() {
+    const sel = $('#payChain'); if (!sel) return;
+    const list = (CATALOG && CATALOG.payChains) || [{ id: 'tron', label: 'TRON', short: 'TRC20', confirmations: 19, note: '' }];
+    const cur = sel.value;
+    sel.innerHTML = list.map((c) =>
+      '<option value="' + esc(c.id) + '">' + esc(c.label + ' · USDT-' + c.short) + '</option>').join('');
+    if (cur && list.some((c) => c.id === cur)) sel.value = cur;
+    const note = () => {
+      const c = list.find((x) => x.id === sel.value) || list[0];
+      $('#payChainNote').textContent = c ? (c.note + ' 到账后要等 ' + c.confirmations + ' 个确认。') : '';
+    };
+    sel.onchange = note; note();
+  }
+  // MINTABLE0X_20260923：这条链上铸造机做不了的位置,直接变灰并写明原因 ——
+  //   不让客户选了、下了单、付了钱,才在第 4 步卡住。判据从 /api/catalog 的 orderable 来，前端不自留表。
+  function syncPosOptions() {
+    const sel = $('#orderPos'); if (!sel || !CATALOG) return;
+    const ok = (kind) => CATALOG.rows.some((r) => (r.chain || 'evm') === PICKED && r.kind === kind && r.orderable);
+    [...sel.options].forEach((o) => {
+      const can = ok(o.value);
+      o.disabled = !can;
+      o.textContent = t(o.value === 'prefix' ? 'posPrefix' : o.value === 'suffix' ? 'posSuffix' : 'posBoth')
+        + (can ? '' : '（' + f.posSoon + '）');
+    });
+    if (sel.options[sel.selectedIndex] && sel.options[sel.selectedIndex].disabled) {
+      sel.value = 'prefix';
+      $('#orderPat2').hidden = true;
+    }
+  }
+  const bootOrder = () => { renderChainPick(); renderPayChains(); syncPosOptions(); seedInputs(); refreshHint(); };
+  if (CATALOG) bootOrder();
+  else { loadCatalog().then(bootOrder).catch(() => { renderChainPick(); renderPayChains(); refreshHint(); }); }
+
+  const dl = (name, text) => {
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([text], { type: 'application/json' }));
+    a.download = name; a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+  };
+
+  // ── [1/6] 造钥匙 ────────────────────────────────────────────────────
+  $('#btnGen').addEventListener('click', () => {
+    const out = $('#out1'); out.hidden = false; out.innerHTML = '';
+    if (!KC()) return outLine(out, f.noCore, 'err');
+    const { pre, suf } = readPat();
+    let gen;
+    try { gen = KC().makeShare(PICKED, pre, suf); }
+    catch (e) { return outLine(out, e.message, 'err'); }
+    orderState.sec = KC().readSecretJson(gen.secret);
+    orderState.A = gen.A;
+    dl('my-secret-s.json', gen.secret);
+    outLine(out, f.genOk, 'ok');
+    outLine(out, f.genKeep, 'err');
+    outLine(out, 'A = ' + gen.A.slice(0, 32) + '…', 'dim');
+    $('#btnCreate').disabled = false;
+    $('#btnGen').disabled = true;
+    ['#orderPos', '#orderPat', '#orderPat2'].forEach((s) => { const e = $(s); if (e) e.disabled = true; });
+    stepsEl.querySelectorAll('#chainPick [data-chain]').forEach((b) => { b.disabled = true; });
+  });
+
+  // 刷新过页面就选回备份文件 —— 内存里的 s 没了，但文件还在
+  $('#secFile').addEventListener('change', (e) => {
+    const file = e.target.files && e.target.files[0]; if (!file) return;
+    const out = $('#out1'); out.hidden = false; out.innerHTML = '';
+    const r = new FileReader();
+    r.onerror = () => outLine(out, f.fileBad, 'err');
+    r.onload = () => {
+      let sec;
+      try { sec = KC().readSecretJson(r.result); }
+      catch (err) { return outLine(out, err.message, 'err'); }
+      orderState.sec = sec;
+      PICKED = sec.chain;
+      orderState.A = KC().signChallenge(sec.s, 'x').A;
+      outLine(out, f.fileOk((sec.prefix || '') + (sec.suffix ? '…' + sec.suffix : ''), sec.chain.toUpperCase()), 'ok');
+      if (orderState.orderId) {                            // 在续一张已有的单：钥匙装回来就够了
+        const o5 = $('#out5'); if (o5) { o5.hidden = false; outLine(o5, f.secBack, 'ok'); }
+        if (orderState.pendingShare) { orderState.pendingShare = false; uploadShare($('#out2')).then((ok) => ok && showPayment()); }
+      } else {
+        $('#btnCreate').disabled = false;
+      }
+    };
+    r.readAsText(file);
+  });
+
+  // ── [2/6] 下单 + 自动签挑战 + 自动上传 ──────────────────────────────
+  // 上传份额：用 s 签这张单的挑战串，连同影子 A 交上去。续单（建了单但还没交份额）也走这里。
+  async function uploadShare(out) {
+    const sec = orderState.sec;
+    outLine(out, f.signing, 'dim');
+    let sig;
+    try { sig = KC().signChallenge(sec.s, orderState.challenge).sig; }
+    catch (e) { outLine(out, e.message, 'err'); return false; }
+    const A = KC().signChallenge(sec.s, 'x').A;          // A 由 s 当场算出,不信任何缓存
+    const up = await api('/api/orders/' + orderState.orderId + '/share', 'POST', { A, sig });
+    if (up.code !== 200) { showApiError(out, up); return false; }
+    outLine(out, f.shareOk, 'ok');
+    setStatus('share_uploaded');
+    return true;
+  }
+  // 显示收款地址 + 打开「我转好了」按钮
+  async function showPayment() {
+    const pay = await api('/api/orders/' + orderState.orderId + '/payment');
+    if (pay.code !== 200) return false;
+    orderState.address = pay.body.address;
+    const pi = $('#payInfo'); pi.hidden = false;
+    pi.innerHTML = '<span class="lbl">' + esc(f.payInfo2(pay.body.address, pay.body.amountUsdt, pay.body.confirmationsRequired, pay.body.chain + ' · USDT-' + pay.body.network)) + '</span>' +
+      '<button class="copy" data-copycmd="' + esc(pay.body.address) + '">' + esc(f.copyAddr) + '</button>';
+    $('#btnPay').disabled = false;
+    return true;
+  }
+  $('#btnCreate').addEventListener('click', async () => {
+    const out = $('#out2'); out.hidden = false; out.innerHTML = '';
+    const sec = orderState.sec;
+    if (!sec) return outLine(out, f.needGen, 'err');
+    const btn = $('#btnCreate'); btn.disabled = true;
+    const payChain = ($('#payChain') || {}).value || 'tron';
+    const res = await api('/api/orders', 'POST', { chain: sec.chain, prefix: sec.prefix, suffix: sec.suffix, payChain });
+    if (res.code !== 200) { showApiError(out, res); btn.disabled = false; return; }
+    orderState.orderId = res.body.orderId;
+    orderState.challenge = res.body.challenge;
+    rememberOrder(res.body.orderId);                    // 这个浏览器记住自己下过的单,关了页面还找得回来
+    outLine(out, f.created + ' ' + res.body.orderId, 'ok');
+    outLine(out, f.keepId(res.body.orderId), 'dim');
+    if (!(await uploadShare(out))) { btn.disabled = false; return; }
+    renderOrders();
+    await showPayment();
+  });
+
+  // ── [3/6] 付款 ──────────────────────────────────────────────────────
+  const pollStatus = () => {
+    api('/api/orders/' + orderState.orderId).then((r) => {
+      if (r.code !== 200) return;
+      if (r.body.status !== 'found') {
+        const msg = r.body.status === 'mining' ? f.stMining : (r.body.status === 'paid' ? f.stPaidWait : null);
+        if (msg && orderState.lastSeen !== r.body.status) {
+          orderState.lastSeen = r.body.status;
+          outLine($('#out4'), msg, 'ok'); $('#out4').hidden = false;
+        }
+        return;
+      }
+      if (orderState.poll) { clearInterval(orderState.poll); orderState.poll = null; }
+      if (!r.body.ready) return;
+      setStatus('paid');
+      orderState.challenge = r.body.challenge || orderState.challenge;
+      orderState.receiptChallenge = r.body.receiptChallenge || null;
+      const out4 = $('#out4'); out4.hidden = false; out4.innerHTML = '';
+      outLine(out4, f.mineHit + r.body.foundAddress, 'ok');
+      outLine(out4, f.readyToTake, 'ok');
+      $('#btnDownload').disabled = false;
+    });
+  };
+  $('#btnPay').addEventListener('click', async () => {
+    const out = $('#out3'); out.hidden = false; out.innerHTML = '';
+    if (IS_LIVE) {
+      outLine(out, f.payingLive, 'dim');
+      $('#btnPay').disabled = true;
+      if (!orderState.poll) orderState.poll = setInterval(pollStatus, 2500);
+      return;
+    }
+    outLine(out, f.paying, 'dim');
+    const res = await api('/api/orders/' + orderState.orderId + '/pay-sim', 'POST');
+    if (res.code !== 200) { showApiError(out, res); return; }
+    outLine(out, f.watching, 'dim');
+    $('#btnPay').disabled = true;
+    orderState.poll = setInterval(pollStatus, 2500);
+  });
+
+  // ── [5/6] 取 b + 当场合成 + 核对 ────────────────────────────────────
+  let MERGED = null;
+  $('#btnDownload').addEventListener('click', async () => {
+    const out = $('#out5'); out.hidden = false; out.innerHTML = '';
+    // DLSIG0X_20260923：取货凭签名 —— 用你那半把钥匙签这张单的挑战串。没有 s 的人下不到。
+    if (!orderState.sec) return outLine(out, f.needSecForTake, 'err');
+    let dsig;
+    try { dsig = KC().signChallenge(orderState.sec.s, orderState.challenge).sig; }
+    catch (e) { return outLine(out, e.message, 'err'); }
+    const res = await api('/api/orders/' + orderState.orderId + '/download?sig=' + dsig);
+    if (res.code !== 200) { showApiError(out, res); return; }
+    orderState.b = res.body.b;
+    outLine(out, f.gotB, 'dim');
+    let r;
+    try { r = KC().merge(orderState.sec, KC().parseB(res.body.b)); }
+    catch (e) { return outLine(out, e.message, 'err'); }
+    if (!r.ok) {
+      outLine(out, f.mergeBad(r.want, r.chain.toUpperCase()), 'err');
+      KC().candList(r.cands).split('\n').forEach((l) => outLine(out, l, 'dim'));
+      return;
+    }
+    MERGED = r; MERGED_K = r.k; try { renderSent(); } catch (e) {}
+    outLine(out, f.mergeOk, 'ok');
+    outLine(out, r.addr + (r.want ? '   ← ' + r.want + ' ' + f.hitWord : ''), 'ok');
+    outLine(out, r.addr === res.body.address ? f.addrMatch : f.addrDiff(res.body.address), r.addr === res.body.address ? 'ok' : 'err');
+    $('#ksBox').hidden = false;
+    setStatus('delivered');
+    if (orderState.receiptChallenge) $('#btnReceipt').disabled = false;
+  });
+  $('#btnKs').addEventListener('click', function () {
+    if (!MERGED) return;
+    const msg = $('#ksMsg');
+    const pw = $('#ksPw').value || '';
+    if (pw.length < 8) { msg.className = 'step-desc warn'; msg.textContent = f.pwShort; return; }
+    if (!crypto.subtle) { msg.className = 'step-desc warn'; msg.textContent = f.noSubtle; return; }
+    const btn = this; btn.disabled = true;
+    msg.className = 'step-desc';
+    KC().keystore(MERGED.k, MERGED.addr, MERGED.chain, pw, (p) => {
+      msg.textContent = f.ksWork + Math.round(p * 100) + '%';
+    }).then((ks) => {
+      dl('my-keystore.json', JSON.stringify(ks, null, 2));
+      msg.textContent = MERGED.chain === 'tron' ? f.ksOkTron : f.ksOk; btn.disabled = false;
+    }, (e) => { msg.className = 'step-desc warn'; msg.textContent = f.ksFail + e.message; btn.disabled = false; });
+  });
+  $('#btnPlain').addEventListener('click', () => {
+    if (!MERGED) return;
+    dl('my-key.txt', '0x' + KC().pad64(MERGED.k));
+    const msg = $('#ksMsg'); msg.className = 'step-desc warn'; msg.textContent = f.plainWarn;
+  });
+
+  // ── [6/6] 回执：一键签 + 提交 ───────────────────────────────────────
+  $('#btnReceipt').addEventListener('click', async () => {
+    const out = $('#out6'); out.hidden = false; out.innerHTML = '';
+    if (!orderState.receiptChallenge) return outLine(out, f.noReceipt, 'err');
+    let r;
+    try { r = KC().signReceipt(orderState.sec, KC().parseB(orderState.b), orderState.receiptChallenge); }
+    catch (e) { return outLine(out, e.message, 'err'); }
+    if (!r.ok) return outLine(out, f.receiptBad, 'err');
+    const res = await api('/api/orders/' + orderState.orderId + '/receipt', 'POST', { sig: r.sig });
+    if (res.code !== 200) { showApiError(out, res); return; }
+    outLine(out, f.receiptOk, 'ok');
+    $('#btnReceipt').disabled = true;
+    setStatus('settled');
+  });
+
+  // ── 续单（RESUME0X_20260923）────────────────────────────────────────
+  //   原来页面写着「可以直接关掉，回头在我的订单里找回来」—— 那是假的：订单表点了没反应，
+  //   关掉页面之后没有任何办法接着做一张付过钱的单。铸造要一个小时，没人会一直开着页面。
+  //   现在：凭订单号恢复到它该在的那一步。钥匙（s）不在服务器上，所以要取货时请他选回备份文件。
+  RESUME = async (id) => {
+    id = String(id || '').trim().toLowerCase();
+    if (!/^[0-9a-f]{8}$/.test(id)) return f.badId;
+    const r = await api('/api/orders/' + id);
+    if (r.code !== 200) return (r.body && r.body.error) || f.noSuchOrder;
+    const o = r.body;
+    const keep = orderState.sec;
+    renderSteps();
+    orderState.orderId = o.id; orderState.challenge = o.challenge;
+    orderState.receiptChallenge = o.receiptChallenge || null; orderState.address = o.address || null;
+    orderState.sec = keep && keep.chain === o.chain ? keep : null;
+    rememberOrder(o.id);
+    // 第 1、2 步已经做过了：把【这张单自己的】链 / 位置 / 图案填回去再锁住 ——
+    //   不填的话第 1 步还显示默认的 EVM 0000000000,续一张 TRON 单时上下两行自相矛盾
+    PICKED = o.chain || 'evm';
+    const kind = o.prefix && o.suffix ? 'both' : (o.suffix ? 'suffix' : 'prefix');
+    if ($('#orderPos')) $('#orderPos').value = kind;
+    $('#orderPat').value = kind === 'suffix' ? (o.suffix || '') : (o.prefix || '');
+    if ($('#orderPat2')) { $('#orderPat2').value = o.suffix || ''; $('#orderPat2').hidden = kind !== 'both'; }
+    stepsEl.querySelectorAll('#chainPick [data-chain]').forEach((b) => b.classList.toggle('active', b.dataset.chain === PICKED));
+    if (o.payChain && $('#payChain')) $('#payChain').value = o.payChain;
+    const hint = $('#patHint'); if (hint) { hint.className = 'step-desc'; hint.textContent = f.resumeHint(o.patternText || o.pattern, o.amountUsdt); }
+    ['#btnGen', '#btnCreate', '#orderPos', '#orderPat', '#orderPat2', '#payChain'].forEach((sel) => { const e = $(sel); if (e) e.disabled = true; });
+    stepsEl.querySelectorAll('#chainPick [data-chain]').forEach((b) => { b.disabled = true; });
+    const o1 = $('#out1'); o1.hidden = false; o1.innerHTML = '';
+    outLine(o1, f.resuming(o.id, o.patternText || o.pattern, (o.chain || 'evm').toUpperCase()), 'ok');
+    if (!orderState.sec) outLine(o1, f.pickSecForResume, 'err');
+    const st = o.status;
+    setStatus(st);
+    if (st === 'created') {                              // 建了单还没交份额
+      if (orderState.sec) { const o2 = $('#out2'); o2.hidden = false; if (await uploadShare(o2)) await showPayment(); }
+      else orderState.pendingShare = true;
+    } else if (st === 'share_uploaded') {
+      await showPayment();
+    } else if (st === 'paid' || st === 'mining') {
+      await showPayment(); $('#btnPay').disabled = true;
+      const o3 = $('#out3'); o3.hidden = false; outLine(o3, f.watchingAgain, 'dim');
+      if (!orderState.poll) orderState.poll = setInterval(pollStatus, 2500);
+    } else if (st === 'found' || st === 'settled') {
+      const o4 = $('#out4'); o4.hidden = false;
+      if (o.foundAddress) outLine(o4, f.mineHit + o.foundAddress, 'ok');
+      outLine(o4, f.readyToTake, 'ok');
+      $('#btnDownload').disabled = false;
+    } else {
+      const o3 = $('#out3'); o3.hidden = false; outLine(o3, f.orderClosed(statusLabel(st)), 'err');
+    }
+    $('#steps').scrollIntoView({ behavior: reducedMotion ? 'auto' : 'smooth', block: 'start' });
+    return null;
+  };
+
+  // 通用复制
+  stepsEl.addEventListener('click', (e) => {
+    const cp = e.target.closest('[data-copycmd]');
+    if (!cp) return;
+    navigator.clipboard.writeText(cp.dataset.copycmd).then(() => {
+      const old = cp.textContent;
+      cp.textContent = f.copied;
+      setTimeout(() => { cp.textContent = old; }, 1200);
+    }).catch(() => {});
+  });
+}
+
+/* ---- 我的订单（优先真后端, 失败回退 mock） ---- */
+async function renderOrders() {
+  // NOMOCK0X / MYORDERS0X_20260923：只列这个浏览器下过的单,逐张按订单号查；
+  //   取不到就如实说,不编假单。每一行都能「接着做」—— 关了页面回来就从这里续。
+  const body = $('#ordersBody'); if (!body) return;
+  const ids = myOrders();
+  if (!ids.length) { body.innerHTML = '<tr><td colspan="5">' + esc(t('ordersEmpty')) + '</td></tr>'; return; }
+  let rows;
+  try {
+    rows = await Promise.all(ids.map((id) => api('/api/orders/' + id)
+      .then((r) => (r.code === 200 ? r.body : (r.code === 404 ? (forgetOrder(id), null) : undefined)))
+      .catch(() => undefined)));
+  } catch (e) { rows = []; }
+  if (rows.some((x) => x === undefined) && !rows.some((x) => x)) {
+    body.innerHTML = '<tr><td colspan="5">' + esc(t('ordersDown')) + '</td></tr>'; return;
+  }
+  const live = rows.filter(Boolean);
+  if (!live.length) { body.innerHTML = '<tr><td colspan="5">' + esc(t('ordersEmpty')) + '</td></tr>'; return; }
+  body.innerHTML = live.map((o) =>
+    '<tr><td>' + esc(o.id) + '</td><td>' + esc(o.patternText || o.pattern) + '</td>'
+    + '<td><span class="' + (STATUS_CLASS[o.status] || '') + '">' + esc(statusLabel(o.status)) + '</span></td>'
+    + '<td class="num">' + (o.amountUsdt != null ? o.amountUsdt : '-') + '</td>'
+    + '<td>' + (['expired', 'refunded'].includes(o.status) ? ''
+        : '<button class="copy" data-resume="' + esc(o.id) + '">' + esc(t('ordersResume')) + '</button>') + '</td></tr>'
+  ).join('');
+}
+
+
+
+/* ---- 续单入口（RESUME0X_20260923）---- */
+async function resumeFrom(id, msgEl) {
+  if (!RESUME) return;
+  const why = await RESUME(id);
+  if (msgEl) { msgEl.textContent = why || ''; msgEl.className = 'step-desc' + (why ? ' warn' : ''); }
+}
+document.addEventListener('click', (e) => {
+  const b = e.target.closest('[data-resume]');
+  if (b) resumeFrom(b.dataset.resume, $('#resumeMsg'));
+});
+if ($('#resumeBtn')) {
+  $('#resumeBtn').addEventListener('click', () => resumeFrom($('#resumeId').value, $('#resumeMsg')));
+  $('#resumeId').addEventListener('keydown', (e) => { if (e.key === 'Enter') resumeFrom($('#resumeId').value, $('#resumeMsg')); });
+}
+
+/* ---- 启动 ---- */
+$('#body').addEventListener('click', (e) => {
+  if (!bootDone && !reducedMotion && e.target.closest('#boot')) { renderBoot(true); }
+}, true);
+
+/* ---- 星空背景 ---- */
+function initStars() {
+  const canvas = $('#space');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const DPR = Math.min(window.devicePixelRatio || 1, 2);
+  let W = 0, H = 0, stars = [], raf = 0;
+  function layout() {
+    W = window.innerWidth; H = window.innerHeight;
+    canvas.width = W * DPR; canvas.height = H * DPR;
+    ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+    stars = Array.from({ length: 120 }, () => ({
+      x: Math.random() * W, y: Math.random() * H,
+      r: 0.4 + Math.random() * 0.9,
+      base: 0.12 + Math.random() * 0.3,
+      ph: Math.random() * Math.PI * 2,
+      sp: 0.4 + Math.random() * 1.2,
+    }));
+  }
+  function draw(t) {
+    ctx.clearRect(0, 0, W, H);
+    for (const s of stars) {
+      const a = reducedMotion ? s.base : s.base + Math.sin(t / 1000 * s.sp + s.ph) * 0.1;
+      ctx.globalAlpha = Math.max(0.08, Math.min(1, a));
+      ctx.fillStyle = '#cfe6ff';
+      ctx.beginPath();
+      ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+    if (!document.hidden && !reducedMotion) raf = requestAnimationFrame(draw);
+  }
+  function redraw() {
+    if (reducedMotion) { draw(0); return; }
+    cancelAnimationFrame(raf);
+    raf = requestAnimationFrame(draw);
+  }
+  layout();
+  window.addEventListener('resize', () => { layout(); redraw(); });
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) redraw(); });
+  redraw();
+}
+
+/* ---- UTC 时钟（全球市场） ---- */
+const utcEl = $('#utcClock');
+function tickUtc() {
+  if (!utcEl) return;
+  const d = new Date();
+  const p = (x) => String(x).padStart(2, '0');
+  utcEl.textContent = d.getUTCFullYear() + '-' + p(d.getUTCMonth() + 1) + '-' + p(d.getUTCDate()) +
+    ' ' + p(d.getUTCHours()) + ':' + p(d.getUTCMinutes()) + ':' + p(d.getUTCSeconds()) + ' UTC';
+}
+tickUtc();
+setInterval(tickUtc, 1000);
+
+/* ---- 快速模式 chips ---- */
+$('#chips').addEventListener('click', (e) => {
+  const chip = e.target.closest('.chip');
+  if (!chip) return;
+  document.querySelectorAll('#chips .chip').forEach((c) => c.classList.remove('active'));
+  chip.classList.add('active');
+  $('#pos').value = 'prefix';
+  $('#pat2').hidden = true;
+  $('#pat1').value = chip.dataset.pat;
+  runCalc();
+  $('#calcOut').scrollIntoView({ behavior: reducedMotion ? 'auto' : 'smooth', block: 'nearest' });
+});
+
+/* CATMODAL0X_20260923：价目表收进弹窗。默认不渲染,点开才拉 —— 首页一进来就该看到下单,
+   不是先滚过 18 行价格。关法给三种:背景、✕、Esc；开之前记住焦点,关了还回去。 */
+(() => {
+  const modal = $('#catalogModal'), btn = $('#btnCatalog');
+  if (!modal || !btn) return;
+  let last = null, loaded = false;
+  const open = () => {
+    last = document.activeElement;
+    modal.hidden = false;
+    document.body.style.overflow = 'hidden';
+    (modal.querySelector('.modal-x') || modal).focus();
+    if (!loaded) { loaded = true; renderCatalog(); }
+  };
+  const close = () => {
+    modal.hidden = true;
+    document.body.style.overflow = '';
+    if (last && last.focus) last.focus();
+  };
+  btn.addEventListener('click', open);
+  modal.querySelectorAll('[data-close-catalog]').forEach((e) => e.addEventListener('click', close));
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && !modal.hidden) close(); });
+})();
+
+renderOrders();
+renderSteps();
+renderBoot(false);
+// 带着订单号进来（比如 track.html 跳过来,或者他自己存的链接）就直接续
+try {
+  const q = new URLSearchParams(location.search).get('order');
+  if (q) setTimeout(() => resumeFrom(q, $('#resumeMsg')), 600);
+} catch (e) {}
+// 问后端一次：现在是真收款还是模拟。失败就当不是 live（宁可显示旧文案,也不要骗人说在收真钱）
+api('/api/health').then((h) => {
+  IS_LIVE = !!(h && h.code === 200 && h.body && h.body.mode === 'live');
+  if (!IS_LIVE) return;
+  liveSwap(dict.zh); liveSwap(dict.en);
+  // ★ 只重绘步骤区是不够的：像 noteProto 这种靠 [data-i18n] 渲染的元素在别处，
+  //   不重刷它们，字典换了页面上还是旧字（20260923 实测被浏览器抓到一次）。
+  document.querySelectorAll('[data-i18n]').forEach((el) => { el.textContent = t(el.dataset.i18n); });
+  renderSteps();
+}).catch(() => {});
+$('#pat2').hidden = $('#pos').value !== 'both';
+initStars();
+</script>
+</body>
+</html>
