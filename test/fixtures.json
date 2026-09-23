@@ -1,0 +1,152 @@
+{
+ "catalog": {
+  "sellableKinds": [
+   "prefix",
+   "suffix",
+   "both"
+  ],
+  "payChains": [
+   {
+    "id": "tron",
+    "label": "TRON",
+    "short": "TRC20",
+    "confirmations": 19,
+    "note": "手续费低、到账快，大部分交易所提 USDT 默认就是这条。"
+   },
+   {
+    "id": "bsc",
+    "label": "BSC",
+    "short": "BEP20",
+    "confirmations": 15,
+    "note": "手续费同样很低。地址是 0x 开头那种，跟以太坊一样。"
+   }
+  ],
+  "chains": [
+   {
+    "id": "evm",
+    "label": "EVM 地址",
+    "example": "0x0000…0000",
+    "addrLen": 40,
+    "worksOn": [
+     "Ethereum",
+     "BSC",
+     "Polygon",
+     "Arbitrum",
+     "Optimism",
+     "Base",
+     "Avalanche C-Chain"
+    ],
+    "alphabet": "0123456789abcdef",
+    "pos": [],
+    "caseSensitive": false,
+    "priced": true
+   },
+   {
+    "id": "tron",
+    "label": "TRON 地址",
+    "example": "TXooooo…",
+    "addrLen": 34,
+    "worksOn": [
+     "TRON"
+    ],
+    "alphabet": "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz",
+    "pos": [
+     "T",
+     "9ABCDEFGHJKLMNPQRSTUVWXYZ"
+    ],
+    "caseSensitive": true,
+    "priced": true
+   }
+  ],
+  "rows": [
+   {
+    "chain": "evm",
+    "kind": "prefix",
+    "kindLabel": "前缀",
+    "length": 3,
+    "pinned": 3,
+    "prefix": "000",
+    "suffix": "",
+    "pattern": "000…",
+    "priceUsdt": 1,
+    "suggestedUsdt": null,
+    "tries": 4096,
+    "mintTimeText": "1.0 小时",
+    "costUsd": 4,
+    "customUsd": 90,
+    "mintable": true,
+    "orderable": true
+   },
+   {
+    "chain": "tron",
+    "kind": "prefix",
+    "kindLabel": "前缀",
+    "length": 2,
+    "pinned": 2,
+    "prefix": "TXo",
+    "suffix": "",
+    "pattern": "TXo…",
+    "priceUsdt": 1,
+    "suggestedUsdt": null,
+    "tries": 1354,
+    "mintTimeText": "1.0 小时",
+    "costUsd": 4,
+    "customUsd": 90,
+    "mintable": true,
+    "orderable": true
+   },
+   {
+    "chain": "tron",
+    "kind": "suffix",
+    "kindLabel": "后缀",
+    "length": 2,
+    "pinned": 2,
+    "prefix": "",
+    "suffix": "oo",
+    "pattern": "…oo",
+    "priceUsdt": 1,
+    "suggestedUsdt": null,
+    "tries": 3364,
+    "mintTimeText": "1.0 小时",
+    "costUsd": 4,
+    "customUsd": 90,
+    "mintable": true,
+    "orderable": true
+   },
+   {
+    "chain": "tron",
+    "kind": "both",
+    "kindLabel": "前后缀",
+    "length": 2,
+    "pinned": 2,
+    "prefix": "TX",
+    "suffix": "o",
+    "pattern": "TX…o",
+    "priceUsdt": 1,
+    "suggestedUsdt": null,
+    "tries": 1354,
+    "mintTimeText": "1.0 小时",
+    "costUsd": 4,
+    "customUsd": 90,
+    "mintable": true,
+    "orderable": true
+   }
+  ],
+  "note": "测试用的模拟目录（只含秒出的小档）"
+ },
+ "health": {
+  "ok": true,
+  "mode": "sim",
+  "xpub": false,
+  "orders": 0,
+  "uptimeSec": 0,
+  "payChains": [
+   "tron",
+   "bsc"
+  ],
+  "depositWatcher": null,
+  "evmWatcher": null,
+  "tronApiKey": false,
+  "mintWorker": null
+ }
+}
