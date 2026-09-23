@@ -3,15 +3,13 @@
 
 const dict = {
   zh: {
-    run: '运行 Run', lblPos: '-位置 Position', posPrefix: '前缀 Prefix', posSuffix: '后缀 Suffix', posBoth: '前+后 Both ends',
+    posPrefix: '前缀 Prefix', posSuffix: '后缀 Suffix', posBoth: '前+后 Both ends',
     thType: '类型 Type', thPrice: '价格 USDT', thEta: '铸造耗时',
     catalogOpen: '查看全部价格 ▸', catalogTitle: '价目表',
     catalogTeaser: (on, off) => '两条链 · ' + on + ' 档在售' + (off ? '（另有 ' + off + ' 档铸造机暂不支持）' : '') + '，点上面那个按钮看完整价目表。', 
     catalogDown: '价目表暂时取不到 —— 宁可不显示，也不给你看一张可能过期的表。',
     kindPrefix: '前缀', digits: '位',
     onlyKinds: (k) => '目前只卖：' + k + '。后缀、前后缀组合、按图案定价都还没实现 —— 不在这张表里的一律不可售。',
-    calcNotSellable: '不可售（后端目前不支持这一类）',
-    calcNoCatalog: '价目表取不到，暂不报价',
     noteHot: '热门模式 (9999/8888/0000/dead/beef/c0ffee/666…) 溢价 30-100%；0x9999 与 0xabcd 难度相同——定价按位数不按字符。',
     safeTitle: '[SAFE] 定制区 · 无托管模式 NON-CUSTODIAL',
     safeBody: '我们全程只拿到影子 A 和另外半把钥匙 b —— 这两样加起来也推不出你的私钥。完整私钥只在你自己的电脑上拼出来。',
@@ -79,19 +77,8 @@ const dict = {
       '加载模块: [ok] keccak256   [ok] secp256k1   [ok] TRC20 watcher',
       'GPU 铸造队列: 待命 (Vast.ai / RunPod · 订单驱动扩缩容)',
       '',
-      '命令: Get-VanityCatalog | Measure-VanityPattern | New-VanityOrder | Get-MyOrders',
+      '命令: Get-VanityCatalog | New-VanityOrder | Get-MyOrders',
     ],
-    calcHeader: (p, pos) => 'PATTERN   : 0x' + p + '  (' + pos + ')',
-    calcTries: (n, t) => 'TRIES     : ' + t + ' 期望次数 (16^' + n + ')',
-    calcRate: 'HASHRATE  : 1.0 GKey/s 每卡 (RTX 4090 估算; 以实测为准)',
-    calcEta: (s) => 'ETA       : ' + s,
-    calcPrice: 'PRICE     : ',
-    calcWarn: 'WARNINGS  : ',
-    errHex: '错误: 模式必须是 hex 字符 (0-9 a-f)',
-    errEmpty: '错误: 请至少输入 1 位模式',
-    warnFarm: '≥13 位：目前不可售（后端最多到 12 位）。真要做得上 GPU 集群，得先谈。',
-    warnImpossible: '40 位 (全9) 数学上不可行: 16^40 ≈ 1.46e48',
-    warnEip55: '匹配忽略大小写 (EIP-55 校验和由地址自动派生)',
     ordersEmpty: '还没有订单', ordersDown: '订单暂时取不到，刷新一下再试',
     ordersResume: '接着做', thAction: '操作', ordersIdPh: '订单号（8 位）', ordersIdBtn: '接着做这一单',
     ordersIdLbl: '换了电脑或浏览器？输入订单号接着做：',
@@ -133,6 +120,8 @@ const dict = {
       s3descLive: '下面这个收款地址是这一单专用的。用你自己的钱包，按上面写的那条链，转【正好这个金额】的 USDT 过去就行。',
       net3: '🌐 这一步要联网。为什么：你要从交易所或钱包把 USDT 转到下面这个地址；这一页要连着网，才能看到钱到了没有。',
       payChainLbl: '你想用哪条链付款',
+      payChainOffline: '现在还没联网，付款方式还没取到 —— 连上网以后点一下这里，所有能用的付款链都会出来。',
+      payPickNow: '付款方式刚取到（刚才没联网）：上面「你想用哪条链付款」现在可以选了。选好再点一次「下单」。',
       payInfo2: (a, amt, c, net) => '用 ' + net + ' 转 ' + amt + ' USDT 到  ' + a + '   · 到账后还要等 ' + c + ' 个确认',
       copyAddr: '复制地址',
       pay: '就当已付款（原型）', payLive: '我转好了，开始盯',
@@ -191,15 +180,13 @@ const dict = {
     // 难度/价格表
   },
   en: {
-    run: 'Run', lblPos: '-Position', posPrefix: 'Prefix', posSuffix: 'Suffix', posBoth: 'Both ends',
+    posPrefix: 'Prefix', posSuffix: 'Suffix', posBoth: 'Both ends',
     thType: 'Type', thPrice: 'Price USDT', thEta: 'Mint time',
     catalogOpen: 'See all prices',  catalogTitle: 'Price list',
     catalogTeaser: (on, off) => 'Two chains, ' + on + ' tiers on sale' + (off ? ' (' + off + ' more not supported by the minter yet)' : '') + ' - open the full list with the button above.', 
     catalogDown: 'Price list unavailable right now — better to show nothing than a table that may be out of date.',
     kindPrefix: 'Prefix', digits: 'digits',
     onlyKinds: (k) => 'Currently on sale: ' + k + '. Suffix, both-ends and pattern-based pricing are not implemented — anything not in this table cannot be ordered.',
-    calcNotSellable: 'Not for sale (backend does not support this kind yet)',
-    calcNoCatalog: 'Price list unavailable — no quote',
     noteHot: 'Hot patterns (9999/8888/0000/dead/beef/c0ffee/666…) +30-100%. 0x9999 is as hard as 0xabcd — price by length, not by characters.',
     safeTitle: '[SAFE] CUSTOM ZONE · NON-CUSTODIAL',
     safeBody: 'All we ever hold is your shadow A and the other half, b. Those two together still cannot produce your private key - it only ever gets assembled on your own computer.',
@@ -261,19 +248,8 @@ const dict = {
       'loading: [ok] keccak256   [ok] secp256k1   [ok] TRC20 watcher',
       'GPU pool: standby (Vast.ai / RunPod · order-driven scaling)',
       '',
-      'commands: Get-VanityCatalog | Measure-VanityPattern | New-VanityOrder | Get-MyOrders',
+      'commands: Get-VanityCatalog | New-VanityOrder | Get-MyOrders',
     ],
-    calcHeader: (p, pos) => 'PATTERN   : 0x' + p + '  (' + pos + ')',
-    calcTries: (n, t) => 'TRIES     : ' + t + ' expected (16^' + n + ')',
-    calcRate: 'HASHRATE  : 1.0 GKey/s per GPU (RTX 4090 estimate; calibrate with benchmark)',
-    calcEta: (s) => 'ETA       : ' + s,
-    calcPrice: 'PRICE     : ',
-    calcWarn: 'WARNINGS  : ',
-    errHex: 'error: pattern must be hex characters (0-9 a-f)',
-    errEmpty: 'error: enter at least 1 hex digit',
-    warnFarm: '>=13 digits: not for sale (the backend tops out at 12). Doing it for real needs a GPU cluster — talk to us first.',
-    warnImpossible: '40 digits (all-9) is mathematically impossible: 16^40 ≈ 1.46e48',
-    warnEip55: 'matching ignores case (EIP-55 checksum is derived automatically)',
     ordersEmpty: 'No orders yet', ordersDown: 'Could not load your orders - refresh to try again',
     ordersResume: 'Continue', thAction: 'Action', ordersIdPh: 'order number (8 chars)', ordersIdBtn: 'Continue this order',
     ordersIdLbl: 'On another computer or browser? Enter the order number to continue:',
@@ -313,6 +289,8 @@ const dict = {
       s3descLive: 'The address below belongs to this order only. Send exactly that amount of USDT from your own wallet, on the chain named above.',
       net3: '🌐 Needs the internet. Why: you send USDT from your exchange or wallet to the address below, and this page has to be online to see the payment arrive.',
       payChainLbl: 'Which chain do you want to pay on',
+      payChainOffline: 'Not online yet, so the payment options have not loaded - once you are back online, click here and every available chain will show up.',
+      payPickNow: 'Payment options just loaded (you were offline): pick the chain you want to pay on above, then click "Place order" again.',
       payInfo2: (a, amt, c, net) => 'Send ' + amt + ' USDT over ' + net + ' to  ' + a + '   - then ' + c + ' confirmations',
       copyAddr: 'Copy address',
       pay: 'Count it as paid (prototype)', payLive: 'Sent it - start watching',
@@ -382,6 +360,7 @@ const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matc
    而轮询原本只在模拟支付成功后才启动 —— 于是真转了账页面会一直干等。
    这里做两件事：把 xxxLive 文案顶上去、让「我已转账」直接启动轮询。 */
 let IS_LIVE = false;
+let HEALTH_OK = false;   // NETSYNC0X_20260924：拿到过 /api/health 没有（断网打开的页面一开始是 false）
 function liveSwap(o) {
   if (!o || typeof o !== 'object') return;
   for (const k of Object.keys(o)) {
@@ -404,7 +383,6 @@ function applyLang() {
   renderTeaser();
   renderOrders();
   renderSteps();
-  if (lastCalc) renderCalc();
   const dr = $('#dlResumeMsg'); if (dr && dr.dataset.order) dr.textContent = t('dlResume')(dr.dataset.order);
 }
 $('#btnZh').addEventListener('click', () => { lang = 'zh'; applyLang(); });
@@ -508,66 +486,9 @@ function renderCatalog() {
   }).join('') + '<tr><td colspan="3">' + esc(CATALOG.note || t('onlyKinds')(CATALOG.sellableKinds.join(' / '))) + '</td></tr>';
 }
 
-/* ---- 难度计算器 ---- */
-// PRICECONTRA0X_20260921: 这里原本有 PRICE_PREFIX / PRICE_SUFFIX 两张写死的表，
-// 和后端真正收钱的那张对不上，还给后端根本不能卖的后缀报价。已删 —— 价目只有一个来源。
-let lastCalc = null;
+// CALCGONE0X_20260924：这里原来是「Measure-VanityPattern 难度计算器」。它只认 0x（EVM）图案、不认 TRON，
+//   而第 1 步输图案时已经当场报价格和大约多久（两条链都行），价目表也列着全部档位 —— 重复又会说错，删掉。
 let PICKED = 'evm';                 // 客户选的是【要哪条链的靓号地址】，不是用哪条链付款
-
-function fmtTries(b) { return b.toLocaleString('en-US'); }
-function etaStr(tries) {
-  const secs = Number(tries / 10n ** 9n);
-  if (secs < 1) return '<1s / 卡';
-  if (secs < 60) return '~' + Math.round(secs) + 's / 卡';
-  if (secs < 3600) return '~' + Math.round(secs / 60) + ' 分钟 / 卡';
-  if (secs < 86400) return '~' + (secs / 3600).toFixed(1) + ' 小时 / 卡';
-  return '~' + (secs / 86400).toFixed(1) + ' 天 / 卡';
-}
-function renderCalc() {
-  const out = $('#calcOut');
-  if (!lastCalc) { out.innerHTML = ''; return; }
-  const { p1, p2, pos, lines } = lastCalc;
-  out.innerHTML = lines;
-  void p1; void p2; void pos;
-}
-function runCalc() {
-  const pos = $('#pos').value;
-  const p1 = $('#pat1').value.trim().toLowerCase().replace(/^0x/, '');
-  const p2 = pos === 'both' ? $('#pat2').value.trim().toLowerCase().replace(/^0x/, '') : '';
-  const out = $('#calcOut');
-  const bad = (msg) => out.innerHTML = '<span class="err">' + msg + '</span>';
-  if (!p1 || (pos === 'both' && !p2)) return bad(t('errEmpty'));
-  if (!/^[0-9a-f]+$/.test(p1) || (pos === 'both' && !/^[0-9a-f]+$/.test(p2))) return bad(t('errHex'));
-  const total = p1.length + p2.length;
-  if (total >= 40) {
-    out.innerHTML = '<span class="warn">' + t('warnImpossible') + '</span>';
-    lastCalc = { p1, p2, pos, lines: out.innerHTML };
-    return;
-  }
-  const tries = 16n ** BigInt(total);
-  const L = [];
-  L.push('<span class="k">' + esc(t('calcHeader')(pos === 'both' ? p1 + '…' + p2 : (pos === 'suffix' ? '…' + p1 : p1), t('pos' + pos.charAt(0).toUpperCase() + pos.slice(1)))) + '</span>');
-  L.push('<span class="k">' + esc(t('calcTries')(total, fmtTries(tries))) + '</span>');
-  L.push('<span class="k">' + esc(t('calcRate')) + '</span>');
-  L.push('<span class="k">' + esc(t('calcEta')(etaStr(tries))) + '</span>');
-  // 定价只认后端目录。不在目录里的一律写【不可售】——
-  // 以前这里对后缀/前后缀报「面议」，而那种单子后端一定 400。
-  const kind = pos === 'both' ? 'both' : (pos === 'suffix' ? 'suffix' : 'prefix');
-  const hit = catalogLookup(kind, total);
-  const price = hit === null ? t('calcNoCatalog')
-    : (hit === false ? t('calcNotSellable') : hit.priceUsdt + ' USDT');
-  L.push('<span class="k">' + esc(t('calcPrice')) + '</span><span class="v gold">' + esc(price) + '</span>');
-  const warns = [];
-  if (total >= 13) warns.push(t('warnFarm'));
-  warns.push(t('warnEip55'));
-  L.push('<span class="k">' + esc(t('calcWarn')) + '</span><span class="' + (total >= 13 ? 'warn' : 'v') + '">' + esc(warns.join('; ')) + '</span>');
-  out.innerHTML = L.join('\n');
-  lastCalc = { p1, p2, pos, lines: out.innerHTML };
-}
-$('#calcBtn').addEventListener('click', runCalc);
-$('#pos').addEventListener('change', () => { $('#pat2').hidden = $('#pos').value !== 'both'; if (lastCalc) runCalc(); });
-$('#pat1').addEventListener('keydown', (e) => { if (e.key === 'Enter') runCalc(); });
-$('#pat2').addEventListener('keydown', (e) => { if (e.key === 'Enter') runCalc(); });
 
 /* ---- 下单流程（对接真后端） ---- */
 // 本地开发走独立后端端口; 生产同域反代(nginx /api/) → 同源
@@ -846,18 +767,26 @@ function wireOrderFlow(f) {
     $('#orderPat2').hidden = $('#orderPos').value !== 'both';
     seedInputs(); refreshHint();
   });
+  // NETSYNC0X_20260924：付款链表如果是【连上网以后才补到的】，他还没看过新表 —— 点下单时先让他选一次，
+  //   不许默默按缺省的 TRON 建单（补表可能就在他按下按钮的那一瞬间到，所以按「看过没有」判，不按时间先后判）。
+  let payNeedsLook = false;
   function renderPayChains() {
     const sel = $('#payChain'); if (!sel) return;
+    const wasFallback = sel.dataset.real === '0';   // 刚才给他看的是断网时的缺省表
     const list = (CATALOG && CATALOG.payChains) || [{ id: 'tron', label: 'TRON', short: 'TRC20', confirmations: 19, note: '' }];
     const cur = sel.value;
     sel.innerHTML = list.map((c) =>
       '<option value="' + esc(c.id) + '">' + esc(c.label + ' · USDT-' + c.short) + '</option>').join('');
     if (cur && list.some((c) => c.id === cur)) sel.value = cur;
+    sel.dataset.real = CATALOG ? '1' : '0';
+    if (CATALOG && wasFallback && list.length > 1) payNeedsLook = true;
+    sel.onpointerdown = sel.onkeydown = () => { if (sel.dataset.real === '1') payNeedsLook = false; };
     const note = () => {
+      if (!CATALOG) { $('#payChainNote').textContent = f.payChainOffline; return; }
       const c = list.find((x) => x.id === sel.value) || list[0];
       $('#payChainNote').textContent = c ? (c.note + ' 到账后要等 ' + c.confirmations + ' 个确认。') : '';
     };
-    sel.onchange = note; note();
+    sel.onchange = () => { payNeedsLook = false; note(); }; note();
   }
   // MINTABLE0X_20260923：这条链上铸造机做不了的位置,直接变灰并写明原因 ——
   //   不让客户选了、下了单、付了钱,才在第 4 步卡住。判据从 /api/catalog 的 orderable 来，前端不自留表。
@@ -879,8 +808,24 @@ function wireOrderFlow(f) {
   const bootOrder = () => { renderChainPick(); renderPayChains(); syncPosOptions(); seedInputs(); refreshHint(); };
   if (CATALOG) bootOrder();
   else { loadCatalog().then(bootOrder).catch(() => { renderChainPick(); renderPayChains(); syncPosOptions(); refreshHint(); }); }
-  // 断网打开、后来连上了：自己去把目录补回来（价格、能不能铸），不用刷新页面
-  window.ononline = () => { if (!CATALOG) loadCatalog().then(() => { if (CATALOG) { renderPayChains(); syncPosOptions(); refreshHint(); if (!orderState.sec) renderChainPick(); } }).catch(() => {}); };
+  // NETSYNC0X_20260924：断网打开的页面，一开始拿不到两样东西 —— 目录（付款链、价格、能不能铸）和「真收款还是原型」。
+  //   原来只靠 online 事件补目录：① 「真收款」根本不补，第 3 步一直是「就当已付款（原型）」，点了会被平台拒掉；
+  //   ② Windows 上有虚拟网卡时，拔了网浏览器也以为自己在线，online 事件根本不来 —— DSJ 20260924 实测第 2 步只有 TRON。
+  //   现在：online 事件 +【动第 2 步的时候】（点付款链、点下单）当场补拿，不靠事件。
+  // 真收款的字样换进第 3 步 —— 不重画整个步骤区（那会把已经造好的钥匙和订单状态清掉）
+  const liveStep3 = () => {
+    const btn = $('#btnPay'), li3 = btn && btn.closest('li'); if (!li3) return;
+    const d = li3.querySelector('.step-desc'); if (d) d.textContent = f.s3desc;
+    if (!orderState.poll) btn.textContent = f.pay;
+  };
+  let syncing = null;
+  const sync = () => (CATALOG && HEALTH_OK) ? Promise.resolve() : (syncing || (syncing = (async () => {
+    if (!HEALTH_OK && onHealth(await api('/api/health'))) liveStep3();
+    if (!CATALOG) { await loadCatalog(); if (CATALOG) { renderPayChains(); syncPosOptions(); refreshHint(); if (!orderState.sec) renderChainPick(); } }
+  })().catch(() => {}).finally(() => { syncing = null; })));
+  window.ononline = () => { sync(); };
+  const li2 = $('#btnCreate') && $('#btnCreate').closest('li');
+  if (li2) { li2.addEventListener('pointerdown', () => { sync(); }, true); li2.addEventListener('focusin', () => { sync(); }, true); }
 
   const dl = (name, text) => {
     const a = document.createElement('a');
@@ -963,6 +908,9 @@ function wireOrderFlow(f) {
     const out = $('#out2'); out.hidden = false; out.innerHTML = '';
     const sec = orderState.sec;
     if (!sec) return outLine(out, f.needGen, 'err');
+    // NETSYNC0X_20260924：目录还没拿到（断网打开的页面）→ 当场补拿；付款链表是刚补到、他还没看过 → 先让他选，再点一次
+    if (!CATALOG || !HEALTH_OK) await sync();
+    if (payNeedsLook) { payNeedsLook = false; return outLine(out, f.payPickNow, 'warn'); }
     const btn = $('#btnCreate'); btn.disabled = true;
     const payChain = ($('#payChain') || {}).value || 'tron';
     const res = await api('/api/orders', 'POST', { chain: sec.chain, prefix: sec.prefix, suffix: sec.suffix, payChain });
@@ -1262,18 +1210,6 @@ function tickUtc() {
 tickUtc();
 setInterval(tickUtc, 1000);
 
-/* ---- 快速模式 chips ---- */
-$('#chips').addEventListener('click', (e) => {
-  const chip = e.target.closest('.chip');
-  if (!chip) return;
-  document.querySelectorAll('#chips .chip').forEach((c) => c.classList.remove('active'));
-  chip.classList.add('active');
-  $('#pos').value = 'prefix';
-  $('#pat2').hidden = true;
-  $('#pat1').value = chip.dataset.pat;
-  runCalc();
-  $('#calcOut').scrollIntoView({ behavior: reducedMotion ? 'auto' : 'smooth', block: 'nearest' });
-});
 
 /* CATMODAL0X_20260923：价目表收进弹窗。默认不渲染,点开才拉 —— 首页一进来就该看到下单,
    不是先滚过 18 行价格。关法给三种:背景、✕、Esc；开之前记住焦点,关了还回去。 */
@@ -1318,14 +1254,17 @@ try {
   else if (q) setTimeout(() => resumeFrom(q, $('#resumeMsg')), 600);
 } catch (e) {}
 // 问后端一次：现在是真收款还是模拟。失败就当不是 live（宁可显示旧文案,也不要骗人说在收真钱）
-api('/api/health').then((h) => {
-  IS_LIVE = !!(h && h.code === 200 && h.body && h.body.mode === 'live');
-  if (!IS_LIVE) return;
+// NETSYNC0X_20260924：拿到了才记 HEALTH_OK；断网打开的页面，连上网后在第 2 步补问（renderSteps 里的 sync）
+function onHealth(h) {
+  if (!h || h.code !== 200) return false;
+  HEALTH_OK = true;
+  if (IS_LIVE || !(h.body && h.body.mode === 'live')) return false;
+  IS_LIVE = true;
   liveSwap(dict.zh); liveSwap(dict.en);
   // ★ 只重绘步骤区是不够的：像 noteProto 这种靠 [data-i18n] 渲染的元素在别处，
   //   不重刷它们，字典换了页面上还是旧字（20260923 实测被浏览器抓到一次）。
   document.querySelectorAll('[data-i18n]').forEach((el) => { el.textContent = t(el.dataset.i18n); });
-  renderSteps();
-}).catch(() => {});
-$('#pat2').hidden = $('#pos').value !== 'both';
+  return true;
+}
+api('/api/health').then((h) => { if (onHealth(h)) renderSteps(); }).catch(() => {});
 initStars();
