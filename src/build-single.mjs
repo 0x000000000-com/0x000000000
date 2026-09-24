@@ -11,7 +11,8 @@ import { fileURLToPath } from 'url';
 const DIR = process.argv[2] || path.dirname(fileURLToPath(import.meta.url));
 const OUT = process.argv[3] || path.join(DIR, '0x000000000.html');
 const rd = (rel) => fs.readFileSync(path.join(DIR, rel), 'utf8').replace(/\r\n/g, '\n');
-const PARTS = [['css/style.css', 'style'], ['js/noble.js', 'script'], ['js/keycore.js', 'script'], ['js/app.js', 'script']];
+// FONTS0X_20260924：fonts.css（代码风字体，data: 网址）排在最前 —— 下载版断网打开也是这套字
+const PARTS = [['css/fonts.css', 'style'], ['css/style.css', 'style'], ['js/noble.js', 'script'], ['js/keycore.js', 'script'], ['js/app.js', 'script']];
 
 export function buildSingle() {
   let html = rd('index.html');
