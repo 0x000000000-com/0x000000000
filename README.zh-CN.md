@@ -4,9 +4,11 @@
 
 [English](README.md) · **中文**
 
-[![线上页面指纹巡检](https://github.com/0x000000000-com/0x000000000/actions/workflows/tamper-check.yml/badge.svg)](https://github.com/0x000000000-com/0x000000000/actions/workflows/tamper-check.yml)
-[![私钥外发检查](https://github.com/0x000000000-com/0x000000000/actions/workflows/noleak.yml/badge.svg)](https://github.com/0x000000000-com/0x000000000/actions/workflows/noleak.yml)
-[![字体可复现检查](https://github.com/0x000000000-com/0x000000000/actions/workflows/fonts.yml/badge.svg)](https://github.com/0x000000000-com/0x000000000/actions/workflows/fonts.yml)
+| 检查（徽章上是英文名） | 现在 |
+|---|---|
+| 线上页面指纹巡检 · Live page tamper patrol | [![线上页面指纹巡检](https://github.com/0x000000000-com/0x000000000/actions/workflows/tamper-check.yml/badge.svg)](https://github.com/0x000000000-com/0x000000000/actions/workflows/tamper-check.yml) |
+| 私钥外发检查 · Private-key leak check | [![私钥外发检查](https://github.com/0x000000000-com/0x000000000/actions/workflows/noleak.yml/badge.svg)](https://github.com/0x000000000-com/0x000000000/actions/workflows/noleak.yml) |
+| 字体可复现检查 · Font rebuild check | [![字体可复现检查](https://github.com/0x000000000-com/0x000000000/actions/workflows/fonts.yml/badge.svg)](https://github.com/0x000000000-com/0x000000000/actions/workflows/fonts.yml) |
 
 这个仓库只做一件事：**让你不用相信我们，自己就能确认两件事——**
 
