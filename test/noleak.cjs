@@ -92,7 +92,7 @@ async function netsync(browser) {
   const open = async (net) => {
     const st = { NET: net === 'up', orders: [] };
     const c = await browser.newContext({ acceptDownloads: true, offline: net === 'event' }); ctxs.push(c);
-    await c.addInitScript(() => { try { localStorage.setItem('0xlang', 'zh'); } catch (e) {} });
+    await c.addInitScript(() => { try { localStorage.setItem('0xlang2', 'zh'); } catch (e) {} });
     await c.route('https://0x000000000.com/**', async (r) => {
       const u = new URL(r.request().url());
       if (!st.NET || !u.pathname.startsWith('/api/')) return r.abort('internetdisconnected');
@@ -157,7 +157,7 @@ async function mint4(browser) {
   const FAKE = { status: null, paidAt: null, found: null };
   const open = async (lang) => {
     const c = await browser.newContext({ acceptDownloads: true });
-    await c.addInitScript((l) => { try { localStorage.setItem('0xlang', l); } catch (e) {} }, lang);
+    await c.addInitScript((l) => { try { localStorage.setItem('0xlang2', l); } catch (e) {} }, lang);
     await c.route('https://0x000000000.com/**', async (r) => {
       const u = new URL(r.request().url());
       if (!u.pathname.startsWith('/api/')) return r.abort();
@@ -249,7 +249,7 @@ async function offlineAll(browser) {
   const open = async (silent) => {
     const st = { NET: !silent };
     const c = await browser.newContext({ acceptDownloads: true });
-    await c.addInitScript((id) => { try { localStorage.setItem('0xlang', 'zh'); localStorage.setItem('0x_myorders', JSON.stringify([id])); } catch (e) {} }, oid);
+    await c.addInitScript((id) => { try { localStorage.setItem('0xlang2', 'zh'); localStorage.setItem('0x_myorders', JSON.stringify([id])); } catch (e) {} }, oid);
     await c.route('https://0x000000000.com/**', async (r) => {
       const u = new URL(r.request().url());
       if (!st.NET || !u.pathname.startsWith('/api/')) return r.abort('internetdisconnected');
@@ -279,9 +279,81 @@ async function offlineAll(browser) {
   return res;
 }
 
+// LANGEN0X / CLEANURL0X / TICKER0X / PPTNAV0X / FONTS0X / LANGKEEP0X_20260924：DSJ 这一轮要的几件事，逐条在真浏览器里量
+//   ① 没选过语言 = 英文 ② 地址栏永远是干净的 0x000000000.com（带 #secOrder / ?order= 进来也洗掉；点「开始铸造」不加 #）
+//   ③ 横梁那一行一直在打字 ④ 顶栏导航到 /ppt（下载版写完整网址、开新窗口）⑤ 全页是代码字体，中英文都在字体里
+//   ⑥ 造好钥匙以后切语言：钥匙还在，不用重新选文件
+async function ui(browser) {
+  // 每一小段各自兜住：旧版页面缺哪个元素，就在那一条上打 ✗（写出缺什么），而不是整段超时、看不出是哪一条红。
+  const html = fs.readFileSync(path.join(PAGE_DIR, 'index.html'), 'utf8');
+  const res = []; const ok = (c, m) => res.push([!!c, m]);
+  const step = async (name, fn) => { try { await fn(); } catch (e) { ok(false, `${name}：走不下去（${String(e.message || e).split('\n')[0].slice(0, 90)}）`); } };
+  const T = { timeout: 5000 };
+  const c1 = await browser.newContext();
+  await c1.route('https://0x000000000.com/**', async (route) => {
+    const u = new URL(route.request().url());
+    if (u.pathname === '/' || u.pathname === '/index.html') return route.fulfill({ status: 200, contentType: 'text/html; charset=utf-8', body: html });
+    if (u.pathname.startsWith('/api/')) return route.fulfill({ response: await route.fetch({ url: 'http://127.0.0.1:8787' + u.pathname + u.search }) });
+    return route.abort();
+  });
+  const p = await c1.newPage(); const errs = []; p.on('pageerror', (e) => errs.push(e.message));
+  await step('网站模式首屏', async () => {
+    await p.goto('https://0x000000000.com/#secOrder'); await sleep(1500);
+    const a = await p.evaluate(() => ({ lang: document.documentElement.lang, url: location.href,
+      cta: (document.querySelector('#heroCta') || {}).textContent,
+      zh: (document.body.innerText.replace(/中文/g, '').match(/[一-鿿]/g) || []).length,
+      nav: (document.querySelector('#navPpt') || {}).href, navT: (document.querySelector('#navPpt') || {}).target,
+      font: getComputedStyle(document.body).fontFamily,
+      faces: [...document.fonts].filter((f) => f.family.replace(/"/g, '') === '0x Mono').map((f) => f.status),
+      t1: (document.querySelector('#tickerText') || {}).textContent }));
+    await sleep(1300);
+    const t2 = await p.evaluate(() => (document.querySelector('#tickerText') || {}).textContent);
+    await p.evaluate(() => window.scrollTo(0, 0));
+    let after = { url: '（没有「开始铸造」按钮）', y: 0 };
+    if (await p.$('#heroCta')) { await p.click('#heroCta', T); await sleep(1200); after = await p.evaluate(() => ({ url: location.href, y: Math.round(window.scrollY) })); }
+    ok(a.lang === 'en' && a.cta === 'Start minting →' && a.zh === 0, `没选过语言：默认英文（lang=${a.lang}，页面上汉字 ${a.zh} 个，不算「中文」按钮）`);
+    ok(a.url === 'https://0x000000000.com/', `带着 #secOrder 进来：地址栏洗成 ${a.url}`);
+    ok(after.url === 'https://0x000000000.com/' && after.y > 200, `点「开始铸造」：滚到下单那一块（y=${after.y}），地址栏不多出 #（${after.url}）`);
+    ok(!!t2 && t2 !== a.t1, `横梁那一行在打字（${JSON.stringify(a.t1 || null).slice(0, 28)} → ${JSON.stringify(t2 || null).slice(0, 28)}）`);
+    ok(a.nav === 'https://0x000000000.com/ppt' && a.navT !== '_blank', `顶栏导航指向 ${a.nav}（网站上同一个窗口打开）`);
+    ok(/^"0x Mono"/.test(a.font) && a.faces.length === 2 && a.faces.every((s) => s === 'loaded'), `全页是代码字体「0x Mono」，英文 + 中文两套都加载了（${a.faces.join('/') || '没有这套字体'}）`);
+  });
+  await step('带 ?order= 进来', async () => {
+    await p.goto('https://0x000000000.com/?order=1a2b3c4d'); await sleep(1300);
+    const q = await p.evaluate(() => ({ url: location.href, msg: (document.querySelector('#dlResumeMsg') || {}).textContent || '' }));
+    ok(q.url === 'https://0x000000000.com/' && /1a2b3c4d/.test(q.msg), `带着 ?order= 进来：订单号先读出来（${q.msg.slice(0, 26)}…），地址栏再洗干净（${q.url}）`);
+  });
+  ok(errs.length === 0, '网站模式页面没报错' + (errs.length ? '：' + errs.join(' | ') : ''));
+  await c1.close();
+  const c2 = await browser.newContext({ acceptDownloads: true });
+  await c2.route('https://0x000000000.com/**', async (r) => { const u = new URL(r.request().url()); if (!u.pathname.startsWith('/api/')) return r.abort();
+    try { return r.fulfill({ response: await r.fetch({ url: 'http://127.0.0.1:8787' + u.pathname + u.search }) }); } catch (e) { return r.abort('connectionrefused'); } });
+  const f = path.join(DATA, 'ui-file.html'); fs.writeFileSync(f, html);
+  const p2 = await c2.newPage(); const errs2 = []; p2.on('pageerror', (e) => errs2.push(e.message));
+  await step('下载版导航', async () => {
+    await p2.goto('file://' + f); await sleep(1500);
+    const nav2 = await p2.evaluate(() => { const n = document.querySelector('#navPpt'), q = document.querySelector('a[data-site="faq.html"]');
+      return { href: n && n.href, t: n && n.target, faq: q && q.href }; });
+    ok(nav2.href === 'https://0x000000000.com/ppt' && nav2.t === '_blank' && nav2.faq === 'https://0x000000000.com/faq.html',
+      `下载版：导航和页脚链接写完整网址、开新窗口（不会把做到一半的这一页顶掉）（${nav2.href} / ${nav2.faq}）`);
+  });
+  await step('造好钥匙再切中文', async () => {
+    await p2.fill('#orderPat', 'abc', T); await p2.dispatchEvent('#orderPat', 'input');
+    await Promise.all([p2.waitForEvent('download', { timeout: 15000 }), p2.click('#btnGen', T)]); await sleep(300);
+    await p2.click('#btnZh', T); await sleep(900);
+    const kept = await p2.evaluate(() => ({ create: !document.querySelector('#btnCreate').disabled, gen: document.querySelector('#btnGen').disabled,
+      out1: document.querySelector('#out1').textContent, head: document.querySelector('#steps > li .step-head').textContent, lang: document.documentElement.lang }));
+    ok(kept.lang === 'zh' && /钥匙还在/.test(kept.out1) && kept.create && kept.gen && /造一把只有你有的钥匙/.test(kept.head),
+      '造好钥匙以后切到中文：六步换成中文，钥匙还在，「下单」直接能点（不用重新选文件）');
+  });
+  ok(errs2.length === 0, '下载版页面没报错' + (errs2.length ? '：' + errs2.join(' | ') : ''));
+  await c2.close();
+  return res;
+}
+
 async function walk(browser, N, chain, pos, pre, suf) {
   const ctx = await browser.newContext({ viewport: { width: 1280, height: 900 }, acceptDownloads: true });
-  await ctx.addInitScript(() => { try { localStorage.setItem('0xlang', 'zh'); } catch (e) {} });
+  await ctx.addInitScript(() => { try { localStorage.setItem('0xlang2', 'zh'); } catch (e) {} });
   const page = await ctx.newPage();
   const errs = []; page.on('pageerror', (e) => errs.push(e.message));
   const wire = [], resp = [];
@@ -312,17 +384,21 @@ async function walk(browser, N, chain, pos, pre, suf) {
   await ctx.setOffline(true);
   await page.click('#btnMerge');
   await page.waitForFunction(() => /合成成功/.test(document.querySelector('#out5').textContent), null, { timeout: 15000 });
-  await page.fill('#ksPw', 'test-password-123');
+  // KSONLY0X_20260924：密码要输两遍；只有钱包文件一种导出（没有明文私钥按钮）
+  await page.fill('#ksPw', 'test-password-123'); await page.fill('#ksPw2', 'test-password-123');
+  const plainBtn = await page.$('#btnPlain') !== null;
   const [dl2] = await Promise.all([page.waitForEvent('download', { timeout: 120000 }), page.click('#btnKs')]);
+  const ksName = dl2.suggestedFilename();
   const ksPath = path.join(DATA, chain + pos + '-ks.json'); await dl2.saveAs(ksPath);
   const offlineReq2 = wire.length - before2;
   await ctx.setOffline(false);
-  const k = keyFromKeystore(JSON.parse(fs.readFileSync(ksPath, 'utf8')), 'test-password-123');
+  const ksJson = JSON.parse(fs.readFileSync(ksPath, 'utf8'));
+  const k = keyFromKeystore(ksJson, 'test-password-123');
   await page.click('#btnReceipt');
   await page.waitForFunction(() => /收条收到了/.test(document.querySelector('#out6').textContent), null, { timeout: 15000 });
   await sleep(500);
   await ctx.close();
-  return { s, k, wire, resp, offlineReq, offlineReq2, errs };
+  return { s, k, wire, resp, offlineReq, offlineReq2, errs, ksName, ksJson, plainBtn };
 }
 
 (async () => {
@@ -339,7 +415,8 @@ async function walk(browser, N, chain, pos, pre, suf) {
     const pubOf = (priv) => hex(N.getPublicKey(Buffer.from(priv, 'hex'), false));
     for (let i = 0; i < 40; i++) { await sleep(250); try { const r = await fetch('http://127.0.0.1:8787/api/health'); if (r.ok) break; } catch (e) {} }
     browser = await chromium.launch();
-    const CASES = process.env.ONLY_ONE ? [['evm', 'prefix', 'abc', '']]
+    // ONLY_UI=1：只跑最后那一段「界面」（拿旧版页面对照新判据时用 —— 旧页面在前面几段就会整段超时，看不出是哪一条红）
+    const CASES = process.env.ONLY_UI ? [] : process.env.ONLY_ONE ? [['evm', 'prefix', 'abc', '']]
       : [['evm', 'prefix', 'abc', ''], ['tron', 'suffix', '', 'oo'], ['tron', 'both', 'TX', 'o']];
     for (const [chain, pos, pre, suf] of CASES) {
       console.log(`== ${chain} ${pos} ${pre}…${suf} ==`);
@@ -392,8 +469,15 @@ async function walk(browser, N, chain, pos, pre, suf) {
       }
       chk(bad === 0 && n >= 8 && kinds.share === 1 && kinds.download >= 1 && kinds.receipt === 1 && kinds.create === 1,
         `白名单：打平台的 ${n} 个请求逐个核对，不合格 ${bad} 个 · ${JSON.stringify(kinds)}`);
+      // KSIMPORT0X_20260924：钱包文件导得进钱包 —— TRON 存 .txt（TronLink 只收 .txt）、address 写 41…（TronLink 读得懂的写法）
+      const h20 = hex(keccak_256(N.getPublicKey(Buffer.from(w.k, 'hex'), false).subarray(1)).subarray(12));
+      const wantName = chain === 'tron' ? 'my-keystore.txt' : 'my-keystore.json';
+      chk(w.ksName === wantName && !w.plainBtn, `钱包文件名 ${w.ksName}（要 ${wantName}），页面上没有「导出明文私钥」`);
+      chk(w.ksJson.address === (chain === 'tron' ? '41' : '') + h20 && w.ksJson.readme && w.ksJson.readme.en && w.ksJson.readme.zh,
+        `钱包文件里的地址是 ${chain === 'tron' ? '41 + ' : ''}这把钥匙的地址，文件里带中英文说明`);
       chk(w.errs.length === 0, '页面没有报错' + (w.errs.length ? '：' + w.errs.join(' | ') : ''));
     }
+    if (!process.env.ONLY_UI) {
     console.log('== 网站模式 / 下载到电脑模式 ==');
     const m = await modes(browser);
     chk(m.site.gate && !m.site.flow && !m.site.genShown && m.site.dl === '0x000000000.html',
@@ -408,6 +492,9 @@ async function walk(browser, N, chain, pos, pre, suf) {
     for (const [c, msg] of await mint4(browser)) chk(c, msg);
     console.log('== 下载版断网打开：整页跟一直在线那份对照 ==');
     for (const [c, msg] of await offlineAll(browser)) chk(c, msg);
+    }
+    console.log('== 界面：默认英文 / 地址栏干净 / 横梁打字 / 导航 / 代码字体 / 切语言不丢钥匙 ==');
+    for (const [c, msg] of await ui(browser)) chk(c, msg);
   } catch (e) {
     fail++; console.log('  ★ 走到一半炸了：' + e.message.split('\n')[0]); console.log(slog.slice(-800));
   } finally {
