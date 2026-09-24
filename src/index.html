@@ -4,7 +4,20 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>0x000000000 — Vanity Address Foundry</title>
-<link rel="icon" href="data:,">
+<meta name="description" content="Vanity address mint for EVM and TRON. You make half the key on your own computer, we mint the other half on GPUs, and only you can put the full private key together.">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="0x000000000">
+<meta property="og:title" content="0x000000000 — Vanity Address Foundry">
+<meta property="og:description" content="Vanity address mint for EVM and TRON. You make half the key on your own computer, we mint the other half on GPUs, and only you can put the full private key together.">
+<meta property="og:url" content="https://0x000000000.com/">
+<meta property="og:image" content="https://0x000000000.com/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#06070c">
+<!-- LOGO0X_20260924：标签页小图标 = 零九零 logo（DSJ 20260924 定案 v2）。内嵌成 data: 网址 —— 这一页照样只有它自己一个文件，断网打开也有图标。 -->
+<link rel="icon" type="image/png" sizes="32x32" href="data:image/png;base64,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">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 256 256'%3E%3Cdefs%3E%3ClinearGradient id='tile' x1='0' y1='0' x2='0' y2='1'%3E%3Cstop offset='0' stop-color='%23151a26'/%3E%3Cstop offset='1' stop-color='%230a0d14'/%3E%3C/linearGradient%3E%3ClinearGradient id='gold' gradientUnits='userSpaceOnUse' x1='0' y1='106.66' x2='0' y2='149.34'%3E%3Cstop offset='0' stop-color='%23f0d98c'/%3E%3Cstop offset='0.55' stop-color='%23ebc65c'/%3E%3Cstop offset='1' stop-color='%23c9a227'/%3E%3C/linearGradient%3E%3CradialGradient id='glow' cx='0.5' cy='0.5' r='0.5'%3E%3Cstop offset='0.45' stop-color='%23ebc65c' stop-opacity='0.16'/%3E%3Cstop offset='1' stop-color='%23ebc65c' stop-opacity='0'/%3E%3C/radialGradient%3E%3Cmask id='cut' maskUnits='userSpaceOnUse' x='0' y='0' width='256' height='256'%3E%3Crect width='256' height='256' fill='%23fff'/%3E%3Cpath d='M108.5 149.34 123.61 127.37 109.44 106.66H117.92L126.2 119.6Q126.75 120.46 127.26 121.48Q127.76 122.5 128.07 123.13Q128.31 122.5 128.82 121.48Q129.33 120.46 129.87 119.6L138.22 106.66H146.64L132.47 127.44L147.5 149.34H139.01L130.02 135.59Q129.47 134.72 128.97 133.59Q128.46 132.46 128.07 131.76Q127.76 132.46 127.18 133.59Q126.6 134.72 125.98 135.59L116.91 149.34Z' fill='%23000' stroke='%23000' stroke-width='5' stroke-linejoin='round'/%3E%3C/mask%3E%3C/defs%3E%3Crect x='6' y='6' width='244' height='244' rx='58' fill='url(%23tile)' stroke='%232b3240' stroke-width='3'/%3E%3Ccircle cx='128' cy='128' r='46' fill='url(%23glow)'/%3E%3Cg fill='none' stroke='%23e9e5d9' stroke-width='6.5'%3E%3Ccircle cx='82' cy='82' r='17'/%3E%3Ccircle cx='128' cy='82' r='17'/%3E%3Ccircle cx='174' cy='82' r='17'/%3E%3Ccircle cx='82' cy='128' r='17'/%3E%3Ccircle cx='174' cy='128' r='17'/%3E%3Ccircle cx='82' cy='174' r='17'/%3E%3Ccircle cx='128' cy='174' r='17'/%3E%3Ccircle cx='174' cy='174' r='17'/%3E%3C/g%3E%3Ccircle cx='128' cy='128' r='17' fill='none' stroke='url(%23gold)' stroke-width='6.5' mask='url(%23cut)'/%3E%3Cpath d='M108.5 149.34 123.61 127.37 109.44 106.66H117.92L126.2 119.6Q126.75 120.46 127.26 121.48Q127.76 122.5 128.07 123.13Q128.31 122.5 128.82 121.48Q129.33 120.46 129.87 119.6L138.22 106.66H146.64L132.47 127.44L147.5 149.34H139.01L130.02 135.59Q129.47 134.72 128.97 133.59Q128.46 132.46 128.07 131.76Q127.76 132.46 127.18 133.59Q126.6 134.72 125.98 135.59L116.91 149.34Z' fill='url(%23gold)'/%3E%3C/svg%3E">
 <!-- FONTS0X_20260924：DSJ「把网页的字体全部换成代码风，中英文数字也要代码风感字体」。字体文件内嵌在 fonts.css 里（data: 网址），
      下载到电脑上断网打开也一样；生成方法和来源见 web/build-fonts.py。 -->
 <link rel="stylesheet" href="css/fonts.css">
@@ -17,6 +30,7 @@
 <main class="term">
   <div class="titlebar">
     <span class="dots" aria-hidden="true"><i class="d r"></i><i class="d y"></i><i class="d g"></i></span>
+    <span class="logo-mark" aria-hidden="true"></span>
     <span class="ttl">0x000000000 — Vanity Address Foundry</span>
     <!-- PPTNAV0X_20260924：DSJ「增加导航…把6个步骤详细人话解释…做成WebPPT…0x000000000.com/ppt」 -->
     <nav class="topnav" aria-label="guide"><a id="navPpt" href="/ppt" data-site="ppt" data-i18n="navPpt">How it works · 6 steps</a></nav>
@@ -35,7 +49,8 @@
     <pre class="boot" id="boot" aria-label="boot sequence"></pre>
 
     <section class="hero">
-      <div class="hero-brand">0x000000000</div>
+      <!-- LOGO0X_20260924：品牌名前面放 logo（九零阵 + 正中那个 x 比金色的零大一点） -->
+      <div class="hero-id"><span class="logo-mark" aria-hidden="true"></span><div class="hero-brand">0x000000000</div></div>
       <div class="hero-tag" data-i18n="heroTag">VANITY ADDRESS MINT · NON-CUSTODIAL SPLIT-KEY</div>
       <div class="hero-mission" data-i18n="heroMission">Pay in USDT. You make half the key on your own machine, we mint the other half - the full key can only be assembled by you.</div>
       <!-- HEROSYNC0X_20260923：这三张卡曾经写死成【已经取消的档位】(前缀8位 15-35 USDT),
