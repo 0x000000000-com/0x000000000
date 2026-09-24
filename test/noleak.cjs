@@ -82,6 +82,39 @@ async function modes(browser) {
   return { site, file, secChain, errs };
 }
 
+// OFFLINEHANG0X_20260924：网是断的、浏览器却以为在线（Windows 虚拟网卡那种）—— 请求发出去一直没回音。
+//   第 1 步（选链、造钥匙）本来就不需要网，不许等请求：一打开就要看得到两条链，选 TRON 造出来的是 TRON 的钥匙。
+//   原来的页面要等目录请求有了结果才画链按钮：请求挂着就一直是空的（20260924 GitHub 上慢机器也因此红过一次）。
+async function hangOpen(browser) {
+  const html = fs.readFileSync(path.join(PAGE_DIR, 'index.html'), 'utf8');
+  const f = path.join(DATA, 'hang-copy.html'); fs.writeFileSync(f, html);
+  const ctx = await browser.newContext({ acceptDownloads: true });
+  let hung = 0, other = 0;
+  await ctx.route('**/*', (r) => {
+    const u = r.request().url();
+    if (u.startsWith('file:')) return r.continue();
+    if (u.startsWith('https://0x000000000.com/')) { hung++; return; }   // 不回、不拒 —— 请求一直挂着
+    other++; return r.abort();
+  });
+  const p = await ctx.newPage(); const errs = []; p.on('pageerror', (e) => errs.push(e.message));
+  await p.goto('file://' + f);
+  const chains = await p.evaluate(() => [...document.querySelectorAll('#chainPick [data-chain]')].map((b) => b.dataset.chain));
+  let secChain = null;
+  try {
+    await p.click('#chainPick [data-chain="tron"]', { timeout: 3000 });
+    await p.fill('#orderPat', 'TX'); await p.dispatchEvent('#orderPat', 'input');
+    const [d] = await Promise.all([p.waitForEvent('download', { timeout: 15000 }), p.click('#btnGen')]);
+    secChain = JSON.parse(fs.readFileSync(await d.path(), 'utf8')).chain || null;
+  } catch (e) { errs.push('请求挂着时造 TRON 钥匙没做成：' + e.message.split('\n')[0]); }
+  await ctx.close();
+  return [
+    [hung > 0, `请求真的挂着：页面发了 ${hung} 个请求，一个都没回（不然下面两条是恒真）`],
+    [chains.includes('evm') && chains.includes('tron'), `网断着、浏览器以为在线（请求一直没回音）：一打开就能选两条链，不等请求（${chains.join(' / ')}）`],
+    [secChain === 'tron' && errs.length === 0, `请求挂着照样选 TRON 造钥匙，备份是 TRON 的（${secChain}）` + (errs.length ? '：' + errs.join(' | ') : '')],
+    [other === 0, `请求挂着的时候也没连别的地方（${other} 个）`],
+  ];
+}
+
 // NETSYNC0X_20260924：下载版【断网打开、后来联网】—— 付款链要补全、第 3 步要换成真收款字样，而且不许只靠浏览器的 online 事件
 //   （Windows 上有虚拟网卡时，拔了网浏览器也以为自己在线，事件根本不来 —— 20260924 实测第 2 步只剩 TRON）。
 //   silent = 网是断的但浏览器以为在线（没有事件）· event = 浏览器知道断网，连上时有 online 事件 · up = 一直在线。
@@ -492,6 +525,7 @@ async function walk(browser, N, chain, pos, pre, suf) {
     chk(m.file.chains.includes('evm') && m.file.chains.includes('tron'), '一开始就断网也能选 TRON（' + m.file.chains.join(' / ') + '）');
     chk(m.secChain === 'tron', '断网选 TRON 造出来的钥匙备份就是 TRON 的（' + m.secChain + '）');
     chk(m.errs.length === 0, '两种打开方式页面都没有报错' + (m.errs.length ? '：' + m.errs.join(' | ') : ''));
+    for (const [c, msg] of await hangOpen(browser)) chk(c, msg);
     console.log('== 下载版断网打开、后来联网 ==');
     for (const [c, msg] of await netsync(browser)) chk(c, msg);
     console.log('== 第 4 步：等到账 / 正在铸造 / 铸好了 ==');
