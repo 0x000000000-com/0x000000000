@@ -19,6 +19,13 @@
   var G = N.ProjectivePoint.BASE, n = N.CURVE.n;
   var enc = new TextEncoder();
 
+  // I18N0X_20260924：这个文件里的每一句提示都会被页面原样印出来 —— 原来全是中文，
+  //   页面默认英文之后（DSJ「把网页默认成英文…每改一字都必须同时翻译双语」），英文界面就会冒中文。
+  //   页面切语言时调 setLang；没调过就是英文。
+  var LANG = 'en';
+  function M(zh, en) { return LANG === 'zh' ? zh : en; }
+  function setLang(l) { LANG = l === 'zh' ? 'zh' : 'en'; }
+
   function hex(u) { var s = '', i; for (i = 0; i < u.length; i++) s += (u[i] < 16 ? '0' : '') + u[i].toString(16); return s; }
 
   function u8(h) { h = h.replace(/^0x/i, ''); var a = new Uint8Array(h.length / 2), i;
@@ -77,20 +84,18 @@
   // b 的格式跟 CLI 一模一样：纯数字=十进制，0x 开头或带 a-f 字母=十六进制
   function parseB(t) {
     t = String(t || '').trim();
-    if (!t) throw new Error('b 是空的');
+    if (!t) throw new Error(M('b 是空的', 'b is empty'));
     var isHex = /^0x/i.test(t) || /[a-f]/i.test(t);
-    if (!isHex && !/^[0-9]+$/.test(t)) throw new Error('b 里有不认识的字符');
-    if (isHex && !/^(0x)?[0-9a-f]+$/i.test(t)) throw new Error('b 里有不认识的字符');
+    if (!isHex && !/^[0-9]+$/.test(t)) throw new Error(M('b 里有不认识的字符', 'b contains characters that do not belong in it'));
+    if (isHex && !/^(0x)?[0-9a-f]+$/i.test(t)) throw new Error(M('b 里有不认识的字符', 'b contains characters that do not belong in it'));
     return BigInt(isHex ? (/^0x/i.test(t) ? t : '0x' + t) : t);
   }
 
   var TOOL_CHAINS = {
-    evm:  { label: 'EVM 地址', alphabet: '0123456789abcdef', pos: [],
-            addrLen: 40, lower: true,
-            rule: '十六进制，只能用 0-9 a-f（开头的 0x 不用写）' },
-    tron: { label: 'TRON 地址', alphabet: '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz',
-            pos: ['T', '9ABCDEFGHJKLMNPQRSTUVWXYZ'], addrLen: 34, lower: false,
-            rule: '第 1 位一定是 T，第 2 位只能是 9 或 A-Z（没有 I O 0），其余用 base58（没有 0 O I l）' }
+    evm:  { label: 'EVM 地址', labelEn: 'EVM address', alphabet: '0123456789abcdef', pos: [],
+            addrLen: 40, lower: true },
+    tron: { label: 'TRON 地址', labelEn: 'TRON address', alphabet: '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz',
+            pos: ['T', '9ABCDEFGHJKLMNPQRSTUVWXYZ'], addrLen: 34, lower: false }
   };
 
   // ---------- GLV 变体（GLV0X_20260923）----------
@@ -114,7 +119,7 @@
     return null;
   }
   function candList(cands) {
-    return cands.map(function (c) { return '  变体 ' + c.v + ': ' + c.addr; }).join('\n');
+    return cands.map(function (c) { return M('  候选 ', '  candidate ') + c.v + ': ' + c.addr; }).join('\n');
   }
 
   // ── 链元数据：跟后端 chains.mjs 同一套 ──────────────────────────────
@@ -122,17 +127,20 @@
 
   function patProblem(chain, pre, suf) {
     var c = CHAINS[chain] || CHAINS.evm, i;
-    if (!pre && !suf) return '前缀和后缀都是空的 —— 至少要钉一头。';
+    if (!pre && !suf) return M('前缀和后缀都是空的 —— 至少要钉一头。', 'Both the start and the end are empty - pin at least one of them.');
     if (pre.length + suf.length > c.addrLen)
-      return c.label + '一共 ' + c.addrLen + ' 位，前 ' + pre.length + ' + 后 ' + suf.length + ' 放不下。';
+      return M(c.label + '一共 ' + c.addrLen + ' 位，前 ' + pre.length + ' + 后 ' + suf.length + ' 放不下。',
+               'A ' + c.labelEn + ' has ' + c.addrLen + ' characters - ' + pre.length + ' at the start plus ' + suf.length + ' at the end do not fit.');
     for (i = 0; i < pre.length; i++) {
       var allowed = c.pos[i] || c.alphabet;
       if (allowed.indexOf(pre[i]) < 0)
-        return c.label + '的第 ' + (i + 1) + ' 位不可能是「' + pre[i] + '」—— 这一位只可能是：' + allowed;
+        return M(c.label + '的第 ' + (i + 1) + ' 位不可能是「' + pre[i] + '」—— 这一位只可能是：' + allowed,
+                 'Character ' + (i + 1) + ' of a ' + c.labelEn + ' can never be "' + pre[i] + '" - it can only be one of: ' + allowed);
     }
     for (i = 0; i < suf.length; i++)
       if (c.alphabet.indexOf(suf[i]) < 0)
-        return c.label + '的后缀里不可能有「' + suf[i] + '」—— 只能用：' + c.alphabet;
+        return M(c.label + '的后缀里不可能有「' + suf[i] + '」—— 只能用：' + c.alphabet,
+                 'The end of a ' + c.labelEn + ' can never contain "' + suf[i] + '" - only: ' + c.alphabet);
     return null;
   }
 
@@ -149,7 +157,8 @@
     return {
       s: s, A: A, chain: chain, prefix: pre, suffix: suf,
       secret: JSON.stringify({
-        warning: '这是你的秘密份额(第一半)。丢了=靓号永久死亡, 平台无法找回。绝不外传, 离线备份。',
+        warning: 'Your secret half of the key. Lose it and this address is gone forever - nobody can recover it. Never share it; keep an offline backup.',
+        warning_zh: '这是你的秘密份额(第一半)。丢了=靓号永久死亡, 平台无法找回。绝不外传, 离线备份。',
         chain: chain, prefix: pre, suffix: suf,
         pattern: pre,
         s: pad64(s)
@@ -162,9 +171,9 @@
   // 所以只在【没写 chain】的时候才沿用小写那套 —— TRON 的 base58 区分大小写。
   function readSecretJson(text) {
     var j = JSON.parse(text);
-    if (!j.s || !/^[0-9a-f]{64}$/i.test(j.s)) throw new Error('这个文件里没有合法的 s —— 选错文件了？');
+    if (!j.s || !/^[0-9a-f]{64}$/i.test(j.s)) throw new Error(M('这个文件里没有合法的 s —— 选错文件了？', 'This file has no valid s in it - wrong file?'));
     var s = BigInt('0x' + j.s);
-    if (s <= 0n || s >= n) throw new Error('文件里的 s 不在合法范围内');
+    if (s <= 0n || s >= n) throw new Error(M('文件里的 s 不在合法范围内', 'The s in this file is out of range'));
     var ch = j.chain === 'tron' ? 'tron' : 'evm';
     var keep = function (v) { var x = String(v || ''); return ch === 'tron' ? x : x.toLowerCase(); };
     return {
@@ -178,7 +187,7 @@
   // ② 签挑战：用 s 给挑战串签名，证明 s 在你手上（防白嫖算力）
   function signChallenge(s, challenge) {
     var msg = String(challenge || '').trim();
-    if (!msg) throw new Error('挑战串是空的。');
+    if (!msg) throw new Error(M('挑战串是空的。', 'The challenge phrase is empty.'));
     return {
       sig: hex(N.sign(N.keccak_256(enc.encode(msg)), u8(pad64(s))).toCompactRawBytes()),
       A: hex(G.multiply(s).toRawBytes(false))
@@ -200,7 +209,7 @@
   // ④ 签回执：用合出来的完整 k 给回执原文签名。平台没有 s，造不出这个签名。
   function signReceipt(sec, b, message) {
     var msg = String(message || '').replace(/\r\n/g, '\n').replace(/\s+$/, '');
-    if (!msg) throw new Error('回执原文是空的。');
+    if (!msg) throw new Error(M('回执原文是空的。', 'The receipt text is empty.'));
     var cands = mergeCandidates(sec.s, b, secShape(sec).chain);
     var hit = pickByOracle(cands, function (a) { return msg.indexOf(a) >= 0; });
     if (!hit) return { ok: false, cands: cands };
@@ -209,8 +218,41 @@
   }
 
   // keystore v3（web3 secret storage）。故意算得慢：暴力猜密码也得这么慢。
-  // ★ address 那一栏按链分开 —— 原来一律 addr.slice(2)，TRON 地址会被啃掉开头的两位。
+  // KSIMPORT0X_20260924：DSJ 拿 TRON 的钱包文件导不进 TronLink —— 原来 address 那一栏写的是 T 开头的地址。
+  //   TronLink 4.11 导入 keystore 的那段代码（扩展包 3725.js 的 ve()）：address 开头的 41 换成 0x、否则前面补 0x，
+  //   交给 ethers 按 0x 地址核对，再用 TronWeb.address.fromHex 换回 T 地址跟私钥算出来的比。
+  //   写 T… 在第一步就被判「地址不合法」，而它把异常吞掉了 —— 用户看到的只是「导入不了」。
+  //   现在：TRON 写 41 + 40 位十六进制（同一个地址的另一种写法，TronLink 读得懂），EVM 写 40 位十六进制（MetaMask 的写法）。
+  //   ★ 写之前当场核对：这一栏换回原来的写法必须等于合出来的那个地址，对不上就不写文件。
+  //   另外文件最上面放一段 readme（英文 + 中文）：DSJ「我打开时是不需要输入密码的…里面一堆不懂是什么…哪个是私钥？」——
+  //   在他打开文件的那一刻就用人话说清楚。
+  function readme(chain, addr) {
+    var tron = chain === 'tron';
+    return {
+      en: 'This is your wallet file (the standard Web3 keystore format, version 3). Your private key is inside, locked with the password you set - it is the "ciphertext" line. '
+        + 'The file opens without a password because the file itself is plain text; only the key inside is locked, and without the password it is useless. '
+        + '"iv", "salt", "mac" and "id" are random numbers the lock uses - they are not addresses and not keys. '
+        + (tron
+          ? '"address" is your TRON address ' + addr + ', written in hex (41 + 40 hex digits) - the same address, spelled the way TronLink reads it. '
+            + 'To use it: TronLink - Add Wallet - TRON - Import Wallet - Import via Keystore File (TronLink only accepts .txt files) - enter your password.'
+          : '"address" is your address ' + addr + ' without the 0x. '
+            + 'To use it: MetaMask - Add account or hardware wallet - Import account - Select type: JSON File - pick this file - enter your password.'),
+      zh: '这是你的钱包文件（通用的 Web3 keystore 格式，第 3 版）。你的私钥就在里面，用你设的密码锁着 —— 就是 ciphertext 那一行。'
+        + '文件本身是普通文字，所以不用密码也能打开；锁住的是里面的私钥，没有密码它就没用。'
+        + 'iv、salt、mac、id 是上锁用的随机数 —— 不是地址，也不是私钥。'
+        + (tron
+          ? 'address 是你的 TRON 地址 ' + addr + '，写成了十六进制（41 + 40 位）—— 同一个地址，换成 TronLink 读得懂的写法。'
+            + '怎么用：TronLink → 添加钱包 → TRON-导入钱包 → 通过 Keystore 文件导入（TronLink 只收 .txt 文件）→ 输入你的密码。'
+          : 'address 是你的地址 ' + addr + '（去掉了开头的 0x）。'
+            + '怎么用：MetaMask → 添加账户或硬件钱包 → 导入账户 → 选择类型「JSON 文件」→ 选这个文件 → 输入你的密码。')
+    };
+  }
   function keystore(k, addr, chain, pw, onp) {
+    var h20 = hash20FromPriv(k), body = hex(h20);
+    var want = chain === 'tron' ? tronFromHash20(h20) : '0x' + body;
+    if (String(addr || '') !== want)
+      return Promise.reject(new Error(M('钱包文件里的地址跟合出来的钥匙对不上，没有写文件。',
+                                        'The address for the wallet file does not match the key that was built - no file was written.')));
     var salt = rnd(32), iv = rnd(16);
     return N.scryptAsync(enc.encode(pw), salt, { N: 131072, r: 8, p: 1, dkLen: 32, maxmem: 300 * 1024 * 1024, onProgress: onp })
       .then(function (dk) {
@@ -223,9 +265,10 @@
             var macIn = new Uint8Array(16 + ct.length);
             macIn.set(dk.subarray(16, 32), 0); macIn.set(ct, 16);
             return {
+              readme: readme(chain, want),
               version: 3,
               id: (crypto.randomUUID ? crypto.randomUUID() : hex(rnd(16))),
-              address: chain === 'tron' ? addr : addr.replace(/^0x/i, '').toLowerCase(),
+              address: chain === 'tron' ? '41' + body : body,
               chain: chain,
               crypto: {
                 cipher: 'aes-128-ctr',
@@ -239,6 +282,8 @@
           });
       });
   }
+  // 钱包文件的名字：TronLink 的「通过 Keystore 文件导入」只收 .txt（扩展包里 accept=".txt" 且判 endsWith(".txt")）
+  function keystoreName(chain) { return chain === 'tron' ? 'my-keystore.txt' : 'my-keystore.json'; }
 
   root.KeyCore = {
     CHAINS: CHAINS, n: n,
@@ -248,6 +293,6 @@
     variantK: variantK, mergeCandidates: mergeCandidates, pickByOracle: pickByOracle, candList: candList,
     makeShare: makeShare, readSecretJson: readSecretJson,
     signChallenge: signChallenge, merge: merge, signReceipt: signReceipt,
-    keystore: keystore
+    keystore: keystore, keystoreName: keystoreName, setLang: setLang
   };
 })(window);

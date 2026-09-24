@@ -19,6 +19,13 @@ const dict = {
     heroTag: '靓号地址铸造台 · SPLIT-KEY 无托管',
     heroMission: '用 USDT 付款。你先在自己电脑上造一半钥匙，我们替你铸另一半——完整私钥只有你拼得出。',
     heroCta: '开始铸造 →',
+    // PPTNAV0X_20260924：顶栏导航 → 0x000000000.com/ppt（6 步说明书 / 白皮书）
+    navPpt: '说明书 · 6 步看懂',
+    // TICKER0X_20260924：顶栏那一行一直在「打字」的话。第一句是 DSJ 要的那句意思，另外两句是能自己核对的证据。
+    ticker: ['我们不要你的信任 —— 我们给你证据。', '私钥从不离开你的电脑 —— 发给我们的每一句话都列给你看。', '这个页面 = GitHub 上公开的那份，一字不差 —— 你自己核对。'],
+    tickerSr: '我们不要你的信任 —— 我们给你证据。',
+    gsEvm0: '0x0000000000 · 前缀10位', gsEvm8: '0x8888888888 · 前缀10位', gsTron: 'TXooooo… · TRON 前缀6位',
+    footTrack: '订单查询',
     // TRUST0X_20260923：原来还写着「OFAC 制裁筛查 · 大额阈值 KYC」—— 代码里一行都没有（grep 0 处），
     //   「开源工具可审计」那时也还没公开。页面上每一句都得是真的，假话比没话更伤信任。
     foot1: '页面代码公开在 GitHub，可逐字节核对 · 定制区无托管 · 收款支持 TRON / BSC 上的 USDT',
@@ -70,7 +77,7 @@ const dict = {
       'Windows PowerShell',
       'Copyright (C) 0x000000000. All rights reserved.',
       '',
-      '0x000000000 — VANITY ADDRESS MINER',
+      '0x000000000 — VANITY ADDRESS MINT',
       '靓号地址铸造台 · split-key 无托管铸造',
       '航次: 0x000000000 · 任务: 铸造靓号私钥 · 轨道: 近地',
       '',
@@ -96,11 +103,12 @@ const dict = {
       genKeep: '这个文件一定要留好。丢了这个靓号就永久没了，我们也找不回来 —— 建议再存一份到 U 盘或另一台电脑。',
       reloadLbl: '刷新过页面？选回你的 my-secret-s.json',
       fileOk: (pat, ch) => '读到了你之前的备份：' + pat + '（' + ch + '），可以接着下单。',
+      keyKept: (pat, ch) => '钥匙还在（' + pat + ' · ' + ch + '），切换语言不影响它，可以接着下单。',
       fileBad: '这个文件读不了，换一个试试。',
       noCore: '密钥模块没加载起来，刷新一下页面再试。',
       noTier: '这个长度目前没有定价，换一个长度。',
       offlineHint: '现在没联网，看不到价格 —— 钥匙照样能造。连上网以后价格会自己出来。',
-      suggest: '建议',
+      suggest: '建议', notPriced: '待定价',
       soon: '这一档还没定价，暂时不接单',
       posSoon: '铸造机暂不支持',
       cantMint: '这一种铸造机暂时还做不了，先不接单 —— 收了钱却交不出货，比不卖糟得多。',
@@ -133,6 +141,8 @@ const dict = {
       //   等到账（等了多久）→ 钱到了 → 正在铸造（算了多久）→ 铸好了。只报「已经多久」，不报「还要多久」。
       mint4Wait: (d) => '等你的付款到账 · 已经等了 ' + d + '。转完一般 1 分钟内会看到，到了这一行会自己变。',
       mint4WaitLong: (id) => '超过 10 分钟还没看到到账：先核对转的是不是上面那条链、那个地址、那个金额。都对的话先别再转，把订单号 ' + id + ' 发给我们，我们去链上查。',
+      // PARTIALPAY0X_20260924：分几笔付的钱平台会合起来算 —— 收到一部分时这一行直接告诉他还差多少
+      mint4Part: (got, want, left) => '已经收到 ' + got + ' USDT，还差 ' + left + ' USDT（一共 ' + want + '）。把差的转到同一个地址就行 —— 几笔会合起来算，够了这一行会自己变。',
       mint4Paid: '钱收到了，马上开始铸造…',
       mint4Run: (d) => '正在铸造 · 已经算了 ' + d,
       mint4RunNote: '显卡正在一个一个地试，试到开头或结尾正好是你要的那串为止。这一页每 2.5 秒问一次进度，铸好了这一行会自己变。',
@@ -148,7 +158,7 @@ const dict = {
 
       s5head: '取货：把两半合起来',
       s5desc: '平台把另一半（叫 b）交给你。先点「取货」把它拿回来，再点「合成我的钥匙」—— 在你的电脑上把两半合成完整私钥，并且当场核对算出来的地址是不是你买的那个，对不上就不让你往下导出。',
-      net5: '先 🌐 联网点「取货」；看到「拿到了」之后可以 🔌 断网，再点「合成我的钥匙」和「导出钱包」。为什么：合成的这一刻完整私钥才第一次出现 —— 断网做，它就只可能留在你的电脑上。',
+      net5: '先 🌐 联网点「取货」；看到「拿到了」之后可以 🔌 断网，再点「合成我的钥匙」和「导出钱包文件」。为什么：合成的这一刻完整私钥才第一次出现 —— 断网做，它就只可能留在你的电脑上。',
       dlBtn: '取货（要联网）',
       mergeBtn: '合成我的钥匙（可以断网）',
       gotB: '拿到了。现在可以断网（拔网线或关掉 Wi-Fi），再点「合成我的钥匙」。',
@@ -158,15 +168,29 @@ const dict = {
       addrMatch: '跟你买的那个地址一致 ✓',
       addrDiff: (a) => '★ 对不上！我们给的是 ' + a + ' —— 先别导出，把这一屏截给我们。',
       mergeBad: (want, ch) => '⛔ 合出来的地址没有一个是你要的 ' + want + '（' + ch + '）—— 我们给的 b 有问题。先别导出，把这一屏截给我们。',
-      pwLbl: '给钱包文件设个密码', pwPh: '至少 8 位',
-      ksBtn: '导出钱包文件', plainBtn: '导出明文私钥（不建议）',
+      // KSONLY0X_20260924：DSJ「拿掉明文文件，专注做好钱包文件就好！」—— 只剩钱包文件一种导出。
+      //   密码要输两遍（输错一个字，文件就永远打不开）；TRON 的文件存成 .txt（TronLink 只收 .txt）。
+      pwLbl: '给钱包文件设个密码（至少 8 位）', pwPh: '密码', pw2Ph: '再输一次',
+      ksBtn: '导出钱包文件',
       pwShort: '密码至少 8 位。这个密码丢了，导出来的文件就再也打不开了。',
-      noSubtle: '这个浏览器不给用加密接口，换个浏览器，或者用下面的明文导出并自己保管好。',
+      pwDiff: '两次输的密码不一样 —— 再输一遍。',
+      noSubtle: '这个浏览器不让用加密功能，钱包文件做不出来。请用 Chrome 或 Edge 打开这个页面再试。',
       ksWork: '正在加密…（故意算得慢，别人暴力猜密码也得这么慢）',
-      ksOk: '导好了：my-keystore.json。导进 MetaMask：账户 → 导入账户 → 选 JSON 文件 → 输这个密码。',
-      ksOkTron: '导好了：my-keystore.json —— 这是加密备份，留好。MetaMask 不支持 TRON，导进去只会显示同一把钥匙的 0x 写法（上面那一行）。要在 TRON 上用，请用下面「导出明文私钥」导进 TronLink（导入钱包 → 私钥），导完立刻删掉那个文件。',
+      ksOk: (name, tron) => '导好了：' + name + '（在你的下载文件夹）。' + (tron
+        ? '导进 TronLink：添加钱包 → TRON-导入钱包 → 通过 Keystore 文件导入 → 选 ' + name + ' → 输入刚才的密码。'
+        : '导进 MetaMask：添加账户或硬件钱包 → 导入账户 → 选择类型「JSON 文件」→ 选 ' + name + ' → 输入刚才的密码。')
+        + '文件和密码分开放 —— 两样都在，钥匙就在。下面有这个文件的人话说明。',
       ksFail: '加密失败：',
-      plainWarn: (tron) => '明文私钥已下载（my-key.txt，里面就是 64 位私钥）。' + (tron ? '导进 TronLink：导入钱包 → 私钥 → 粘贴这 64 位。' : '导进 MetaMask：导入账户 → 私钥 → 粘贴这 64 位。') + '任何人拿到这个文件就拿到了这个地址 —— 导完立刻删掉它。',
+      // KSGUIDE0X_20260924：DSJ「打开时是不需要输入密码的…一堆地址，我都不知道哪个是私钥？怎么导入钱包？…你也没有人话解释在网页」
+      ksGuideHead: '这个钱包文件是什么？为什么打开不用密码？私钥在哪？怎么导进钱包？（点开看）',
+      ksGuide: [
+        ['一句话', '钱包文件 = 你的私钥 + 一把锁。开锁的钥匙，就是你刚才设的密码。'],
+        ['为什么打开不用密码？', '文件本身是普通文字，谁都能打开看。锁住的是里面的私钥：打开只看得到锁住之后的一串乱码，没有密码什么都做不了。你把它导进钱包的时候，钱包才会问你密码。'],
+        ['里面那些是什么？', 'address = 你的地址（TRON 的写成 41 开头的十六进制 —— 跟 T 开头的是同一个地址，TronLink 认这种写法）· ciphertext = 锁住的私钥 · iv、salt = 上锁用的随机数 · mac = 用来判断密码对不对 · kdf、n、r、p = 这把锁有多难撬（故意算得很慢）· id、version = 文件编号和格式版本 · readme = 这段说明。除了 address，那些一长串的都不是地址，也不是私钥。'],
+        ['私钥在哪一行？', '哪一行都不是明文私钥 —— 它被锁成了 ciphertext。这正是这个文件安全的原因：文件就算被人拿到，没有密码也拿不走你的钱。'],
+        ['怎么导进钱包？', '0x 开头的地址 → MetaMask：添加账户或硬件钱包 → 导入账户 → 选择类型「JSON 文件」→ 选 my-keystore.json → 输密码。 T 开头的地址 → TronLink：添加钱包 → TRON-导入钱包 → 通过 Keystore 文件导入 → 选 my-keystore.txt（TronLink 只收 .txt）→ 输密码。'],
+        ['怎么保管？', '文件和密码分开放（比如文件存 U 盘，密码写在纸上）。两样都在，钥匙就在。只丢了一样：铸好之后 30 天内，还可以用 my-secret-s.json 和订单号重新取货、重新合成、重新导出。'],
+      ],
 
       s6head: '交个收条',
       s6desc: '用刚合成的完整钥匙给一句话签个名交回来。平台手上没有你的那一半，这个签名平台自己造不出来 —— 收到就等于双方都认这一单交付完成了。',
@@ -203,9 +227,14 @@ const dict = {
     safeBody: 'All we ever hold is your shadow A and the other half, b. Those two together still cannot produce your private key - it only ever gets assembled on your own computer.',
     noteProto: 'Prototype note: this page talks to the real platform; only payment is simulated. Your half of the key is created and used only on your own computer.',
     noteProtoLive: 'This page talks to the real platform: ordering, minting, delivery and payment are all real. Your half of the key is created and used only on your own computer - the platform never sees it.',
-    heroTag: 'VANITY ADDRESS MINER · NON-CUSTODIAL SPLIT-KEY',
+    heroTag: 'VANITY ADDRESS MINT · NON-CUSTODIAL SPLIT-KEY',
     heroMission: 'Pay in USDT. You make half the key on your own machine, we mint the other half - the full key can only be assembled by you.',
     heroCta: 'Start minting →',
+    navPpt: 'How it works · 6 steps',
+    ticker: ["We don't ask for your trust - we give you proof.", 'Your private key never leaves your computer - every message sent to us is listed for you.', 'This page = the public copy on GitHub, byte for byte - verify it yourself.'],
+    tickerSr: "We don't ask for your trust - we give you proof.",
+    gsEvm0: '0x0000000000 · prefix 10', gsEvm8: '0x8888888888 · prefix 10', gsTron: 'TXooooo… · TRON prefix 6',
+    footTrack: 'Track an order',
     foot1: 'page code published on GitHub, verifiable byte for byte · custom zone non-custodial · USDT on TRON / BSC',
     proof1: 'Your half of the key is created on your own computer and only ever stored there. The platform only receives a public key (public, like a bank account number) and signatures (proof that you hold your half, without revealing it). Everything the minting page says to the platform is listed at its bottom under "Every word this page said to the platform" - check it yourself.',
     proof2: '"Make key" needs no network: switch off Wi-Fi before clicking and it still works.',
@@ -252,7 +281,7 @@ const dict = {
       'Windows PowerShell',
       'Copyright (C) 0x000000000. All rights reserved.',
       '',
-      '0x000000000 — VANITY ADDRESS MINER',
+      '0x000000000 — VANITY ADDRESS MINT',
       'split-key non-custodial vanity minting',
       'vessel: 0x000000000 · mission: mint vanity keys · orbit: LEO',
       '',
@@ -276,11 +305,12 @@ const dict = {
       genKeep: 'Keep that file. Lose it and this address is gone for good - we cannot recover it either. Put a second copy on a USB stick or another machine.',
       reloadLbl: 'Reloaded the page? Pick your my-secret-s.json back',
       fileOk: (pat, ch) => 'Loaded your backup: ' + pat + ' (' + ch + '). You can order now.',
+      keyKept: (pat, ch) => 'Your key is still here (' + pat + ' · ' + ch + ') - switching the language does not touch it. You can place the order.',
       fileBad: 'That file could not be read. Try another one.',
       noCore: 'The key module did not load. Refresh the page and try again.',
       noTier: 'That length has no price yet - pick another length.',
       offlineHint: 'You are offline, so prices are not shown - you can still make the key. Prices appear by themselves once you reconnect.',
-      suggest: 'suggested',
+      suggest: 'suggested', notPriced: 'price not set yet',
       soon: 'this tier has no price yet - not taking orders',
       posSoon: 'not supported yet',
       cantMint: 'The minting machine cannot make this kind yet, so it is not on sale - taking payment without being able to deliver is worse than not selling.',
@@ -310,6 +340,7 @@ const dict = {
       watching: 'Watching that address on-chain...',
       mint4Wait: (d) => 'Waiting for your payment to land - ' + d + ' so far. It usually shows up within a minute of sending; this line changes by itself when it does.',
       mint4WaitLong: (id) => 'Over 10 minutes and no payment seen yet: check that you sent on the chain named above, to that address, that exact amount. If all of it is right, do not send again - send us order number ' + id + ' and we will check the chain.',
+      mint4Part: (got, want, left) => 'Received ' + got + ' USDT so far - ' + left + ' USDT to go (total ' + want + '). Send the rest to the same address; payments are added up, and this line changes by itself once it is complete.',
       mint4Paid: 'Payment received - minting starts now...',
       mint4Run: (d) => 'Minting - running for ' + d,
       mint4RunNote: 'The GPU tries candidates one after another until an address starts or ends with exactly what you asked for. This page asks for progress every 2.5 seconds and this line changes by itself when it is done.',
@@ -335,15 +366,26 @@ const dict = {
       addrMatch: 'Matches the address you bought.',
       addrDiff: (a) => 'Mismatch. We delivered ' + a + ' - do not export; send us a screenshot of this.',
       mergeBad: (want, ch) => 'None of the candidates match your ' + want + ' (' + ch + ') - the b we sent is wrong. Do not export; send us a screenshot of this.',
-      pwLbl: 'Password for the wallet file', pwPh: 'at least 8 characters',
-      ksBtn: 'Export wallet file', plainBtn: 'Export plain private key (not advised)',
+      pwLbl: 'Set a password for the wallet file (at least 8 characters)', pwPh: 'password', pw2Ph: 'type it again',
+      ksBtn: 'Export wallet file',
       pwShort: 'At least 8 characters. Lose this password and the exported file can never be opened.',
-      noSubtle: 'This browser will not allow the crypto API. Use another browser, or the plain export below and keep it safe yourself.',
+      pwDiff: 'The two passwords do not match - type them again.',
+      noSubtle: 'This browser does not allow the encryption the wallet file needs. Open this page in Chrome or Edge and try again.',
       ksWork: 'Encrypting... (deliberately slow, so brute-forcing the password is slow too) ',
-      ksOk: 'Exported: my-keystore.json. In MetaMask: Account - Import account - JSON file - this password.',
-      ksOkTron: 'Exported: my-keystore.json - keep it as your encrypted backup. MetaMask does not support TRON and would only show the 0x form of the same key (the line above). To use it on TRON, click "Export plain private key" below and import it into TronLink (Import wallet - Private key), then delete that file right away.',
+      ksOk: (name, tron) => 'Exported: ' + name + ' (in your downloads folder). ' + (tron
+        ? 'Import into TronLink: Add Wallet - TRON - Import Wallet - Import via Keystore File - pick ' + name + ' - enter the password. '
+        : 'Import into MetaMask: Add account or hardware wallet - Import account - Select type: JSON File - pick ' + name + ' - enter the password. ')
+        + 'Keep the file and the password in separate places - with both, you have your key. A plain-words guide to the file is below.',
       ksFail: 'Encryption failed: ',
-      plainWarn: (tron) => 'Plain private key downloaded (my-key.txt - just the 64-character key). ' + (tron ? 'TronLink: Import wallet - Private key - paste the 64 characters. ' : 'MetaMask: Import account - Private key - paste the 64 characters. ') + 'Anyone who gets this file owns the address - delete it right after importing.',
+      ksGuideHead: 'What is this wallet file? Why does it open without a password? Where is the key? How do I import it? (tap to read)',
+      ksGuide: [
+        ['In one line', 'Wallet file = your private key + a lock. The key to the lock is the password you just set.'],
+        ['Why does it open without a password?', 'The file itself is plain text - anyone can open it and look. What is locked is the private key inside: opening the file only shows the scrambled, locked version, which is useless without the password. Your wallet asks for the password when you import the file.'],
+        ['What are all those lines?', 'address = your address (for TRON it is written in hex starting with 41 - the same address as your T… one, spelled the way TronLink reads it) · ciphertext = your private key, locked · iv, salt = random numbers the lock uses · mac = lets the wallet check the password · kdf, n, r, p = how hard the lock is to force (deliberately slow) · id, version = file number and format version · readme = this explanation. Apart from address, none of those long strings is an address or a key.'],
+        ['Which line is the private key?', 'None of them in plain form - it is locked inside ciphertext. That is exactly what makes the file safe: even if someone gets the file, without the password they cannot take your funds.'],
+        ['How do I import it?', 'Addresses starting with 0x → MetaMask: Add account or hardware wallet - Import account - Select type: JSON File - pick my-keystore.json - enter the password. Addresses starting with T → TronLink: Add Wallet - TRON - Import Wallet - Import via Keystore File - pick my-keystore.txt (TronLink only accepts .txt) - enter the password.'],
+        ['How do I keep it safe?', 'Keep the file and the password in different places (for example the file on a USB stick, the password on paper). With both, you have your key. Lost one of them? Within 30 days of minting you can collect again with my-secret-s.json and the order number, rebuild the key and export a new file.'],
+      ],
 
       s6head: 'Send a receipt',
       s6desc: 'Sign one phrase with the key you just built. The platform does not hold your half, so it could not forge this signature - receiving it means both sides agree the order is delivered.',
@@ -368,9 +410,15 @@ const dict = {
   },
 };
 
-const savedLang = (() => { try { return localStorage.getItem('0xlang'); } catch (e) { return null; } })();
-let lang = savedLang || (typeof navigator !== 'undefined' && navigator.language && navigator.language.toLowerCase().startsWith('zh') ? 'zh' : 'en');
+// LANGEN0X_20260924：DSJ「把网页默认成英文」。原来按浏览器语言挑（中文浏览器看中文），开页时也不套词典 ——
+//   英文访客看到的其实是 index.html 里写死的中文。现在：默认英文；只有点了「中文 / EN」才记住；开页就把整页套成这个语言。
+//   换一个新的键（0xlang2）：以前点过「中文」的人也先看到英文 —— 包括店主自己，不然他看不出默认已经改了。
+const LANG_KEY = '0xlang2';
+let lang = (() => { try { const v = localStorage.getItem(LANG_KEY); return v === 'zh' || v === 'en' ? v : 'en'; } catch (e) { return 'en'; } })();
 const t = (k) => (dict[lang][k] !== undefined ? dict[lang][k] : k);
+// SRVEN0X_20260924：平台下发的字（链名、报错、目录说明）也要跟着语言走。平台给了 xxxEn 就用它；
+//   老平台没给就退回原来那句 —— 宁可显示中文，也不许空着。
+const L = (o, k) => (o && lang === 'en' && typeof o[k + 'En'] === 'string' && o[k + 'En']) ? o[k + 'En'] : (o ? o[k] : undefined);
 const $ = (s) => document.querySelector(s);
 const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
@@ -390,22 +438,61 @@ function liveSwap(o) {
 }
 
 /* ---- 语言切换 ---- */
-function applyLang() {
-  try { localStorage.setItem('0xlang', lang); } catch (e) {}
+// 只换「写死在页面上的字」：开页时跑一次（默认英文靠它），切语言时也跑
+function applyStaticLang() {
   document.documentElement.lang = lang;
   document.querySelectorAll('[data-i18n]').forEach((el) => { el.textContent = t(el.dataset.i18n); });
   document.querySelectorAll('[data-i18n-ph]').forEach((el) => { el.placeholder = t(el.dataset.i18nPh); });
   $('#btnZh').classList.toggle('active', lang === 'zh');
   $('#btnEn').classList.toggle('active', lang === 'en');
+  if (window.KeyCore && window.KeyCore.setLang) window.KeyCore.setLang(lang);   // keycore 的提示（图案不合法之类）跟着换
+  const dr = $('#dlResumeMsg'); if (dr && dr.dataset.order) dr.textContent = t('dlResume')(dr.dataset.order);
+  tickerRestart();
+}
+function applyLang(save) {
+  if (save) { try { localStorage.setItem(LANG_KEY, lang); } catch (e) {} }
+  applyStaticLang();
   renderBoot(true);
   renderCatalog();
   renderTeaser();
   renderOrders();
+  // LANGKEEP0X_20260924：切语言原来会把六步整个重画 —— 造好的钥匙、下到一半的单全清掉，只能回头选文件、输订单号。
+  //   默认英文之后切语言的人会多：手上有进度就接着续（钥匙留在内存里；有订单号就按订单号续到它该在的那一步）。
+  const keepSec = orderState.sec, keepId = orderState.orderId;
   renderSteps();
-  const dr = $('#dlResumeMsg'); if (dr && dr.dataset.order) dr.textContent = t('dlResume')(dr.dataset.order);
+  if (keepId && RESUME) { orderState.sec = keepSec; RESUME(keepId, true); }
+  else if (keepSec && KEEPKEY) KEEPKEY(keepSec);
 }
-$('#btnZh').addEventListener('click', () => { lang = 'zh'; applyLang(); });
-$('#btnEn').addEventListener('click', () => { lang = 'en'; applyLang(); });
+$('#btnZh').addEventListener('click', () => { lang = 'zh'; applyLang(true); });
+$('#btnEn').addEventListener('click', () => { lang = 'en'; applyLang(true); });
+
+/* ---- TICKER0X_20260924：顶栏那一行「打代码」的字 ----
+   DSJ「在网页横梁上做一个像打代码出现的一段字，这段字要一直重复的像打代码那样一直闪出来类似跑马灯一直在跑，
+   写着『我们不骗取用户信任，我们提供证明！』」。一个字一个字打出来 → 停一下 → 退格删掉 → 打下一句，一直循环；
+   主句隔一句出现一次。系统设了「减少动态效果」就只摆主句、不动。页面在后台时不打。 */
+const TICKER = { timer: null, gen: 0 };
+function tickerRestart() {
+  const el = $('#tickerText'); if (!el) return;
+  clearTimeout(TICKER.timer); const gen = ++TICKER.gen;
+  const lines = t('ticker'), order = [0, 1, 0, 2];
+  if (reducedMotion) { el.textContent = lines[0]; return; }
+  let li = 0, i = 0, back = false;
+  const step = () => {
+    if (gen !== TICKER.gen) return;
+    if (document.hidden) { TICKER.timer = setTimeout(step, 700); return; }
+    const txt = lines[order[li % order.length] % lines.length];
+    if (!back) {
+      i += 1; el.textContent = txt.slice(0, i);
+      if (i >= txt.length) { back = true; TICKER.timer = setTimeout(step, 2600); return; }
+      TICKER.timer = setTimeout(step, 34 + Math.floor(Math.random() * 46));
+    } else {
+      i = Math.max(0, i - 3); el.textContent = txt.slice(0, i);
+      if (i === 0) { back = false; li += 1; TICKER.timer = setTimeout(step, 420); return; }
+      TICKER.timer = setTimeout(step, 16);
+    }
+  };
+  el.textContent = ''; step();
+}
 
 /* ---- 开机自举 ---- */
 const bootEl = $('#boot');
@@ -478,31 +565,31 @@ function renderCatalog() {
   }
   // CHAINSEL0X_20260923：两条链分组显示。价目和字母表全部来自后端,前端不留任何一份表。
   const chains = CATALOG.chains || [{ id: 'evm', label: 'EVM', example: '' }];
-  const f2 = dict[lang].flow || {};
+  const f = dict[lang].flow || {};
   body.innerHTML = chains.map((c) => {
     const rows = CATALOG.rows.filter((r) => (r.chain || 'evm') === c.id);
     if (!rows.length) return '';
-    const head = '<tr><td colspan="3" class="chainhead">' + esc(c.label + '  ' + c.example)
+    const head = '<tr><td colspan="3" class="chainhead">' + esc(L(c, 'label') + '  ' + c.example)
       + (c.worksOn && c.worksOn.length > 1 ? '<span class="works">' + esc(c.worksOn.join(' · ')) + '</span>' : '')
       + '</td></tr>';
     return head + rows.map((r) => {
       const priced = r.priceUsdt != null;
       const price = priced ? esc(String(r.priceUsdt))
-        : '<span class="soon">' + esc(f2.notPriced || '待定价')
-          + (r.suggestedUsdt != null ? ' · ' + esc((f2.suggest || '建议') + ' ' + r.suggestedUsdt) : '') + '</span>';
+        : '<span class="soon">' + esc(f.notPriced)
+          + (r.suggestedUsdt != null ? ' · ' + esc(f.suggest + ' ' + r.suggestedUsdt) : '') + '</span>';
       // CATFIELD0X_20260923：后端目录行现在给的是 kindLabel / pinned / mintTimeText。
       //   etaText 按 DSJ 死令【不给客户看期望耗时】已删；slaText 早改名成 mintTimeText。
       //   这里原来还硬写 t('kindPrefix')，后缀档也会被标成「前缀」—— 一起修掉。
       return '<tr' + (priced && r.mintable !== false ? '' : ' class="unpriced"') + '><td class="tier">'
         + esc((r.pattern || '') + '  ')
-        + esc((r.kindLabel || t('kindPrefix')) + ' ' + (r.pinned != null ? r.pinned : r.length) + ' ' + t('digits')) + '</td>'
+        + esc((((lang === 'en' && r.kindLabelEn) || r.kindLabel) || t('kindPrefix')) + ' ' + (r.pinned != null ? r.pinned : r.length) + ' ' + t('digits')) + '</td>'
         + '<td class="price">' + price + '</td>'
         // MINTABLE0X_20260923：定了价但铸造机做不了的,价格照写（DSJ 定的价不动）,耗时那格写明为什么不卖
         + '<td class="eta">' + (r.mintable === false
-            ? '<span class="soon">' + esc(f2.posSoon || '铸造机暂不支持') + '</span>'
-            : esc(r.mintTimeText)) + '</td></tr>';
+            ? '<span class="soon">' + esc(f.posSoon) + '</span>'
+            : esc((lang === 'en' && r.mintTimeTextEn) || r.mintTimeText)) + '</td></tr>';
     }).join('');
-  }).join('') + '<tr><td colspan="3">' + esc(CATALOG.note || t('onlyKinds')(CATALOG.sellableKinds.join(' / '))) + '</td></tr>';
+  }).join('') + '<tr><td colspan="3">' + esc(L(CATALOG, 'note') || t('onlyKinds')(CATALOG.sellableKinds.join(' / '))) + '</td></tr>';
 }
 
 // CALCGONE0X_20260924：这里原来是「Measure-VanityPattern 难度计算器」。它只认 0x（EVM）图案、不认 TRON，
@@ -542,6 +629,7 @@ function forgetOrder(id) {
   try { localStorage.setItem(MY_KEY, JSON.stringify(myOrders().filter((x) => x !== id))); } catch (e) {}
 }
 let RESUME = null;   // 由 wireOrderFlow 挂上（它要用向导里的闭包）
+let KEEPKEY = null;  // 同上：切语言重画之后把内存里的钥匙装回第 1 步（LANGKEEP0X_20260924）
 
 // SENTLOG0X_20260923：这一页发给平台的【每一次】通信都记下来，用人话摆在页面上（「发给平台的全部内容」）。
 //   这里是全页唯一的出网口 —— 页面上别处没有 fetch / XHR / WebSocket（打包闸会扫）。
@@ -609,8 +697,8 @@ function outLine(container, text, cls) {
 // 四个出口共用这一个函数：以后后端再多返回一个字段，只改这一处，不会又只改好其中一个。
 function showApiError(container, res) {
   const b = (res && res.body) || {};
-  outLine(container, (res.code ? 'HTTP ' + res.code + ' ' : '') + (b.error || ''), 'err');
-  if (b.reason) outLine(container, b.reason, 'err');
+  outLine(container, (res.code ? 'HTTP ' + res.code + ' ' : '') + (L(b, 'error') || ''), 'err');
+  if (b.reason) outLine(container, L(b, 'reason'), 'err');
   if (Array.isArray(b.sellableLengths) && b.sellableLengths.length) {
     outLine(container, (lang === 'en' ? 'sellable lengths: ' : '可售位数: ') + b.sellableLengths.join(' / '), 'err');
   }
@@ -624,9 +712,9 @@ function showApiError(container, res) {
    用户得在两个标签页之间来回七趟，中间还要手动复制粘贴 A、SIG、b、回执签名四样东西。
    任何一样贴错、贴漏、贴串行，都表现为后端一句看不懂的报错。
 
-   现在：密钥运算由 js/keycore.js 提供（跟 tool.html 内联的是同一份），
-   页面自己调，用户只用点按钮。s 全程只在这个浏览器的内存里，一个字节都不上传。
-   tool.html 仍然保留 —— 它是「下载下来、断网、离线用」那条路，不是必经之路。
+   现在：密钥运算由 js/keycore.js 提供，页面自己调，用户只用点按钮。s 全程只在这个浏览器的内存里，一个字节都不上传。
+   TOOLRETIRE0X_20260924：tool.html 已经退役（只剩一个把人带回首页的跳转）—— 「下载下来、断网用」就是下载的这一个文件本身；
+   而旧工具页既不在 GitHub 上公开、也没过私钥外发检查，还留着明文私钥导出。
    ──────────────────────────────────────────────────────────────────────── */
 
 const KC = () => window.KeyCore;
@@ -646,7 +734,7 @@ function note(text, cls) {
 
 // MINTLIVE4_20260924：第 4 步那一行「在动的状态」。phase：wait 等到账 / paid 钱到了 / run 正在铸造 / done 铸好了。
 //   每秒刷新一次「已经多久」；到了 done 就停。系统设了「减少动态效果」时，小动画由 CSS 关掉，字照样每秒更新。
-const MINT = { phase: null, since: 0, tick: null };
+const MINT = { phase: null, since: 0, tick: null, got: 0, want: 0 };
 function fmtDur(ms) {
   const x = Math.max(0, Math.floor(ms / 1000)), f = t('flow');
   return f.dur(Math.floor(x / 3600), Math.floor((x % 3600) / 60), x % 60);
@@ -660,7 +748,7 @@ function mintView(phase, opts = {}) {
     const f = t('flow'), el = Date.now() - MINT.since;
     note.className = 'step-desc';
     if (phase === 'wait') {
-      txt.textContent = f.mint4Wait(fmtDur(el));
+      txt.textContent = MINT.got > 0 && MINT.want > MINT.got ? f.mint4Part(MINT.got, MINT.want, Number((MINT.want - MINT.got).toFixed(6))) : f.mint4Wait(fmtDur(el));
       note.hidden = el < 10 * 60 * 1000; note.className = 'step-desc warn'; note.textContent = f.mint4WaitLong(orderState.orderId || '');
     } else if (phase === 'paid') { txt.textContent = f.mint4Paid; note.hidden = true; }
     else if (phase === 'run') { txt.textContent = f.mint4Run(fmtDur(el)); note.hidden = false; note.textContent = f.mint4RunNote; }
@@ -740,10 +828,13 @@ function renderSteps() {
     '<pre class="step-out" id="out5" hidden></pre>' +
     '<div class="flow-ctl" id="ksBox" hidden>' +
       '<span class="lbl">' + esc(f.pwLbl) + '</span>' +
-      '<input type="password" id="ksPw" aria-label="keystore password" placeholder="' + esc(f.pwPh) + '">' +
-      '<button class="run" id="btnKs">' + esc(f.ksBtn) + '</button>' +
-      '<button class="copy" id="btnPlain">' + esc(f.plainBtn) + '</button></div>' +
-    '<div class="step-desc" id="ksMsg"></div>';
+      '<div class="pwrow"><input type="password" id="ksPw" autocomplete="new-password" aria-label="wallet file password" placeholder="' + esc(f.pwPh) + '">' +
+      '<input type="password" id="ksPw2" autocomplete="new-password" aria-label="wallet file password again" placeholder="' + esc(f.pw2Ph) + '"></div>' +
+      '<button class="run" id="btnKs">' + esc(f.ksBtn) + '</button></div>' +
+    '<div class="step-desc" id="ksMsg"></div>' +
+    // KSGUIDE0X_20260924：钱包文件的人话说明 —— 导出之后自动展开（那正是他打开文件、看到一堆字段的时候）
+    '<details class="ksguide" id="ksGuide"><summary>' + esc(f.ksGuideHead) + '</summary><dl>' +
+      f.ksGuide.map((x) => '<dt>' + esc(x[0]) + '</dt><dd>' + esc(x[1]) + '</dd>').join('') + '</dl></details>';
   stepsEl.appendChild(li5);
 
   // ── [6/6] 回执 ──────────────────────────────────────────────────────
@@ -762,7 +853,7 @@ function wireOrderFlow(f) {
   // OFFLINE0X_20260924：断网打开时拿不到 /api/catalog，原来链的选项整排消失、只剩默认 EVM（DSJ 实测）。
   //   造钥匙本来就不需要网，所以链从 keycore 自带的那份取（没有价格，价格联网后再补）。
   const chainList = () => (CATALOG && CATALOG.chains) || (KC() ? Object.keys(KC().CHAINS).map((id) => ({
-    id, label: KC().CHAINS[id].label, example: '', addrLen: KC().CHAINS[id].addrLen, caseSensitive: !KC().CHAINS[id].lower })) : []);
+    id, label: KC().CHAINS[id].label, labelEn: KC().CHAINS[id].labelEn, example: '', addrLen: KC().CHAINS[id].addrLen, caseSensitive: !KC().CHAINS[id].lower })) : []);
   const chainMeta = () => chainList().find((c) => c.id === PICKED) || null;
   const norm = (v) => { const c = chainMeta(); const x = String(v || '').trim();
     return (!c || c.caseSensitive) ? x : x.replace(/^0x/i, '').toLowerCase(); };
@@ -780,6 +871,7 @@ function wireOrderFlow(f) {
   const seedRow = (chain, kind) => (CATALOG && CATALOG.rows || []).find(
     (r) => (r.chain || 'evm') === chain && r.kind === kind && r.orderable) || null;
   function seedInputs() {
+    if (orderState.sec || orderState.orderId) return;   // 钥匙已经造好 / 在续单：图案是定死的，不许被示例覆盖
     const pos = ($('#orderPos') || {}).value || 'prefix';
     const row = seedRow(PICKED, pos); if (!row) return;
     $('#orderPat').value  = pos === 'suffix' ? (row.suffix || '') : (row.prefix || '');
@@ -799,14 +891,15 @@ function wireOrderFlow(f) {
       : row && row.mintable === false ? f.cantMint
       : row && row.priceUsdt == null ? f.soon + (row.suggestedUsdt != null ? '（' + f.suggest + ' ' + row.suggestedUsdt + ' USDT）' : '')
       // PLAINHINT0X_20260923：原来写「大约要试 1,099,511,627,776 次」—— 13 位数字对客户没有任何意义。
-      : row ? f.patOk2(row.priceUsdt, row.mintTimeText || '')
+      : row ? f.patOk2(row.priceUsdt, (lang === 'en' && row.mintTimeTextEn) || row.mintTimeText || '')
       : f.noTier;
   }
   function renderChainPick() {
     const box = $('#chainPick'); const list = chainList(); if (!box || !list.length) return;
     box.innerHTML = list.map((c) =>
       '<button class="chip' + (c.id === PICKED ? ' active' : '') + '" data-chain="' + esc(c.id) + '">'
-      + esc(c.label) + ' <span class="dim">' + esc(c.example) + '</span></button>').join('');
+      + esc(L(c, 'label')) + ' <span class="dim">' + esc(c.example) + '</span></button>').join('');
+    if (orderState.sec || orderState.orderId) box.querySelectorAll('[data-chain]').forEach((b) => { b.disabled = true; });
     box.querySelectorAll('[data-chain]').forEach((b) => b.addEventListener('click', () => {
       PICKED = b.dataset.chain;
       const c = chainMeta();
@@ -1000,7 +1093,10 @@ function wireOrderFlow(f) {
       const st = r.body.status;
       // ORDERSTALE0X_20260924：状态一变，最下面「我的订单」跟着重拉 —— 原来要重新打开页面才变
       if (orderState.lastSeen !== st) { orderState.lastSeen = st; renderOrders(); }
-      if (st === 'created' || st === 'share_uploaded') { if (MINT.phase !== 'wait') mintView('wait', { since: orderState.watchSince || Date.now() }); return; }
+      if (st === 'created' || st === 'share_uploaded') {
+        MINT.got = Number(r.body.receivedUsdt) || 0; MINT.want = Number(r.body.amountUsdt) || 0;   // PARTIALPAY0X：已经收到多少
+        if (MINT.phase !== 'wait') mintView('wait', { since: orderState.watchSince || Date.now() }); return;
+      }
       if (st === 'paid') { if (MINT.phase !== 'paid') mintView('paid'); return; }
       if (st === 'mining') { if (MINT.phase !== 'run') mintView('run', { since: r.body.paidAt || Date.now() }); return; }
       if (st !== 'found' && st !== 'settled') {                  // 过期 / 已退款：停下来说清楚，不再空转
@@ -1077,26 +1173,25 @@ function wireOrderFlow(f) {
     setStatus('delivered');
     if (orderState.receiptChallenge) $('#btnReceipt').disabled = false;
   });
+  // KSONLY0X_20260924：DSJ「拿掉明文文件，专注做好钱包文件就好！」—— 明文私钥导出（my-key.txt）整个拿掉。
+  //   密码输两遍、对上才做；TRON 存成 .txt（TronLink 只收 .txt），address 那一栏写 TronLink 读得懂的 41… 写法（见 keycore.js）。
   $('#btnKs').addEventListener('click', function () {
     if (!MERGED) return;
     const msg = $('#ksMsg');
-    const pw = $('#ksPw').value || '';
+    const pw = $('#ksPw').value || '', pw2 = $('#ksPw2').value || '';
     if (pw.length < 8) { msg.className = 'step-desc warn'; msg.textContent = f.pwShort; return; }
+    if (pw !== pw2) { msg.className = 'step-desc warn'; msg.textContent = f.pwDiff; return; }
     if (!crypto.subtle) { msg.className = 'step-desc warn'; msg.textContent = f.noSubtle; return; }
     const btn = this; btn.disabled = true;
     msg.className = 'step-desc';
     KC().keystore(MERGED.k, MERGED.addr, MERGED.chain, pw, (p) => {
       msg.textContent = f.ksWork + Math.round(p * 100) + '%';
     }).then((ks) => {
-      dl('my-keystore.json', JSON.stringify(ks, null, 2));
-      msg.textContent = MERGED.chain === 'tron' ? f.ksOkTron : f.ksOk; btn.disabled = false;
+      const name = KC().keystoreName(MERGED.chain);
+      dl(name, JSON.stringify(ks, null, 2));
+      msg.className = 'step-desc ok'; msg.textContent = f.ksOk(name, MERGED.chain === 'tron'); btn.disabled = false;
+      const g = $('#ksGuide'); if (g) g.open = true;
     }, (e) => { msg.className = 'step-desc warn'; msg.textContent = f.ksFail + e.message; btn.disabled = false; });
-  });
-  $('#btnPlain').addEventListener('click', () => {
-    if (!MERGED) return;
-    // KEYTXT0X_20260924：原来写 0x + 64 位。TronLink 只收 64 位 0-9a-f（官方说明），多了 0x 就导不进去；MetaMask 两种都收。
-    dl('my-key.txt', KC().pad64(MERGED.k));
-    const msg = $('#ksMsg'); msg.className = 'step-desc warn'; msg.textContent = f.plainWarn(MERGED.chain === 'tron');
   });
 
   // ── [6/6] 回执：一键签 + 提交 ───────────────────────────────────────
@@ -1114,15 +1209,30 @@ function wireOrderFlow(f) {
     setStatus('settled');
   });
 
+  // LANGKEEP0X_20260924：切语言重画之后，把内存里那把钥匙原样装回第 1 步 —— 跟刚造完一样：图案填好、锁住，可以直接下单
+  KEEPKEY = (sec) => {
+    orderState.sec = sec; PICKED = sec.chain;
+    orderState.A = KC().signChallenge(sec.s, 'x').A;
+    const kind = sec.prefix && sec.suffix ? 'both' : (sec.suffix ? 'suffix' : 'prefix');
+    if ($('#orderPos')) $('#orderPos').value = kind;
+    $('#orderPat').value = kind === 'suffix' ? sec.suffix : sec.prefix;
+    if ($('#orderPat2')) { $('#orderPat2').value = sec.suffix || ''; $('#orderPat2').hidden = kind !== 'both'; }
+    stepsEl.querySelectorAll('#chainPick [data-chain]').forEach((b) => { b.classList.toggle('active', b.dataset.chain === PICKED); b.disabled = true; });
+    ['#btnGen', '#orderPos', '#orderPat', '#orderPat2'].forEach((q) => { const e = $(q); if (e) e.disabled = true; });
+    const o1 = $('#out1'); o1.hidden = false; o1.innerHTML = '';
+    outLine(o1, f.keyKept((sec.prefix || '') + (sec.suffix ? '…' + sec.suffix : ''), sec.chain.toUpperCase()), 'ok');
+    $('#btnCreate').disabled = false;
+  };
+
   // ── 续单（RESUME0X_20260923）────────────────────────────────────────
   //   原来页面写着「可以直接关掉，回头在我的订单里找回来」—— 那是假的：订单表点了没反应，
   //   关掉页面之后没有任何办法接着做一张付过钱的单。铸造要一个小时，没人会一直开着页面。
   //   现在：凭订单号恢复到它该在的那一步。钥匙（s）不在服务器上，所以要取货时请他选回备份文件。
-  RESUME = async (id) => {
+  RESUME = async (id, quiet) => {
     id = String(id || '').trim().toLowerCase();
     if (!/^[0-9a-f]{8}$/.test(id)) return f.badId;
     const r = await api('/api/orders/' + id);
-    if (r.code !== 200) return (r.body && r.body.error) || f.noSuchOrder;
+    if (r.code !== 200) return (r.body && L(r.body, 'error')) || f.noSuchOrder;
     const o = r.body;
     const keep = orderState.sec;
     renderSteps();
@@ -1166,7 +1276,7 @@ function wireOrderFlow(f) {
     } else {
       const o3 = $('#out3'); o3.hidden = false; outLine(o3, f.orderClosed(statusLabel(st)), 'err');
     }
-    $('#steps').scrollIntoView({ behavior: reducedMotion ? 'auto' : 'smooth', block: 'start' });
+    if (!quiet) $('#steps').scrollIntoView({ behavior: reducedMotion ? 'auto' : 'smooth', block: 'start' });
     return null;
   };
 
@@ -1330,15 +1440,30 @@ setInterval(tickUtc, 1000);
 const ON_SITE = /(^|\.)0x000000000\.com$/i.test(location.hostname);
 [['#dlGate', !ON_SITE], ['#flowWrap', ON_SITE], ['#secOrders', ON_SITE]].forEach(([sel, hide]) => { const e = $(sel); if (e) e.hidden = hide; });
 document.querySelectorAll('.buildIdCopy').forEach((e) => { e.textContent = ($('#buildId') || {}).textContent || ''; });
-// 老链接（track.html、以前发出去的 #secOrders）和带订单号进来的：网站上的订单区已经撤掉 → 直接带到下载那一块
-if (ON_SITE && (location.hash === '#secOrders' || /[?&]order=/.test(location.search)))
-  setTimeout(() => { const g = $('#secOrder'); if (g) g.scrollIntoView({ block: 'start' }); }, 300);
+// CLEANURL0X_20260924：DSJ「我不喜欢看见这样的域名，后面带着#secOrder。我要很干净的0x000000000.com而已！」
+//   ① 「开始铸造」原来是 <a href="#secOrder">，点一下地址栏就多出 #secOrder —— 改成按钮：只滚动，不碰地址栏。
+//   ② 带着 #… 或 ?order=… 进来的（老链接、track.html 跳过来的）：该用的先读出来，然后把地址栏洗回干净的那一个。
+const START_HASH = location.hash, START_QS = location.search;
+try {
+  if (/^https?:$/.test(location.protocol) && (location.hash || location.search || /\/index\.html$/.test(location.pathname)))
+    history.replaceState(null, '', location.pathname.replace(/\/index\.html$/, '/'));
+} catch (e) {}
+const toOrder = (smooth) => { const g = $('#secOrder'); if (g) g.scrollIntoView({ behavior: smooth && !reducedMotion ? 'smooth' : 'auto', block: 'start' }); };
+{ const b = $('#heroCta'); if (b) b.addEventListener('click', () => toOrder(true)); }
+// PPTNAV0X_20260924：说明书在 0x000000000.com/ppt。下载到电脑上的这一份（file://）要写完整网址、开新窗口 ——
+//   不然点一下就离开了这一页，内存里造好的钥匙和做到一半的单就没了。页脚的 FAQ / 订单查询同理（原来是相对路径，下载版点了是死链）。
+if (!/^https?:$/.test(location.protocol)) {
+  document.querySelectorAll('a[data-site]').forEach((a) => { a.href = 'https://0x000000000.com/' + a.dataset.site; a.target = '_blank'; a.rel = 'noopener'; });
+}
+// 老链接（track.html、以前发出去的 #secOrder / #secOrders）和带订单号进来的：网站上的订单区已经撤掉 → 直接带到下载那一块
+if (ON_SITE && (/^#secOrders?$/.test(START_HASH) || /[?&](order=|track\b)/.test(START_QS))) setTimeout(() => toOrder(false), 300);
+applyStaticLang();
 renderOrders();
 renderSteps();
 renderBoot(false);
 // 带着订单号进来（比如 track.html 跳过来,或者他自己存的链接）就直接续 —— 网站上没有 6 步，就告诉他去下载的那一页续
 try {
-  const q = new URLSearchParams(location.search).get('order');
+  const q = new URLSearchParams(START_QS).get('order');
   const qid = String(q || '').trim().toLowerCase();
   if (q && ON_SITE) { const m = $('#dlResumeMsg'); if (m && /^[0-9a-f]{8}$/.test(qid)) { m.dataset.order = qid; m.textContent = t('dlResume')(qid); } }
   else if (q) setTimeout(() => resumeFrom(q, $('#resumeMsg')), 600);
