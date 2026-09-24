@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256" role="img" aria-label="0x000000000">
+  <!-- LOGO0X_20260924 v2：九零阵（3×3 九个零）+ 正中那个零上叠一个 x（JetBrains Mono 的 x，wght 418.5，转成路径）。
+       x 比金圈大，四条腿各伸出圈外约 6（整张图 256 宽）；x 笔画粗约 7.0，圈线 6.5 —— 全图一种线宽的代码风。
+       x 压住圈的地方切开 2.5 宽的缝，露出底色，看起来是 x 叠在 O 上面。
+       配色取自网站：底 #151a26→#0a0d14、边 #2b3240、零 #e9e5d9、金 #f0d98c→#ebc65c→#c9a227。纯矢量，不依赖字体。 -->
+  <defs>
+    <linearGradient id="tile" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#151a26"/><stop offset="1" stop-color="#0a0d14"/></linearGradient>
+    <linearGradient id="gold" gradientUnits="userSpaceOnUse" x1="0" y1="106.66" x2="0" y2="149.34"><stop offset="0" stop-color="#f0d98c"/><stop offset="0.55" stop-color="#ebc65c"/><stop offset="1" stop-color="#c9a227"/></linearGradient>
+    <radialGradient id="glow" cx="0.5" cy="0.5" r="0.5"><stop offset="0.45" stop-color="#ebc65c" stop-opacity="0.16"/><stop offset="1" stop-color="#ebc65c" stop-opacity="0"/></radialGradient>
+    <mask id="cut" maskUnits="userSpaceOnUse" x="0" y="0" width="256" height="256">
+      <rect width="256" height="256" fill="#fff"/>
+      <path d="M108.5 149.34 123.61 127.37 109.44 106.66H117.92L126.2 119.6Q126.75 120.46 127.26 121.48Q127.76 122.5 128.07 123.13Q128.31 122.5 128.82 121.48Q129.33 120.46 129.87 119.6L138.22 106.66H146.64L132.47 127.44L147.5 149.34H139.01L130.02 135.59Q129.47 134.72 128.97 133.59Q128.46 132.46 128.07 131.76Q127.76 132.46 127.18 133.59Q126.6 134.72 125.98 135.59L116.91 149.34Z" fill="#000" stroke="#000" stroke-width="5" stroke-linejoin="round"/>
+    </mask>
+  </defs>
+  <rect x="6" y="6" width="244" height="244" rx="58" fill="url(#tile)" stroke="#2b3240" stroke-width="3"/>
+  <circle cx="128" cy="128" r="46" fill="url(#glow)"/>
+  <g fill="none" stroke="#e9e5d9" stroke-width="6.5">
+    <circle cx="82" cy="82" r="17"/><circle cx="128" cy="82" r="17"/><circle cx="174" cy="82" r="17"/>
+    <circle cx="82" cy="128" r="17"/><circle cx="174" cy="128" r="17"/>
+    <circle cx="82" cy="174" r="17"/><circle cx="128" cy="174" r="17"/><circle cx="174" cy="174" r="17"/>
+  </g>
+  <circle cx="128" cy="128" r="17" fill="none" stroke="url(#gold)" stroke-width="6.5" mask="url(#cut)"/>
+  <path d="M108.5 149.34 123.61 127.37 109.44 106.66H117.92L126.2 119.6Q126.75 120.46 127.26 121.48Q127.76 122.5 128.07 123.13Q128.31 122.5 128.82 121.48Q129.33 120.46 129.87 119.6L138.22 106.66H146.64L132.47 127.44L147.5 149.34H139.01L130.02 135.59Q129.47 134.72 128.97 133.59Q128.46 132.46 128.07 131.76Q127.76 132.46 127.18 133.59Q126.6 134.72 125.98 135.59L116.91 149.34Z" fill="url(#gold)"/>
+</svg>

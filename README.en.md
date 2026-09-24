@@ -1,3 +1,5 @@
+<p align="center"><img src="logo.svg" width="120" height="120" alt="0x000000000 logo"></p>
+
 # 0x000000000.com page code · published so you can check it
 
 **中文 → [README.md](README.md)**

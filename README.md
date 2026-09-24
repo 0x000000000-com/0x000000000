@@ -1,3 +1,5 @@
+<p align="center"><img src="logo.svg" width="120" height="120" alt="0x000000000 的 logo"></p>
+
 # 0x000000000.com 的页面代码 · 公开核对用
 
 **English → [README.en.md](README.en.md)**
