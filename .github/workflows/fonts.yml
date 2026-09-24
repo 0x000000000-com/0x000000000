@@ -1,0 +1,32 @@
+name: 字体可复现检查
+# 页面里内嵌了两套开源字体（JetBrains Mono、Noto Sans SC，都是 SIL OFL 1.1），只留页面用到的那些字。
+# 这里拿 Google Fonts 官方仓库的原始字体文件（网址钉在固定的提交上），按 src/css/fonts-chars.txt 重新裁一遍，
+# 必须跟 src/css/fonts.css 逐字节相同 —— 证明那一大段字体数据里只有字体，没有夹带别的东西。
+# （页面 0x000000000.html 就是 src/ 按 build-single.mjs 原样拼出来的，那一步在「私钥外发检查」里核对。）
+on:
+  push:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  fonts:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: 下载 Google Fonts 官方仓库里的原始字体，核对指纹
+        run: |
+          mkdir -p /tmp/f
+          curl -fsSL --retry 3 -o "/tmp/f/JetBrainsMono[wght].ttf" https://raw.githubusercontent.com/google/fonts/2e05c1cf00a6e4f40a4b931600a90881c26e15cd/ofl/jetbrainsmono/JetBrainsMono%5Bwght%5D.ttf
+          curl -fsSL --retry 3 -o "/tmp/f/NotoSansSC[wght].ttf" https://raw.githubusercontent.com/google/fonts/2894aab31764f10f29c421bdfd2340d3b382d384/ofl/notosanssc/NotoSansSC%5Bwght%5D.ttf
+          echo "48715a42ec242c21e9f02692891e147d022299a52e48d5e413e1a942193ffeda  /tmp/f/JetBrainsMono[wght].ttf" | sha256sum -c
+          echo "a3041811a78c361b1de50f953c805e0244951c21c5bd412f7232ef0d899af0da  /tmp/f/NotoSansSC[wght].ttf" | sha256sum -c
+      - name: 用 src/build-fonts.py 重新生成，必须跟公开的 src/css/fonts.css 逐字节相同
+        run: |
+          pip install fonttools==4.62.1 brotli==1.2.0
+          cp src/css/fonts.css /tmp/published-fonts.css
+          python src/build-fonts.py "/tmp/f/JetBrainsMono[wght].ttf" "/tmp/f/NotoSansSC[wght].ttf"
+          cmp src/css/fonts.css /tmp/published-fonts.css
+          echo "一致：页面里的字体就是这两套开源字体按 src/css/fonts-chars.txt 裁出来的，没有别的东西"
