@@ -57,7 +57,7 @@ One file, one fingerprint: opened on the website it shows only "Download"; downl
 | Receipt | One signature made with the complete key you built | Deterministic; the platform does not hold your half and could not forge it |
 
 The page **connects nowhere else**. The check also really goes offline: "Make key" completes offline with 0 requests in the meantime; after collecting, "Build my key" and "Export wallet file" complete offline with 0 requests.
-A few more: opened as the website, the file shows only "Download" and no steps; downloaded and opened offline from the start, both TRON and EVM can be chosen and a key can be made; a first-time visitor sees English, and switching to Chinese after making a key keeps the key. The check code is `test/noleak.cjs` — anyone can run it.
+A few more: opened as the website, the file shows only "Download" and no steps; downloaded and opened offline from the start, both TRON and EVM can be chosen and a key can be made — also when the network is down but the browser thinks it is online (requests just hang): the choice is there the moment the page opens, it does not wait for them; a first-time visitor sees English, and switching to Chinese after making a key keeps the key. The check code is `test/noleak.cjs` — anyone can run it.
 
 ## The wallet file (exported in step 5)
 
