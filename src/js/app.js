@@ -956,6 +956,11 @@ function wireOrderFlow(f) {
     }
   }
   const bootOrder = () => { renderChainPick(); renderPayChains(); syncPosOptions(); seedInputs(); refreshHint(); };
+  // OFFLINEHANG0X_20260924：第 1 步不等网。链按钮、位置先按 keycore 自带的那份画出来，目录回来以后下面照原样再画一次。
+  //   原来要等 /api/catalog 有了结果才画：真断网时浏览器马上报错还好，可「网是断的、浏览器以为在线」（NETSYNC0X 那种）时
+  //   请求一直挂着，链按钮一直是空的 —— 选不了 TRON。本机把请求挂住实测：12 秒都没画出来；
+  //   GitHub 上的私钥外发检查也因此红过一次（慢机器上 1.5 秒还没画出来）。付款链不在这里先画：那张表有「看过没有」的判断。
+  renderChainPick(); syncPosOptions(); refreshHint();
   if (CATALOG) bootOrder();
   else { loadCatalog().then(bootOrder).catch(() => { renderChainPick(); renderPayChains(); syncPosOptions(); refreshHint(); }); }
   // NETSYNC0X_20260924：断网打开的页面，一开始拿不到两样东西 —— 目录（付款链、价格、能不能铸）和「真收款还是原型」。
