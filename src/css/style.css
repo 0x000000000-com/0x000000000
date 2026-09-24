@@ -8,15 +8,22 @@
   --text:#e9e5d9; --dim:#9aa0ab; --faint:#5d6470;
   --gold:#c9a227; --gold-b:#ebc65c; --gold-d:#8f6f1a;
   --up:#2fbf8f; --down:#e5484d; --warn:#e8a13c; --info:#6aa9ff;
-  --sans:system-ui,"PingFang SC","Microsoft YaHei","Noto Sans SC",sans-serif;
-  --mono:"Cascadia Mono",Consolas,"Courier New",ui-monospace,monospace;
+  /* FONTS0X_20260924：DSJ「把网页的字体全部换成代码风，中英文数字也要代码风感字体」。
+     全站只有一套字：「0x Mono」= JetBrains Mono（英文 / 数字 / 符号）+ Noto Sans SC（中文，每个字占正好两格，
+     跟终端里一样对齐）。两个都是 SIL OFL 开源字体，裁成页面用到的字、内嵌在 fonts.css 里 —— 断网打开也是这套字。
+     --sans 留着这个名字只是为了不动几十处引用：它现在也是代码字。 */
+  --mono:"0x Mono","JetBrains Mono",ui-monospace,"Cascadia Mono",Consolas,"Sarasa Mono SC","Noto Sans Mono CJK SC",monospace;
+  --sans:var(--mono);
   --metal-text:linear-gradient(180deg,#f0d98c,#c9a227 55%,#8f6f1a);
 }
 *{box-sizing:border-box}
+/* HIDDEN0X_20260924：带 hidden 的元素一律不显示。原来 .mint-live 这类写了 display:flex 的，hidden 盖不住它（作者样式赢过浏览器默认） */
+[hidden]{display:none!important}
 html{-webkit-text-size-adjust:100%}
 html,body{margin:0;padding:0}
-body{background:var(--bg0);color:var(--text);font-family:var(--sans);font-size:15px;line-height:1.65;
-     padding:24px 16px 64px}
+body{background:var(--bg0);color:var(--text);font-family:var(--sans);font-size:14px;line-height:1.7;
+     font-variant-ligatures:none;padding:24px 16px 64px}
+button,input,select,textarea{font-family:inherit}
 body::before,body::after{content:none}
 
 /* 终端皮肤的三件套：星空 / 开机字 / 光标行 —— 这次要的就是没有它们 */
@@ -48,7 +55,8 @@ body::before,body::after{content:none}
   background:var(--metal-text);-webkit-background-clip:text;background-clip:text;color:transparent}
 .gs-item.cta{display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#ebc65c,#c9a227);
   border-color:var(--gold-d);min-width:0;padding:0}
-.gs-item.cta a{display:block;padding:14px 22px;color:#1a1405;font-weight:700;font-size:14px;text-decoration:none;white-space:nowrap}
+.gs-item.cta a,.gs-item.cta button{display:block;padding:14px 22px;color:#1a1405;font-weight:700;font-size:14px;text-decoration:none;white-space:nowrap;
+  background:transparent;border:0;font-family:var(--mono);cursor:pointer;width:100%}
 .gs-item.cta:hover{filter:brightness(1.08)}
 
 /* ── 每个 section 变成一张卡 ── */
@@ -232,7 +240,19 @@ tr.unpriced td{opacity:.72}
 .sentgh .proof-links a { color: var(--gold-b); }
 .sentraw { margin-top: 8px; }
 .sentraw > summary { cursor: pointer; opacity: .75; font-size: 12px; }
-#ksBox .copy { margin-left: 10px; }
+/* KSONLY0X_20260924：钱包文件只剩一种导出 —— 密码输两遍 + 人话说明 */
+#ksBox .pwrow { display: flex; flex-wrap: wrap; gap: 8px; }
+#ksBox .pwrow input { flex: 1 1 220px; width: auto; min-width: 0; }
+.step-desc.ok { color: var(--up); }
+.ksguide { margin: 10px 0 2px; border: 1px solid var(--line2); border-radius: 8px; background: #0a0d14; font-size: 12.5px; }
+.ksguide > summary { cursor: pointer; padding: 9px 12px; color: var(--gold-b); list-style: none; }
+.ksguide > summary::-webkit-details-marker { display: none; }
+.ksguide > summary::before { content: "▸ "; color: var(--gold-d); }
+.ksguide[open] > summary::before { content: "▾ "; }
+.ksguide dl { margin: 0; padding: 0 12px 10px; }
+.ksguide dt { color: var(--text); font-weight: 600; margin-top: 8px; }
+.ksguide dt::before { content: "# "; color: var(--gold-d); }
+.ksguide dd { margin: 2px 0 0; color: var(--dim); line-height: 1.7; }
 
 /* MINTLIVE4_20260924：第 4 步那一行在动的状态 —— 等到账（蓝）→ 正在铸造（金）→ 铸好了（绿，停住）。
    系统设了「减少动态效果」就不跳，字照样每秒更新。 */
@@ -248,3 +268,29 @@ tr.unpriced td{opacity:.72}
 .mint-live.done .mint-anim{display:none}
 @keyframes mintdot{0%,80%,100%{opacity:.25;transform:scale(.85)}40%{opacity:1;transform:scale(1.2)}}
 @media (prefers-reduced-motion: reduce){.mint-anim i{animation:none;opacity:.85}}
+
+/* PPTNAV0X_20260924：顶栏导航 → /ppt（6 步说明书）。代码风：像一个可以点的命令 */
+.topnav{display:flex;align-items:center}
+.topnav a{font-size:12px;color:var(--gold-b);text-decoration:none;border:1px solid var(--gold-d);border-radius:6px;
+  padding:3px 10px;background:rgba(201,162,39,.08);white-space:nowrap}
+.topnav a::before{content:"▶ ";font-size:10px;color:var(--gold-d)}
+.topnav a:hover{background:rgba(201,162,39,.16)}
+.topnav a:focus-visible{outline:2px solid var(--gold-b);outline-offset:2px}
+
+/* TICKER0X_20260924：横梁上那一行一直在「打代码」的字。高度按最长那句预留好（桌面 1 行、手机 3 行），打字、删字时下面的内容不跳。 */
+.ticker{display:block;margin:-10px 0 22px;padding:8px 12px;border:1px solid var(--line);
+  border-radius:8px;background:linear-gradient(90deg,rgba(47,191,143,.07),rgba(10,13,20,.6) 60%);
+  font-size:13px;line-height:1.55;color:var(--up);min-height:calc(1.55em * 1 + 18px)}
+.ticker .tk-pre{color:var(--gold-b);margin-right:8px}
+.ticker .tk-caret{display:inline-block;width:.6em;height:1.1em;vertical-align:-.18em;margin-left:1px;background:var(--up);animation:tkblink 1s steps(1) infinite}
+@keyframes tkblink{50%{opacity:0}}
+@media (prefers-reduced-motion: reduce){.ticker .tk-caret{animation:none;opacity:.7}}
+@media (max-width:940px){.ticker{min-height:calc(1.55em * 2 + 18px)}}
+.sr-only{position:absolute!important;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+
+@media (max-width:640px){
+  .titlebar{flex-wrap:wrap;row-gap:8px}
+  .topnav{order:5;flex:1 1 100%}
+  .ticker{font-size:12px;margin-top:-8px;min-height:calc(1.55em * 2 + 18px)}
+}
+@media (max-width:360px){.ticker{min-height:calc(1.55em * 3 + 18px)}}
