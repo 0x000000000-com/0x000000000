@@ -1,4 +1,7 @@
-name: 线上页面指纹巡检
+name: Live page tamper patrol · 线上页面指纹巡检
+# Every hour: download the home page, the "download the minting page" copy and the /ppt explainer from 0x000000000.com and compare them
+# with the fingerprints published here. Any mismatch turns red - the site is not serving what is published here.
+# This check runs on GitHub machines; the platform cannot touch it.
 # 每小时一次：到 0x000000000.com 下载网站首页、「下载铸造页面」那一份、说明书 /ppt，跟这个仓库里公开的指纹比。
 # 不一致就变红 —— 说明网站上跑的不是这里公开的这一份。这个检查在 GitHub 的机器上跑，平台插不上手。
 on:
@@ -12,17 +15,17 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: 下载线上页面，跟公开版本比指纹
+      - name: Download the live pages and compare fingerprints with the published ones · 下载线上页面，跟公开版本比指纹
         run: |
           bad=0
           check() {
             want=$(awk -v f="$2" '$2==f{print $1}' SHA256SUMS)
             got=$(curl -fsSL --retry 3 --retry-delay 5 -H 'Cache-Control: no-cache' "$1" | sha256sum | cut -d' ' -f1)
-            echo "$1  ->  $got（公开的 $2：$want）"
-            if [ -z "$want" ] || [ "$got" != "$want" ]; then echo "::error::线上这一份跟公开版本不一致：$1"; bad=1; fi
+            echo "$1  ->  $got  (published $2 / 公开的 $2: $want)"
+            if [ -z "$want" ] || [ "$got" != "$want" ]; then echo "::error::Live page differs from the published version / 线上这一份跟公开版本不一致: $1"; bad=1; fi
           }
           check "https://0x000000000.com/" 0x000000000.html
           check "https://0x000000000.com/0x000000000.html" 0x000000000.html
           check "https://0x000000000.com/ppt" ppt.html
-          if [ $bad -eq 0 ]; then echo "一致：网站上跑的就是这里公开的这几份"; fi
+          if [ $bad -eq 0 ]; then echo "Match: the site serves exactly the files published here · 一致：网站上跑的就是这里公开的这几份"; fi
           exit $bad

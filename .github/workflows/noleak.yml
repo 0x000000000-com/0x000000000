@@ -1,4 +1,5 @@
-name: 私钥外发检查
+name: Private-key leak check · 私钥外发检查
+# Runs on every new version (push), and again every Monday so the check does not stop when nobody pushes.
 # 每次有新版本（推送）都跑；每周一再跑一次，免得「没人推送就没人查」。
 on:
   push:
@@ -15,17 +16,17 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-      - name: 用 src/ 里的源码重新构建一遍，必须跟公开的文件逐字节相同
+      - name: Rebuild from src/ - must equal the published file byte for byte · 用 src/ 里的源码重新构建一遍，必须跟公开的文件逐字节相同
         run: |
           node src/build-single.mjs src /tmp/rebuilt.html
           sha256sum -c SHA256SUMS
           cmp /tmp/rebuilt.html 0x000000000.html
-          echo "从源码重新构建出来的文件，跟公开的这份一模一样"
-      - name: 装真浏览器
+          echo "Rebuilt from source: identical to the published file · 从源码重新构建出来的文件，跟公开的这份一模一样"
+      - name: Install a real browser · 装真浏览器
         working-directory: test
         run: |
           npm install --no-audit --no-fund
           npx playwright install --with-deps chromium
-      - name: 用真浏览器走完 6 步，逐个核对页面发出去的每一个请求
+      - name: Walk all 6 steps in a real browser and check every request the page sends · 用真浏览器走完 6 步，逐个核对页面发出去的每一个请求
         working-directory: test
         run: node noleak.cjs ../0x000000000.html ./mock-platform.mjs ./node_modules
