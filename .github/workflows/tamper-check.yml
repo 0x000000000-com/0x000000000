@@ -1,5 +1,5 @@
 name: 线上页面指纹巡检
-# 每小时一次：到 0x000000000.com 下载网站首页和「下载这个页面」那一份，跟这个仓库里公开的指纹比。
+# 每小时一次：到 0x000000000.com 下载网站首页、「下载铸造页面」那一份、说明书 /ppt，跟这个仓库里公开的指纹比。
 # 不一致就变红 —— 说明网站上跑的不是这里公开的这一份。这个检查在 GitHub 的机器上跑，平台插不上手。
 on:
   schedule:
@@ -14,13 +14,15 @@ jobs:
       - uses: actions/checkout@v4
       - name: 下载线上页面，跟公开版本比指纹
         run: |
-          want=$(awk '$2=="0x000000000.html"{print $1}' SHA256SUMS)
-          echo "公开版本的指纹：$want"
           bad=0
-          for url in "https://0x000000000.com/" "https://0x000000000.com/0x000000000.html"; do
-            got=$(curl -fsSL --retry 3 --retry-delay 5 -H 'Cache-Control: no-cache' "$url" | sha256sum | cut -d' ' -f1)
-            echo "$url  ->  $got"
-            if [ "$got" != "$want" ]; then echo "::error::线上这一份跟公开版本不一致：$url"; bad=1; fi
-          done
-          if [ $bad -eq 0 ]; then echo "一致：网站上跑的就是这里公开的这一份"; fi
+          check() {
+            want=$(awk -v f="$2" '$2==f{print $1}' SHA256SUMS)
+            got=$(curl -fsSL --retry 3 --retry-delay 5 -H 'Cache-Control: no-cache' "$1" | sha256sum | cut -d' ' -f1)
+            echo "$1  ->  $got（公开的 $2：$want）"
+            if [ -z "$want" ] || [ "$got" != "$want" ]; then echo "::error::线上这一份跟公开版本不一致：$1"; bad=1; fi
+          }
+          check "https://0x000000000.com/" 0x000000000.html
+          check "https://0x000000000.com/0x000000000.html" 0x000000000.html
+          check "https://0x000000000.com/ppt" ppt.html
+          if [ $bad -eq 0 ]; then echo "一致：网站上跑的就是这里公开的这几份"; fi
           exit $bad
