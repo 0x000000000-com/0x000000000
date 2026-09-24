@@ -1,4 +1,6 @@
-name: Live page tamper patrol · 线上页面指纹巡检
+name: Live page tamper patrol
+# The name is English only: GitHub badges size the label for Latin letters and cover the last Chinese characters with "passing".
+# 名字只用英文：GitHub 徽章按英文字母算宽度，中文最后一两个字会被「passing」盖住（20260924 实测，原来的中文徽章也是这样）。中文名写在 README.zh-CN.md 徽章旁边。
 # Every hour: download the home page, the "download the minting page" copy and the /ppt explainer from 0x000000000.com and compare them
 # with the fingerprints published here. Any mismatch turns red - the site is not serving what is published here.
 # This check runs on GitHub machines; the platform cannot touch it.

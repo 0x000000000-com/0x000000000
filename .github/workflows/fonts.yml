@@ -1,4 +1,6 @@
-name: Font rebuild check · 字体可复现检查
+name: Font rebuild check
+# The name is English only: GitHub badges size the label for Latin letters and cover the last Chinese characters with "passing".
+# 名字只用英文：GitHub 徽章按英文字母算宽度，中文最后一两个字会被「passing」盖住（20260924 实测，原来的中文徽章也是这样）。中文名写在 README.zh-CN.md 徽章旁边。
 # The page embeds two open-source fonts (JetBrains Mono, Noto Sans SC, both SIL OFL 1.1), cut down to the characters the page uses.
 # This rebuilds them from the original font files in the official Google Fonts repository (URLs pinned to fixed commits)
 # using src/css/fonts-chars.txt; the result must equal src/css/fonts.css byte for byte - so that large block of font data
