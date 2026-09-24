@@ -128,9 +128,20 @@ const dict = {
       payNote: '每一单的收款地址都不一样，我们靠地址认单，所以别用别的单子的地址。转完这一页会自己往下走，不用刷新；也可以直接关掉，回头在下面「我的订单」里找回来。',
       paying: '正在模拟到账…', payingLive: '正在盯这个地址（每 2.5 秒看一眼）…',
       watching: '开始盯链上这个地址…',
-      stPaidWait: '钱收到了，正在排队等机器', stMining: '钱收到了，机器正在做',
+      // MINTLIVE4_20260924：DSJ「虽然有说我们开做，但是也放个显示正在铸造的一个小动态让用户更直观……不然用户会一直在等，
+      //   会让用户感觉付了钱但是没反应」。第 4 步原来只在状态变的那一下印一行字，之后一直不动。现在一直有一行在动的状态：
+      //   等到账（等了多久）→ 钱到了 → 正在铸造（算了多久）→ 铸好了。只报「已经多久」，不报「还要多久」。
+      mint4Wait: (d) => '等你的付款到账 · 已经等了 ' + d + '。转完一般 1 分钟内会看到，到了这一行会自己变。',
+      mint4WaitLong: (id) => '超过 10 分钟还没看到到账：先核对转的是不是上面那条链、那个地址、那个金额。都对的话先别再转，把订单号 ' + id + ' 发给我们，我们去链上查。',
+      mint4Paid: '钱收到了，马上开始铸造…',
+      mint4Run: (d) => '正在铸造 · 已经算了 ' + d,
+      mint4RunNote: '显卡正在一个一个地试，试到开头或结尾正好是你要的那串为止。这一页每 2.5 秒问一次进度，铸好了这一行会自己变。',
+      mint4Done: (d) => '铸好了' + (d ? '（这一单算了 ' + d + '）' : '') + ' ✓',
+      mint4Next: '往下到第 5 步取货。',
+      dur: (h, m, sec) => (h ? h + ' 小时 ' + String(m).padStart(2, '0') + ' 分' : (m ? m + ' 分 ' + String(sec).padStart(2, '0') + ' 秒' : sec + ' 秒')),
+      payConfirmN: (n) => '到账后要等 ' + n + ' 个确认。',
 
-      s4head: '我们开做',
+      s4head: '我们正在开始铸造',
       s4desc: '我们拿着你的影子 A 一直试，直到试出一个地址，它的开头或结尾正好是你要的那串。整个过程我们手上只有 A，做不出你的私钥。',
       net4: '🌐 保持联网，这一页先别关。为什么：平台的显卡正在替你算，这一页每隔几秒问一次进度。关掉也不要紧，回头在最下面用订单号接着做。',
       mineHit: '做出来了：', readyToTake: '可以取货了。',
@@ -297,9 +308,17 @@ const dict = {
       payNote: 'Every order gets its own address and that is how we match payments, so never reuse another order\'s address. The page moves on by itself - no refresh needed. You can also close it and come back through "My orders" below.',
       paying: 'Simulating payment...', payingLive: 'Watching that address (every 2.5s)...',
       watching: 'Watching that address on-chain...',
-      stPaidWait: 'Paid - queued for a machine', stMining: 'Paid - the machine is working',
+      mint4Wait: (d) => 'Waiting for your payment to land - ' + d + ' so far. It usually shows up within a minute of sending; this line changes by itself when it does.',
+      mint4WaitLong: (id) => 'Over 10 minutes and no payment seen yet: check that you sent on the chain named above, to that address, that exact amount. If all of it is right, do not send again - send us order number ' + id + ' and we will check the chain.',
+      mint4Paid: 'Payment received - minting starts now...',
+      mint4Run: (d) => 'Minting - running for ' + d,
+      mint4RunNote: 'The GPU tries candidates one after another until an address starts or ends with exactly what you asked for. This page asks for progress every 2.5 seconds and this line changes by itself when it is done.',
+      mint4Done: (d) => 'Minted' + (d ? ' (this order took ' + d + ')' : '') + ' ✓',
+      mint4Next: 'Go down to step 5 to collect it.',
+      dur: (h, m, sec) => (h ? h + 'h ' + String(m).padStart(2, '0') + 'm' : (m ? m + 'm ' + String(sec).padStart(2, '0') + 's' : sec + 's')),
+      payConfirmN: (n) => 'After it lands it needs ' + n + ' confirmations.',
 
-      s4head: 'We do the work',
+      s4head: 'We are starting to mint',
       s4desc: 'We take your shadow A and keep trying until an address turns up whose start or end is exactly what you asked for. All we hold throughout is A, which cannot produce your private key.',
       net4: '🌐 Stay online and keep this page open. Why: the platform GPUs are working on your address, and this page asks for progress every few seconds. Closing it is fine - continue later with the order number at the bottom.',
       mineHit: 'Found: ', readyToTake: 'Ready to collect.',
@@ -625,12 +644,45 @@ function note(text, cls) {
   return '<div class="step-desc' + (cls ? ' ' + cls : '') + '">' + esc(text) + '</div>';
 }
 
+// MINTLIVE4_20260924：第 4 步那一行「在动的状态」。phase：wait 等到账 / paid 钱到了 / run 正在铸造 / done 铸好了。
+//   每秒刷新一次「已经多久」；到了 done 就停。系统设了「减少动态效果」时，小动画由 CSS 关掉，字照样每秒更新。
+const MINT = { phase: null, since: 0, tick: null };
+function fmtDur(ms) {
+  const x = Math.max(0, Math.floor(ms / 1000)), f = t('flow');
+  return f.dur(Math.floor(x / 3600), Math.floor((x % 3600) / 60), x % 60);
+}
+function mintView(phase, opts = {}) {
+  const box = $('#mintLive'), txt = $('#mintText'), note = $('#mintNote');
+  if (!box || !txt || !note) return;
+  if (phase !== MINT.phase) { MINT.phase = phase; MINT.since = opts.since || Date.now(); }
+  box.hidden = false; box.className = 'mint-live ' + phase;
+  const draw = () => {
+    const f = t('flow'), el = Date.now() - MINT.since;
+    note.className = 'step-desc';
+    if (phase === 'wait') {
+      txt.textContent = f.mint4Wait(fmtDur(el));
+      note.hidden = el < 10 * 60 * 1000; note.className = 'step-desc warn'; note.textContent = f.mint4WaitLong(orderState.orderId || '');
+    } else if (phase === 'paid') { txt.textContent = f.mint4Paid; note.hidden = true; }
+    else if (phase === 'run') { txt.textContent = f.mint4Run(fmtDur(el)); note.hidden = false; note.textContent = f.mint4RunNote; }
+    else { txt.textContent = f.mint4Done(opts.took ? fmtDur(opts.took) : ''); note.hidden = false; note.textContent = f.mint4Next; }
+  };
+  draw();
+  clearInterval(MINT.tick); MINT.tick = null;
+  if (phase === 'wait' || phase === 'run') MINT.tick = setInterval(draw, 1000);
+}
+function mintStop() {
+  clearInterval(MINT.tick); MINT.tick = null; MINT.phase = null;
+  const b = $('#mintLive'), n = $('#mintNote'); if (b) b.hidden = true; if (n) n.hidden = true;
+}
+
 function renderSteps() {
   const f = t('flow');
   stepsEl.innerHTML = '';
   if (orderState.poll) { clearInterval(orderState.poll); orderState.poll = null; }
   orderState.orderId = null; orderState.challenge = null; orderState.A = null;
   orderState.b = null; orderState.address = null; orderState.sec = null;
+  orderState.lastSeen = null; orderState.watchSince = 0;
+  mintStop();
 
   // ── [1/6] 造钥匙 ────────────────────────────────────────────────────
   const li1 = stepBox(1, f.s1head, f.s1desc, f.net1);
@@ -673,7 +725,11 @@ function renderSteps() {
 
   // ── [4/6] 铸造 ──────────────────────────────────────────────────────
   const li4 = stepBox(4, f.s4head, f.s4desc, f.net4);
-  li4.innerHTML += '<pre class="step-out" id="out4" hidden></pre>';
+  // MINTLIVE4_20260924：一直在动的那一行（等到账 / 正在铸造），外加一句说明
+  li4.innerHTML += '<div class="mint-live" id="mintLive" hidden><span class="mint-anim" aria-hidden="true"><i></i><i></i><i></i></span>' +
+    '<span class="mint-text" id="mintText" role="status" aria-live="polite"></span></div>' +
+    '<div class="step-desc" id="mintNote" hidden></div>' +
+    '<pre class="step-out" id="out4" hidden></pre>';
   stepsEl.appendChild(li4);
 
   // ── [5/6] 取货 + 当场合成 ───────────────────────────────────────────
@@ -784,7 +840,8 @@ function wireOrderFlow(f) {
     const note = () => {
       if (!CATALOG) { $('#payChainNote').textContent = f.payChainOffline; return; }
       const c = list.find((x) => x.id === sel.value) || list[0];
-      $('#payChainNote').textContent = c ? (c.note + ' 到账后要等 ' + c.confirmations + ' 个确认。') : '';
+      // PAYNOTEEN0X_20260924：说明按语言取（平台两种都下发），「要等几个确认」进词典 —— 原来英文界面也是整句中文
+      $('#payChainNote').textContent = c ? (((lang === 'en' && c.noteEn) ? c.noteEn : c.note) + ' ' + f.payConfirmN(c.confirmations)) : '';
     };
     sel.onchange = () => { payNeedsLook = false; note(); }; note();
   }
@@ -821,7 +878,18 @@ function wireOrderFlow(f) {
   let syncing = null;
   const sync = () => (CATALOG && HEALTH_OK) ? Promise.resolve() : (syncing || (syncing = (async () => {
     if (!HEALTH_OK && onHealth(await api('/api/health'))) liveStep3();
-    if (!CATALOG) { await loadCatalog(); if (CATALOG) { renderPayChains(); syncPosOptions(); refreshHint(); if (!orderState.sec) renderChainPick(); } }
+    if (!CATALOG) {
+      await loadCatalog();
+      if (CATALOG) {
+        if (!orderState.sec) renderChainPick();
+        renderPayChains(); syncPosOptions();
+        // NETSYNCALL0X_20260924：整页对照抓到的 —— 在线打开的那份会先填一个示例图案并报价，断网打开的这份补拿之后没填，
+        //   第 1 步一直挂着一句橙色的「前缀和后缀都是空的」。他还没输图案、还没造钥匙的话，填上同一个示例。
+        if (!orderState.sec) { const { pre, suf } = readPat(); if (!pre && !suf) seedInputs(); }
+        refreshHint();
+      }
+    }
+    if (CATALOG || HEALTH_OK) ordersRetry();          // NETSYNCALL0X：网回来了，「我的订单」上次查不到的话也重查
   })().catch(() => {}).finally(() => { syncing = null; })));
   window.ononline = () => { sync(); };
   const li2 = $('#btnCreate') && $('#btnCreate').closest('li');
@@ -929,12 +997,15 @@ function wireOrderFlow(f) {
   const pollStatus = () => {
     api('/api/orders/' + orderState.orderId).then((r) => {
       if (r.code !== 200) return;
-      if (r.body.status !== 'found') {
-        const msg = r.body.status === 'mining' ? f.stMining : (r.body.status === 'paid' ? f.stPaidWait : null);
-        if (msg && orderState.lastSeen !== r.body.status) {
-          orderState.lastSeen = r.body.status;
-          outLine($('#out4'), msg, 'ok'); $('#out4').hidden = false;
-        }
+      const st = r.body.status;
+      // ORDERSTALE0X_20260924：状态一变，最下面「我的订单」跟着重拉 —— 原来要重新打开页面才变
+      if (orderState.lastSeen !== st) { orderState.lastSeen = st; renderOrders(); }
+      if (st === 'created' || st === 'share_uploaded') { if (MINT.phase !== 'wait') mintView('wait', { since: orderState.watchSince || Date.now() }); return; }
+      if (st === 'paid') { if (MINT.phase !== 'paid') mintView('paid'); return; }
+      if (st === 'mining') { if (MINT.phase !== 'run') mintView('run', { since: r.body.paidAt || Date.now() }); return; }
+      if (st !== 'found' && st !== 'settled') {                  // 过期 / 已退款：停下来说清楚，不再空转
+        if (orderState.poll) { clearInterval(orderState.poll); orderState.poll = null; }
+        mintStop(); const o4 = $('#out4'); o4.hidden = false; outLine(o4, f.orderClosed(statusLabel(st)), 'err');
         return;
       }
       if (orderState.poll) { clearInterval(orderState.poll); orderState.poll = null; }
@@ -942,6 +1013,8 @@ function wireOrderFlow(f) {
       setStatus('paid');
       orderState.challenge = r.body.challenge || orderState.challenge;
       orderState.receiptChallenge = r.body.receiptChallenge || null;
+      // 「这一单算了多久」只在这一页亲眼看着它从「正在铸造」变过来时才报 —— 隔了几个小时回来看，那不是铸造用的时间
+      mintView('done', { took: MINT.phase === 'run' ? Date.now() - MINT.since : 0 });
       const out4 = $('#out4'); out4.hidden = false; out4.innerHTML = '';
       outLine(out4, f.mineHit + r.body.foundAddress, 'ok');
       outLine(out4, f.readyToTake, 'ok');
@@ -953,6 +1026,7 @@ function wireOrderFlow(f) {
     if (IS_LIVE) {
       outLine(out, f.payingLive, 'dim');
       $('#btnPay').disabled = true;
+      orderState.watchSince = Date.now(); mintView('wait', { since: orderState.watchSince });
       if (!orderState.poll) orderState.poll = setInterval(pollStatus, 2500);
       return;
     }
@@ -1081,8 +1155,10 @@ function wireOrderFlow(f) {
     } else if (st === 'paid' || st === 'mining') {
       await showPayment(); $('#btnPay').disabled = true;
       const o3 = $('#out3'); o3.hidden = false; outLine(o3, f.watchingAgain, 'dim');
+      mintView(st === 'paid' ? 'paid' : 'run', { since: o.paidAt || Date.now() });
       if (!orderState.poll) orderState.poll = setInterval(pollStatus, 2500);
     } else if (st === 'found' || st === 'settled') {
+      mintView('done');
       const o4 = $('#out4'); o4.hidden = false;
       if (o.foundAddress) outLine(o4, f.mineHit + o.foundAddress, 'ok');
       outLine(o4, f.readyToTake, 'ok');
@@ -1107,6 +1183,18 @@ function wireOrderFlow(f) {
 }
 
 /* ---- 我的订单（优先真后端, 失败回退 mock） ---- */
+// NETSYNCALL0X_20260924：「我的订单」是这一页开机时向平台要的第三样东西（前两样是付款方式、真收款还是原型）。
+//   断网打开时它显示「查不到」，原来联网之后不会自己再查。现在：联网信号、回到这个窗口、点到订单那一块、
+//   第 2 步补拿成功 —— 只要上一次是「查不到」就重查一次（3 秒内不重复）。
+let ORDERS_DOWN = false, ordersRetryAt = 0;
+function ordersRetry() {
+  if (!ORDERS_DOWN || Date.now() - ordersRetryAt < 3000) return;
+  ordersRetryAt = Date.now(); renderOrders();
+}
+window.addEventListener('online', ordersRetry);
+window.addEventListener('focus', ordersRetry);
+document.addEventListener('visibilitychange', () => { if (!document.hidden) ordersRetry(); });
+{ const so = document.getElementById('secOrders'); if (so) { so.addEventListener('pointerdown', ordersRetry, true); so.addEventListener('focusin', ordersRetry, true); } }
 async function renderOrders() {
   // NOMOCK0X / MYORDERS0X_20260923：只列这个浏览器下过的单,逐张按订单号查；
   //   取不到就如实说,不编假单。每一行都能「接着做」—— 关了页面回来就从这里续。
@@ -1120,8 +1208,10 @@ async function renderOrders() {
       .catch(() => undefined)));
   } catch (e) { rows = []; }
   if (rows.some((x) => x === undefined) && !rows.some((x) => x)) {
+    ORDERS_DOWN = true;
     body.innerHTML = '<tr><td colspan="5">' + esc(t('ordersDown')) + '</td></tr>'; return;
   }
+  ORDERS_DOWN = false;
   const live = rows.filter(Boolean);
   if (!live.length) { body.innerHTML = '<tr><td colspan="5">' + esc(t('ordersEmpty')) + '</td></tr>'; return; }
   body.innerHTML = live.map((o) =>
