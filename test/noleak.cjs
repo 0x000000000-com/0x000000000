@@ -305,7 +305,11 @@ async function ui(browser) {
       nav: (document.querySelector('#navPpt') || {}).href, navT: (document.querySelector('#navPpt') || {}).target,
       font: getComputedStyle(document.body).fontFamily,
       faces: [...document.fonts].filter((f) => f.family.replace(/"/g, '') === '0x Mono').map((f) => f.status),
-      t1: (document.querySelector('#tickerText') || {}).textContent }));
+      t1: (document.querySelector('#tickerText') || {}).textContent,
+      // LOGO0X_20260924：标签页图标和页面上的 logo 都是内嵌的（data:），不多取一个文件
+      icons: [...document.querySelectorAll('link[rel~="icon"]')].map((l) => l.getAttribute('href').slice(0, 19)),
+      logo: ['.titlebar .logo-mark', '.hero-id .logo-mark'].map((q) => { const e = document.querySelector(q); return !!e && e.getBoundingClientRect().width >= 16
+        && /^url\("data:image\/svg\+xml/.test(getComputedStyle(e).backgroundImage); }) }));
     await sleep(1300);
     const t2 = await p.evaluate(() => (document.querySelector('#tickerText') || {}).textContent);
     await p.evaluate(() => window.scrollTo(0, 0));
@@ -317,6 +321,8 @@ async function ui(browser) {
     ok(!!t2 && t2 !== a.t1, `横梁那一行在打字（${JSON.stringify(a.t1 || null).slice(0, 28)} → ${JSON.stringify(t2 || null).slice(0, 28)}）`);
     ok(a.nav === 'https://0x000000000.com/ppt' && a.navT !== '_blank', `顶栏导航指向 ${a.nav}（网站上同一个窗口打开）`);
     ok(/^"0x Mono"/.test(a.font) && a.faces.length === 2 && a.faces.every((s) => s === 'loaded'), `全页是代码字体「0x Mono」，英文 + 中文两套都加载了（${a.faces.join('/') || '没有这套字体'}）`);
+    ok(a.icons.length >= 2 && a.icons.every((h) => h.startsWith('data:image/')) && a.logo.every(Boolean),
+      `logo：标签页图标 ${a.icons.length} 个、都是内嵌的；标题栏和品牌名旁边都有 logo（${a.logo.join('/')}）`);
   });
   await step('带 ?order= 进来', async () => {
     await p.goto('https://0x000000000.com/?order=1a2b3c4d'); await sleep(1300);
