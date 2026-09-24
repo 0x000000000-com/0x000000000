@@ -149,6 +149,136 @@ async function netsync(browser) {
   return res;
 }
 
+// MINTLIVE4_20260924：DSJ「付了钱但是没反应」。第 4 步要一直有一行在动：等到账（等了多久）→ 正在铸造（算了多久）→ 铸好了。
+//   订单状态在线路上按 FAKE 改（平台是什么不重要，测的是页面怎么显示）；只报「已经多久」，不许出现「还要多久」。
+async function mint4(browser) {
+  const html = fs.readFileSync(path.join(PAGE_DIR, 'index.html'), 'utf8');
+  const res = []; const ok = (c, m) => res.push([!!c, m]);
+  const FAKE = { status: null, paidAt: null, found: null };
+  const open = async (lang) => {
+    const c = await browser.newContext({ acceptDownloads: true });
+    await c.addInitScript((l) => { try { localStorage.setItem('0xlang', l); } catch (e) {} }, lang);
+    await c.route('https://0x000000000.com/**', async (r) => {
+      const u = new URL(r.request().url());
+      if (!u.pathname.startsWith('/api/')) return r.abort();
+      let resp; try { resp = await r.fetch({ url: 'http://127.0.0.1:8787' + u.pathname + u.search }); } catch (e) { return r.abort('connectionrefused'); }
+      if (u.pathname === '/api/health') { const j = await resp.json(); j.mode = 'live'; return r.fulfill({ response: resp, body: JSON.stringify(j) }); }
+      if (/^\/api\/orders\/[0-9a-f]{8}$/.test(u.pathname) && r.request().method() === 'GET' && FAKE.status) {
+        const j = await resp.json(); j.status = FAKE.status; j.paidAt = FAKE.paidAt;
+        if (FAKE.found) { j.foundAddress = FAKE.found; j.ready = true; }
+        return r.fulfill({ response: resp, body: JSON.stringify(j) });
+      }
+      return r.fulfill({ response: resp });
+    });
+    const f = path.join(DATA, 'mint4-' + lang + '.html'); fs.writeFileSync(f, html);
+    const p = await c.newPage(); const errs = []; p.on('pageerror', (e) => errs.push(e.message));
+    await p.goto('file://' + f); await sleep(1200);
+    return { c, p, errs };
+  };
+  const run = async (name, fn) => { try { await fn(); } catch (e) { ok(false, name + ' 没走完：' + String(e.message).split('\n')[0].slice(0, 100)); } };
+  await run('第 4 步在动的那一行', async () => {
+    const { c, p, errs } = await open('zh');
+    await p.click('#chainPick [data-chain="tron"]'); await p.fill('#orderPat', 'TXo'); await p.dispatchEvent('#orderPat', 'input');
+    await Promise.all([p.waitForEvent('download', { timeout: 15000 }), p.click('#btnGen')]); await sleep(300);
+    await p.click('#btnCreate');
+    await p.waitForFunction(() => !document.querySelector('#payInfo').hidden, null, { timeout: 15000 });
+    ok(/我们正在开始铸造/.test(await p.textContent('#steps > li:nth-child(4) .step-head')), '第 4 步标题是「我们正在开始铸造」');
+    ok(await p.evaluate(() => { const b = document.querySelector('#mintLive'); return !!b && b.hidden; }), '还没付款时第 4 步那一行藏着');
+    FAKE.status = 'share_uploaded';
+    await p.click('#btnPay'); await sleep(2800);
+    const w1 = (await p.textContent('#mintText')) || '';
+    ok(/等你的付款到账/.test(w1), '点了「我转好了」：第 4 步马上出现「等你的付款到账」（' + w1.slice(0, 24) + '）');
+    await sleep(1600);
+    ok(((await p.textContent('#mintText')) || '') !== w1, '「已经等了多久」每秒在走');
+    ok(await p.evaluate(() => getComputedStyle(document.querySelector('.mint-anim i')).animationName) === 'mintdot', '小动画在跳');
+    await p.evaluate(() => { MINT.since = Date.now() - 11 * 60 * 1000; }); await sleep(1300);
+    ok(await p.evaluate(() => !document.querySelector('#mintNote').hidden && /订单号/.test(document.querySelector('#mintNote').textContent)),
+      '等了 10 分钟以上：出现「核对链、地址、金额，别再转，把订单号发给我们」');
+    FAKE.status = 'mining'; FAKE.paidAt = Date.now() - 95 * 1000; await sleep(3500);
+    const r1 = (await p.textContent('#mintText')) || '';
+    ok(/正在铸造 · 已经算了 1 分/.test(r1), '钱到了：变成「正在铸造 · 已经算了 1 分多」（' + r1 + '）');
+    ok(!/还要|剩下|预计|大约还/.test(r1 + ((await p.textContent('#mintNote')) || '')), '铸造时只报「已经多久」，没有「还要多久」');
+    ok(/铸造中/.test((await p.textContent('#ordersBody')) || ''), '最下面「我的订单」跟着变成「铸造中」（不用重新打开页面）');
+    FAKE.status = 'found'; FAKE.found = 'TXoAbCdEfGhJkLmNpQrStUvWxYz1234567'; await sleep(3500);
+    const d1 = (await p.textContent('#mintText')) || '';
+    ok(/铸好了/.test(d1) && /第 5 步/.test((await p.textContent('#mintNote')) || '') && !(await p.isDisabled('#btnDownload')),
+      '铸好了：「铸好了 ✓」+ 叫他去第 5 步 + 取货按钮能点（' + d1 + '）');
+    ok(await p.evaluate(() => getComputedStyle(document.querySelector('.mint-anim')).display) === 'none', '铸好了之后小动画收起');
+    await sleep(1300);
+    ok(((await p.textContent('#mintText')) || '') === d1, '铸好了之后不再计时');
+    ok(/已铸出/.test((await p.textContent('#ordersBody')) || ''), '「我的订单」跟着变成「已铸出」');
+    ok(errs.length === 0, '第 4 步这一段页面没报错' + (errs.length ? '：' + errs.join(' | ') : ''));
+    FAKE.status = null; FAKE.paidAt = null; FAKE.found = null;
+    await c.close();
+  });
+  await run('英文界面的付款说明', async () => {
+    const { c, p, errs } = await open('en');
+    await p.waitForFunction(() => document.querySelectorAll('#payChain option').length > 1, null, { timeout: 8000 }).catch(() => {});
+    const note = (await p.textContent('#payChainNote')) || '';
+    ok(/confirmations/.test(note) && !/[一-鿿]/.test(note), '英文界面第 2 步付款方式下面那行没有中文（' + note.slice(0, 50) + '）');
+    ok(/starting to mint/.test((await p.textContent('#steps > li:nth-child(4) .step-head')) || ''), '英文界面第 4 步标题');
+    ok(errs.length === 0, '英文界面页面没报错');
+    await c.close();
+  });
+  return res;
+}
+
+// NETSYNCALL0X_20260924：「断网打开、后来联网」不再一样一样地查，而是整页对照：
+//   A = 一直在线打开 · B = 断网打开（浏览器以为自己在线、没有 online 事件）→ 联网 → 碰一下第 2 步和「我的订单」。
+//   两份页面上每一步的字、选项、价格提示、付款说明、「我的订单」必须逐项一样。以后页面再加一样开机时才拿的东西，
+//   它没补拿就会在这里对不上 —— 不用再等用户撞到。
+async function offlineAll(browser) {
+  const html = fs.readFileSync(path.join(PAGE_DIR, 'index.html'), 'utf8');
+  const res = []; const ok = (c, m) => res.push([!!c, m]);
+  const mk = await (await fetch('http://127.0.0.1:8787/api/orders', { method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ chain: 'tron', prefix: 'TXo', suffix: '', payChain: 'tron' }) })).json();
+  const oid = mk.orderId;
+  ok(/^[0-9a-f]{8}$/.test(oid || ''), '先在平台上建一张单，放进两份页面的「我的订单」（' + oid + '）');
+  const snap = () => ({
+    heads: [...document.querySelectorAll('#steps > li .step-head')].map((e) => e.textContent),
+    nets: [...document.querySelectorAll('#steps > li .netline')].map((e) => e.textContent),
+    descs: [...document.querySelectorAll('#steps > li > .step-desc')].map((e) => e.textContent),
+    hint: (document.querySelector('#patHint') || {}).textContent || '',
+    chains: [...document.querySelectorAll('#chainPick [data-chain]')].map((b) => b.dataset.chain),
+    pos: [...document.querySelectorAll('#orderPos option')].map((o) => o.value),
+    pay: [...document.querySelectorAll('#payChain option')].map((o) => o.value + ':' + o.textContent),
+    payNote: (document.querySelector('#payChainNote') || {}).textContent || '',
+    btnPay: (document.querySelector('#btnPay') || {}).textContent || '',
+    orders: ((document.querySelector('#ordersBody') || {}).textContent || '').replace(/\s+/g, ' ').trim(),
+  });
+  const open = async (silent) => {
+    const st = { NET: !silent };
+    const c = await browser.newContext({ acceptDownloads: true });
+    await c.addInitScript((id) => { try { localStorage.setItem('0xlang', 'zh'); localStorage.setItem('0x_myorders', JSON.stringify([id])); } catch (e) {} }, oid);
+    await c.route('https://0x000000000.com/**', async (r) => {
+      const u = new URL(r.request().url());
+      if (!st.NET || !u.pathname.startsWith('/api/')) return r.abort('internetdisconnected');
+      let resp; try { resp = await r.fetch({ url: 'http://127.0.0.1:8787' + u.pathname + u.search }); } catch (e) { return r.abort('connectionrefused'); }
+      if (u.pathname === '/api/health') { const j = await resp.json(); j.mode = 'live'; return r.fulfill({ response: resp, body: JSON.stringify(j) }); }
+      return r.fulfill({ response: resp });
+    });
+    const f = path.join(DATA, 'offall-' + (silent ? 'b' : 'a') + '.html'); fs.writeFileSync(f, html);
+    const p = await c.newPage(); const errs = []; p.on('pageerror', (e) => errs.push(e.message));
+    await p.goto('file://' + f); await sleep(1500);
+    return { c, p, st, errs };
+  };
+  try {
+    const A = await open(false); await sleep(800);
+    const a = await A.p.evaluate(snap);
+    const B = await open(true);
+    B.st.NET = true;
+    await B.p.click('#payChain'); await B.p.keyboard.press('Escape');
+    await B.p.click('#secOrders'); await sleep(2500);
+    const b = await B.p.evaluate(snap);
+    const diff = Object.keys(a).filter((k) => JSON.stringify(a[k]) !== JSON.stringify(b[k]));
+    ok(diff.length === 0, '断网打开、联网后碰一下：整页跟一直在线那份逐项一样' + (diff.length ? '（不一样的：' + diff.map((k) => k + ' → ' + JSON.stringify(b[k]).slice(0, 60)).join(' ｜ ') + '）' : ''));
+    ok(a.orders.includes(oid) && a.pay.length >= 2 && a.nets.length === 6, '对照的那份本身是完整的（订单在、付款方式 ' + a.pay.length + ' 条、6 步都有联网说明）');
+    ok(A.errs.length === 0 && B.errs.length === 0, '两份页面都没报错' + ([...A.errs, ...B.errs].length ? '：' + [...A.errs, ...B.errs].join(' | ') : ''));
+    await A.c.close(); await B.c.close();
+  } catch (e) { ok(false, '整页对照没走完：' + String(e.message).split('\n')[0].slice(0, 100)); }
+  return res;
+}
+
 async function walk(browser, N, chain, pos, pre, suf) {
   const ctx = await browser.newContext({ viewport: { width: 1280, height: 900 }, acceptDownloads: true });
   await ctx.addInitScript(() => { try { localStorage.setItem('0xlang', 'zh'); } catch (e) {} });
@@ -274,6 +404,10 @@ async function walk(browser, N, chain, pos, pre, suf) {
     chk(m.errs.length === 0, '两种打开方式页面都没有报错' + (m.errs.length ? '：' + m.errs.join(' | ') : ''));
     console.log('== 下载版断网打开、后来联网 ==');
     for (const [c, msg] of await netsync(browser)) chk(c, msg);
+    console.log('== 第 4 步：等到账 / 正在铸造 / 铸好了 ==');
+    for (const [c, msg] of await mint4(browser)) chk(c, msg);
+    console.log('== 下载版断网打开：整页跟一直在线那份对照 ==');
+    for (const [c, msg] of await offlineAll(browser)) chk(c, msg);
   } catch (e) {
     fail++; console.log('  ★ 走到一半炸了：' + e.message.split('\n')[0]); console.log(slog.slice(-800));
   } finally {

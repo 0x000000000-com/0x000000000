@@ -11,14 +11,16 @@
     "label": "TRON",
     "short": "TRC20",
     "confirmations": 19,
-    "note": "手续费低、到账快，大部分交易所提 USDT 默认就是这条。"
+    "note": "手续费低、到账快，大部分交易所提 USDT 默认就是这条。",
+    "noteEn": "Low fees and fast; most exchanges send USDT on this chain by default."
    },
    {
     "id": "bsc",
     "label": "BSC",
     "short": "BEP20",
     "confirmations": 15,
-    "note": "手续费同样很低。地址是 0x 开头那种，跟以太坊一样。"
+    "note": "手续费同样很低。地址是 0x 开头那种，跟以太坊一样。",
+    "noteEn": "Fees are low too. The address starts with 0x, the same kind as Ethereum."
    }
   ],
   "chains": [
