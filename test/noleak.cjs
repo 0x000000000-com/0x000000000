@@ -6,6 +6,7 @@
 //   传公钥    POST /api/orders/:id/share   正好 {A,sig}：A = s·G；sig = RFC6979 确定性签名(s, 挑战串)
 //   取货      GET  /api/orders/:id/download?sig=  只许一个 sig = 确定性签名(s, 挑战串)
 //   收条      POST /api/orders/:id/receipt 正好 {sig} = 确定性签名(完整私钥 k, 回执原文)
+//   免费查    POST /api/check              正好 {address} = 用户自己贴进去的那个地址（查的地址、你自己的地址，各一次）
 //   其余      查目录 / 查状态 / 要收款地址 / 模拟付款：不许带任何内容
 // 签名是确定性的（RFC6979），随机数那一格没有空间藏东西；A 由 s 唯一决定。于是请求内容里没有一个字节能夹带私钥（请求的次数和时间间隔不在这项检查的范围内）。
 // 另外还查：断网也能造钥匙；页面只取它自己这一个文件；除了平台接口不连任何别的地方；请求头没有自定义项。
@@ -25,6 +26,8 @@ const PAGE_DIR = fs.mkdtempSync(path.join(require('os').tmpdir(), 'page_'));
 fs.copyFileSync(PAGE_FILE, path.join(PAGE_DIR, 'index.html'));
 const DATA = fs.mkdtempSync('/tmp/noleak_');
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+// FREECHECK0X_20260928：免费查那一格里要贴的两个公开地址（查的地址 / 你自己的地址）—— 白名单只认这两个值
+const CHECK_A = 'TQDm3ZVNg4UYz38kc4QAF2Y4TCh6cH98aS', CHECK_MINE = 'TCwMNMzJsGwiJwEWCqDdWpmri5K9cYKqsw';
 let fail = 0; const chk = (ok, m) => { if (!ok) { fail++; console.log('  ★ ' + m); } else console.log('  ✓ ' + m); };
 
 const srv = spawn(process.execPath, [SERVER], {
@@ -336,6 +339,7 @@ async function ui(browser) {
       cta: (document.querySelector('#heroCta') || {}).textContent,
       zh: (document.body.innerText.replace(/中文/g, '').match(/[一-鿿]/g) || []).length,
       nav: (document.querySelector('#navPpt') || {}).href, navT: (document.querySelector('#navPpt') || {}).target,
+      wp: (document.querySelector('#navWp') || {}).href, wpT: (document.querySelector('#navWp') || {}).target,
       font: getComputedStyle(document.body).fontFamily,
       faces: [...document.fonts].filter((f) => f.family.replace(/"/g, '') === '0x Mono').map((f) => f.status),
       t1: (document.querySelector('#tickerText') || {}).textContent,
@@ -353,6 +357,7 @@ async function ui(browser) {
     ok(after.url === 'https://0x000000000.com/' && after.y > 200, `点「开始铸造」：滚到下单那一块（y=${after.y}），地址栏不多出 #（${after.url}）`);
     ok(!!t2 && t2 !== a.t1, `横梁那一行在打字（${JSON.stringify(a.t1 || null).slice(0, 28)} → ${JSON.stringify(t2 || null).slice(0, 28)}）`);
     ok(a.nav === 'https://0x000000000.com/ppt' && a.navT !== '_blank', `顶栏导航指向 ${a.nav}（网站上同一个窗口打开）`);
+    ok(a.wp === 'https://0x000000000.com/wp' && a.wpT !== '_blank', `顶栏第二个入口指向白皮书 ${a.wp}（网站上同一个窗口打开）`);   // WPNAV0X_20260928
     ok(/^"0x Mono"/.test(a.font) && a.faces.length === 2 && a.faces.every((s) => s === 'loaded'), `全页是代码字体「0x Mono」，英文 + 中文两套都加载了（${a.faces.join('/') || '没有这套字体'}）`);
     ok(a.icons.length >= 2 && a.icons.every((h) => h.startsWith('data:image/')) && a.logo.every(Boolean),
       `logo：标签页图标 ${a.icons.length} 个、都是内嵌的；标题栏和品牌名旁边都有 logo（${a.logo.join('/')}）`);
@@ -371,10 +376,11 @@ async function ui(browser) {
   const p2 = await c2.newPage(); const errs2 = []; p2.on('pageerror', (e) => errs2.push(e.message));
   await step('下载版导航', async () => {
     await p2.goto('file://' + f); await sleep(1500);
-    const nav2 = await p2.evaluate(() => { const n = document.querySelector('#navPpt'), q = document.querySelector('a[data-site="faq.html"]');
-      return { href: n && n.href, t: n && n.target, faq: q && q.href }; });
-    ok(nav2.href === 'https://0x000000000.com/ppt' && nav2.t === '_blank' && nav2.faq === 'https://0x000000000.com/faq.html',
-      `下载版：导航和页脚链接写完整网址、开新窗口（不会把做到一半的这一页顶掉）（${nav2.href} / ${nav2.faq}）`);
+    const nav2 = await p2.evaluate(() => { const n = document.querySelector('#navPpt'), q = document.querySelector('a[data-site="faq.html"]'), w = document.querySelector('#navWp');
+      return { href: n && n.href, t: n && n.target, faq: q && q.href, wp: w && w.href, wpT: w && w.target }; });
+    ok(nav2.href === 'https://0x000000000.com/ppt' && nav2.t === '_blank' && nav2.faq === 'https://0x000000000.com/faq.html'
+      && nav2.wp === 'https://0x000000000.com/wp' && nav2.wpT === '_blank',
+      `下载版：导航和页脚链接写完整网址、开新窗口（不会把做到一半的这一页顶掉）（${nav2.href} / ${nav2.wp} / ${nav2.faq}）`);
   });
   await step('造好钥匙再切中文', async () => {
     await p2.fill('#orderPat', 'abc', T); await p2.dispatchEvent('#orderPat', 'input');
@@ -412,6 +418,13 @@ async function walk(browser, N, chain, pos, pre, suf) {
   const offlineReq = wire.length - before;
   await ctx.setOffline(false);
   const s = JSON.parse(fs.readFileSync(secPath, 'utf8')).s;
+  // FREECHECK0X_20260928：钥匙已经在这一页的内存里 —— 这时候用一次免费查（查一个地址 + 填上你自己的地址）。
+  //   平台回什么不重要：线路上回一份固定结果，好让第二个请求也发出去。要验的是【页面发出去的内容】：两个请求都只许带贴进去的那一个地址。
+  await page.route('http://127.0.0.1:8787/api/check', (r) => r.fulfill({ status: 200, contentType: 'application/json',
+    body: JSON.stringify({ ok: true, result: { chain: 'tron', address: JSON.parse(r.request().postData() || '{}').address, window: { n: 0, complete: true },
+      verdict: 'clean', profile: {}, poison: [], poisonCount: 0, lookalikes: [], spam: { senders: 0, records: 0 }, counterparties: [], counterpartyCount: 0, known: [], evidence: [] } }) }));
+  await page.click('#fcMineSum'); await page.fill('#fcMine', CHECK_MINE); await page.fill('#fcAddr', CHECK_A); await page.click('#fcGo');
+  await page.waitForFunction(() => { const b = document.querySelector('#fcResult'); return !!b && !b.hidden && !!b.querySelector('.fc-card') && !b.querySelector('.lv-dim'); }, null, { timeout: 15000 });
   await page.click('#btnCreate');
   await page.waitForFunction(() => !document.querySelector('#payInfo').hidden, null, { timeout: 15000 });
   await page.click('#btnPay');
@@ -485,6 +498,11 @@ async function walk(browser, N, chain, pos, pre, suf) {
           kind = 'create';
           if (keys !== 'chain,payChain,prefix,suffix') no('下单带了多余/缺少的字段：' + keys);
           else if (body.chain !== chain || body.prefix !== pre || body.suffix !== suf || body.payChain !== 'tron') no('下单字段值跟用户选的不一致：' + x.body);
+        } else if (x.method === 'POST' && p === '/api/check') {
+          kind = 'check';   // FREECHECK0X_20260928
+          if (keys !== 'address') no('免费查带了多余/缺少的字段：' + keys);
+          else if (![CHECK_A, CHECK_MINE].includes(body.address)) no('免费查带的地址不是用户贴进去的那个：' + x.body.slice(0, 80));
+          if (q.length) no('免费查带了查询参数：' + u.search);
         } else if (/^\/api\/orders\/[0-9a-f]{8}\/share$/.test(p) && x.method === 'POST') {
           kind = 'share';
           if (keys !== 'A,sig') no('传影子带了多余/缺少的字段：' + keys);
@@ -508,6 +526,7 @@ async function walk(browser, N, chain, pos, pre, suf) {
       }
       chk(bad === 0 && n >= 8 && kinds.share === 1 && kinds.download >= 1 && kinds.receipt === 1 && kinds.create === 1,
         `白名单：打平台的 ${n} 个请求逐个核对，不合格 ${bad} 个 · ${JSON.stringify(kinds)}`);
+      chk(kinds.check === 2, `免费查：钥匙在内存里时查一次，发出去 ${kinds.check || 0} 个请求（要 2 个：查的地址、你自己的地址），每个都只带贴进去的那一个地址`);
       // KSIMPORT0X_20260924：钱包文件导得进钱包 —— TRON 存 .txt（TronLink 只收 .txt）、address 写 41…（TronLink 读得懂的写法）
       const h20 = hex(keccak_256(N.getPublicKey(Buffer.from(w.k, 'hex'), false).subarray(1)).subarray(12));
       const wantName = chain === 'tron' ? 'my-keystore.txt' : 'my-keystore.json';
