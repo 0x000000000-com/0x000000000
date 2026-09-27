@@ -21,6 +21,7 @@ const dict = {
     heroCta: '开始铸造 →',
     // PPTNAV0X_20260924：顶栏导航 → 0x000000000.com/ppt（6 步说明书 / 白皮书）
     navPpt: '说明书 · 6 步看懂',
+    navWp: '白皮书',   // WPNAV0X_20260928
     // TICKER0X_20260924：顶栏那一行一直在「打字」的话。第一句是 DSJ 要的那句意思，另外两句是能自己核对的证据。
     ticker: ['我们不要你的信任 —— 我们给你证据。', '私钥从不离开你的电脑 —— 发给我们的每一句话都列给你看。', '这个页面 = GitHub 上公开的那份，一字不差 —— 你自己核对。'],
     tickerSr: '我们不要你的信任 —— 我们给你证据。',
@@ -61,6 +62,7 @@ const dict = {
     sentGhRepo: '看公开的页面代码 ↗',
     sent: {
       catalog: '看价目表 —— 没带你的任何东西',
+      check: '免费查一个地址 —— 带了你贴的那个地址（平台查完不存、不记日志）',
       health: '看平台在不在线 —— 没带你的任何东西',
       create: '下单 —— 告诉平台：哪条链、什么图案、用哪条链付款',
       share: '交「影子」—— 一个公开的数（像银行卡号）加一个签名，证明你手里有那一半钥匙；钥匙本身没发',
@@ -72,6 +74,10 @@ const dict = {
       other: '其他',
     },
     foot2: '平台永远不会索要你的私钥或备份文件 —— 任何索要私钥的消息都是钓鱼。',
+    // FREECHECK0X_20260928：构思 v3 第三章第 1 条（DSJ：「这句话是精髓」）+ 个人靓号页另加的那一句 + 官方网址只有一个
+    footNever: '零九零永远不会让你连接钱包、不会让你在钱包 App 里给我们签名或授权、不会让你转钱给我们来「验证」。凡是这样要求你的，一定是假的。',
+    footSign: '铸造页会在页面里自动签几次名（下单、取货、交收条），用的是这一单在你电脑上生成、合成的钥匙，签的只是一段证明文字，不是转账、不是授权 —— 只用来证明这一单是你的。',
+    footOne: '官方网址只有一个：0x 000 000 000 .com（0x 后面 9 个 0）· 零九零没有发行任何代币 · 收藏官网，以后只从收藏夹进。',
     thOrder: '订单 Order', thPattern: '模式 Pattern', thStatus: '状态 Status', thPrice2: '价格 USDT',
     boot: [
       'Windows PowerShell',
@@ -231,6 +237,7 @@ const dict = {
     heroMission: 'Pay in USDT. You make half the key on your own machine, we mint the other half - the full key can only be assembled by you.',
     heroCta: 'Start minting →',
     navPpt: 'How it works · 6 steps',
+    navWp: 'White paper',
     ticker: ["We don't ask for your trust - we give you proof.", 'Your private key never leaves your computer - every message sent to us is listed for you.', 'This page = the public copy on GitHub, byte for byte - verify it yourself.'],
     tickerSr: "We don't ask for your trust - we give you proof.",
     gsEvm0: '0x0000000000 · prefix 10', gsEvm8: '0x8888888888 · prefix 10', gsTron: 'TXooooo… · TRON prefix 6',
@@ -265,6 +272,7 @@ const dict = {
     sentGhRepo: 'See the published page code ↗',
     sent: {
       catalog: 'read the price list - carried nothing of yours',
+      check: 'free check of an address - carried the address you pasted (the platform stores and logs nothing)',
       health: 'checked the platform is online - carried nothing of yours',
       create: 'order - told the platform which chain, which pattern and which payment chain',
       share: 'handed in the "shadow" - a public number (like a bank account number) plus a signature proving you hold your half; the key itself was not sent',
@@ -276,6 +284,9 @@ const dict = {
       other: 'other',
     },
     foot2: 'The platform will never ask for your private key or backup file - any message asking for keys is phishing.',
+    footNever: '0x000000000 will never ask you to connect your wallet, to sign or approve anything for us in a wallet app, or to send us money to "verify". Anyone who asks is fake.',
+    footSign: 'The minting page signs a few times inside the page (placing the order, collecting, filing the receipt), with the key made and built for that order on your own computer. It signs a short proof text - never a transfer, never an approval - only to prove the order is yours.',
+    footOne: 'The only official website: 0x 000 000 000 .com (nine zeros after 0x) · 0x000000000 has not issued any token · bookmark it and always come in from the bookmark.',
     thOrder: 'Order', thPattern: 'Pattern', thStatus: 'Status', thPrice2: 'Price USDT',
     boot: [
       'Windows PowerShell',
@@ -448,6 +459,7 @@ function applyStaticLang() {
   if (window.KeyCore && window.KeyCore.setLang) window.KeyCore.setLang(lang);   // keycore 的提示（图案不合法之类）跟着换
   const dr = $('#dlResumeMsg'); if (dr && dr.dataset.order) dr.textContent = t('dlResume')(dr.dataset.order);
   tickerRestart();
+  if (typeof window.fcLang === 'function') window.fcLang();   // FREECHECK0X_20260928：免费查、快讯自己画出来的字也跟着换
 }
 function applyLang(save) {
   if (save) { try { localStorage.setItem(LANG_KEY, lang); } catch (e) {} }
@@ -638,6 +650,7 @@ function sentKind(method, path) {
   const p = path.split('?')[0];
   if (p === '/api/catalog') return 'catalog';
   if (p === '/api/health') return 'health';
+  if (method === 'POST' && p === '/api/check') return 'check';   // FREECHECK0X_20260928
   if (method === 'POST' && p === '/api/orders') return 'create';
   if (/\/share$/.test(p)) return 'share';
   if (/\/payment$/.test(p)) return 'payment';
