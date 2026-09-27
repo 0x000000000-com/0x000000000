@@ -15,6 +15,8 @@ This repository does one thing: **it lets you confirm two facts yourself, withou
 
 Prefer an animated version first? **[0x000000000.com/ppt](https://0x000000000.com/ppt)** — the 6 steps, why you do not need to trust us, why we cannot get your private key, and where the proof is. That page's file is here too (`ppt.html`).
 
+The white paper: **[0x000000000.com/wp](https://0x000000000.com/wp)** — what runs today, the scam we work against (address poisoning), what we build next, and how to check each claim yourself. Its file is here too (`wp.html`).
+
 ## How it works (one paragraph)
 
 Your key is split in two. **Your half is generated in your own browser** and saved as `my-secret-s.json` on your own computer; the platform only receives its **public key** (public, like a bank account number) and a **signature** (proof that you hold your half, without revealing it). The platform mints the other half, `b`, on its GPUs and hands it to you, and **joining the two halves into the complete private key also happens in your own browser**. A private key cannot be derived from a public key — that is the security foundation of Bitcoin, Ethereum and TRON.
@@ -40,8 +42,8 @@ One file, one fingerprint: opened on the website it shows only "Download"; downl
 
 | | What it is | Where to look |
 |---|---|---|
-| **1. The page is this one file** | The website home page = `0x000000000.html` here = the file you get from "Download the minting page" on the website, **byte for byte**. The explainer at `0x000000000.com/ppt` = `ppt.html` here. Both fingerprints are in `SHA256SUMS`. Every change leaves a public record here that cannot be deleted. | This page · commit history |
-| **2. Tamper patrol** | **Every hour**, machines at GitHub download the live home page, the download copy and the `/ppt` explainer, and compare them with the fingerprints here. **Any mismatch turns red**, visible to everyone. The check runs on GitHub; the platform cannot touch it. | First badge above |
+| **1. The page is this one file** | The website home page = `0x000000000.html` here = the file you get from "Download the minting page" on the website, **byte for byte**. The explainer at `0x000000000.com/ppt` = `ppt.html` here, and the white paper at `0x000000000.com/wp` = `wp.html` here. All their fingerprints are in `SHA256SUMS`. Every change leaves a public record here that cannot be deleted. | This page · commit history |
+| **2. Tamper patrol** | **Every hour**, machines at GitHub download the live home page, the download copy, the `/ppt` explainer and the `/wp` white paper, and compare them with the fingerprints here. **Any mismatch turns red**, visible to everyone. The check runs on GitHub; the platform cannot touch it. | First badge above |
 | **3. Private-key leak check** | For every new version, machines at GitHub walk through all 6 steps in a **real browser** and check **every single request** the page sends (table below): every field must equal a recomputed value exactly — **one extra field or one extra character turns it red**. | Second badge above |
 | **4. Font rebuild** | The page embeds two open-source fonts (see "Fonts" below). Machines at GitHub rebuild them from the official original font files; the result must be **byte-for-byte identical** to what the page carries — that large block of font data holds fonts and nothing else. | Third badge above |
 
@@ -73,6 +75,8 @@ The whole page uses code-style fonts: **JetBrains Mono** for Latin letters, digi
 
 So that the page looks the same offline and never contacts a font website, the fonts are embedded in the page, keeping only the characters the page uses (listed in `src/css/fonts-chars.txt`). `src/build-fonts.py` regenerates `src/css/fonts.css` from the official Google Fonts files (URLs pinned to fixed commits, fingerprints at the top of the script), byte for byte, for anyone who runs it.
 
+Characters used only by the white paper are kept in a second file, `src/css/fonts-extra.css` (listed in `src/css/fonts-extra-chars.txt`), so adding text to the white paper never changes a single byte of the minting page. The same script regenerates both files, and the font check compares both.
+
 ## Check it yourself (pick any)
 
 **Check the file you downloaded**
@@ -89,9 +93,10 @@ The fingerprint must match the one in `SHA256SUMS`.
 ```
 curl -s https://0x000000000.com/ | shasum -a 256
 curl -s https://0x000000000.com/ppt | shasum -a 256
+curl -s https://0x000000000.com/wp | shasum -a 256
 ```
 
-The first must equal the `0x000000000.html` line in `SHA256SUMS`, the second the `ppt.html` line.
+The first must equal the `0x000000000.html` line in `SHA256SUMS`, the second the `ppt.html` line, the third the `wp.html` line.
 
 **Rebuild it from source yourself** (`src/` holds the complete page source)
 
@@ -107,7 +112,7 @@ The resulting `rebuilt.html` must be byte-for-byte identical to `0x000000000.htm
 python src/build-fonts.py JetBrainsMono[wght].ttf NotoSansSC[wght].ttf
 ```
 
-Download the two font files from the URLs at the top of `src/build-fonts.py`. The generated `src/css/fonts.css` must be byte-for-byte identical to the one in this repository.
+Download the two font files from the URLs at the top of `src/build-fonts.py`. The generated `src/css/fonts.css` and `src/css/fonts-extra.css` must be byte-for-byte identical to the ones in this repository.
 
 **Offline test**: download `0x000000000.html`, double-click it, turn off Wi-Fi, then click "Make key" — it still completes. After collecting in step 5, turn off Wi-Fi again: "Build my key" and "Export wallet file" still complete.
 
