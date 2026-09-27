@@ -28,12 +28,19 @@
   <canvas id="space"></canvas>
 </div>
 <main class="term">
+  <!-- FREECHECK0X_20260928：每页最顶上一条安全快讯细条（构思 v3 第一章「安全快讯」）：一次一条、6 秒换、鼠标放上去就停、点 × 关 24 小时；不闪、不弹窗 -->
+  <div class="nstrip" id="nStrip" hidden>
+    <span class="ns-tag" id="nsTag">NEWS</span>
+    <button type="button" class="ns-text" id="nsText"></button>
+    <button type="button" class="ns-x" id="nsX" aria-label="close" title="hide for 24 hours">×</button>
+  </div>
   <div class="titlebar">
     <span class="dots" aria-hidden="true"><i class="d r"></i><i class="d y"></i><i class="d g"></i></span>
     <span class="logo-mark" aria-hidden="true"></span>
     <span class="ttl">0x000000000 — Vanity Address Foundry</span>
     <!-- PPTNAV0X_20260924：DSJ「增加导航…把6个步骤详细人话解释…做成WebPPT…0x000000000.com/ppt」 -->
-    <nav class="topnav" aria-label="guide"><a id="navPpt" href="/ppt" data-site="ppt" data-i18n="navPpt">How it works · 6 steps</a></nav>
+    <!-- WPNAV0X_20260928：白皮书 0x000000000.com/wp 的入口（首页单文件本来就要重过白名单和 GitHub，这一次一起放进来） -->
+    <nav class="topnav" aria-label="guide"><a id="navPpt" href="/ppt" data-site="ppt" data-i18n="navPpt">How it works · 6 steps</a><a id="navWp" href="/wp" data-site="wp" data-i18n="navWp">White paper</a></nav>
     <span class="utc" id="utcClock">--:--:-- UTC</span>
     <span class="lang">
       <button id="btnZh" data-lang="zh">中文</button>
@@ -45,6 +52,34 @@
   <span class="sr-only" data-i18n="tickerSr">We don't ask for your trust - we give you proof.</span>
 
   <div class="body" id="body">
+
+    <!-- FREECHECK0X_20260928：首页正中间的免费查（构思 v3：像 Google、Namecheap 那样，页面上最大的就是它；框的上下边沿各一条金色代码流）。
+         代码流里的「地址」是随手编的，而且故意带一个「0」—— 波场地址里根本没有 0 这个字，没人能照着转钱。 -->
+    <section class="fc" id="secCheck" aria-labelledby="fcTitle">
+      <h1 class="fc-title" id="fcTitle">Free check: has this address been poisoned?</h1>
+      <div class="fc-box">
+        <div class="fc-stream" aria-hidden="true"><span id="fcS1"></span></div>
+        <form class="fc-form" id="fcForm" autocomplete="off" novalidate>
+          <span class="fc-dollar" aria-hidden="true">$</span>
+          <input id="fcAddr" class="fc-input" type="text" inputmode="text" spellcheck="false" autocapitalize="off" autocorrect="off" aria-labelledby="fcTitle" placeholder="Paste a TRON address T…">
+          <button type="submit" class="fc-go" id="fcGo">Check</button>
+        </form>
+        <div class="fc-stream rev" aria-hidden="true"><span id="fcS2"></span></div>
+      </div>
+      <details class="fc-sub"><summary id="fcSub">This is exactly how 0x000000000 protects its own money.</summary><p id="fcSubWhy"></p></details>
+      <details class="fc-own">
+        <summary id="fcMineSum">Paying someone? Add your own address to compare against the people you have actually paid</summary>
+        <input id="fcMine" class="fc-input small" type="text" spellcheck="false" autocapitalize="off" autocorrect="off" aria-labelledby="fcMineSum" placeholder="Your own TRON address (stays on this page only)">
+        <div class="fc-note" id="fcMineNote"></div>
+      </details>
+      <div class="fc-result" id="fcResult" aria-live="polite" hidden></div>
+    </section>
+
+    <!-- FREECHECK0X_20260928：三张安全快讯新闻卡（66 宗真案子里挑的，每张都带来源）+ 「看全部」 -->
+    <section class="ncards" aria-labelledby="ncHead">
+      <div class="nc-head"><span id="ncHead">Security news</span> <button type="button" class="peek" id="newsAllBtn">See all 66 cases →</button></div>
+      <div class="nc-wrap" id="ncWrap"></div>
+    </section>
 
     <pre class="boot" id="boot" aria-label="boot sequence"></pre>
 
@@ -75,6 +110,14 @@
         <div class="note" id="catalogTeaser"></div>
       </div>
     </section>
+
+    <div class="modal" id="newsModal" hidden>
+      <div class="modal-back" data-close-news></div>
+      <div class="modal-box wide" role="dialog" aria-modal="true" aria-labelledby="newsTitle">
+        <div class="modal-head"><span id="newsTitle">Security news</span><button type="button" class="modal-x" data-close-news aria-label="close">✕</button></div>
+        <div class="modal-body"><div class="news-filter" id="newsFilter"></div><div class="news-list" id="newsList"></div></div>
+      </div>
+    </div>
 
     <div class="modal" id="catalogModal" hidden>
       <div class="modal-back" data-close-catalog></div>
@@ -184,6 +227,10 @@
 
     <footer class="foot">
       <div><a href="faq.html" data-site="faq.html">FAQ</a> · <a href="track.html" data-site="track.html" data-i18n="footTrack">Track an order</a> · <a href="admin.html">Admin</a> · <span data-i18n="foot1">page code published on GitHub, verifiable byte for byte · custom zone non-custodial · USDT on TRON / BSC</span></div>
+      <!-- FREECHECK0X_20260928：构思 v3 第三章第 1 条（DSJ：「这句话是精髓」）—— 每一页最底下固定放这几句 -->
+      <div class="warnline" data-i18n="footNever">0x000000000 will never ask you to connect your wallet, to sign or approve anything for us in a wallet app, or to send us money to "verify". Anyone who asks is fake.</div>
+      <div class="dimline" data-i18n="footSign">The minting page signs a few times inside the page (placing the order, collecting, filing the receipt), with the key made and built for that order on your own computer. It signs a short proof text - never a transfer, never an approval - only to prove the order is yours.</div>
+      <div class="dimline" data-i18n="footOne">The only official website: 0x 000 000 000 .com (nine zeros after 0x) · 0x000000000 has not issued any token · bookmark it and always come in from the bookmark.</div>
       <div class="warnline" data-i18n="foot2">The platform will never ask for your private key or backup file - any message asking for keys is phishing.</div>
     </footer>
   </div>
@@ -192,6 +239,9 @@
      原样内联成单文件（可下载离线用），首页直接引 —— 同一套算法，不会分叉。 -->
 <script src="js/noble.js"></script>
 <script src="js/keycore.js"></script>
+<script src="js/judge.js"></script>
+<script src="js/news.js"></script>
 <script src="js/app.js"></script>
+<script src="js/fcheck.js"></script>
 </body>
 </html>

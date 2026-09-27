@@ -12,7 +12,10 @@ const DIR = process.argv[2] || path.dirname(fileURLToPath(import.meta.url));
 const OUT = process.argv[3] || path.join(DIR, '0x000000000.html');
 const rd = (rel) => fs.readFileSync(path.join(DIR, rel), 'utf8').replace(/\r\n/g, '\n');
 // FONTS0X_20260924：fonts.css（代码风字体，data: 网址）排在最前 —— 下载版断网打开也是这套字
-const PARTS = [['css/fonts.css', 'style'], ['css/style.css', 'style'], ['js/noble.js', 'script'], ['js/keycore.js', 'script'], ['js/app.js', 'script']];
+// FREECHECK0X_20260928：judge.js（「长得像」的唯一判法，服务器和取款工具读的也是这一份）、news.js（66 宗安全快讯）在 app.js 前；
+//   fcheck.js（首页免费查的界面）在 app.js 后 —— 它用 app.js 的 api()（全页唯一的出网口）。
+const PARTS = [['css/fonts.css', 'style'], ['css/style.css', 'style'], ['js/noble.js', 'script'], ['js/keycore.js', 'script'],
+  ['js/judge.js', 'script'], ['js/news.js', 'script'], ['js/app.js', 'script'], ['js/fcheck.js', 'script']];
 
 export function buildSingle() {
   let html = rd('index.html');
