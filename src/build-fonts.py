@@ -25,6 +25,15 @@ DSJ：「把网页的字体全部换成代码风，中英文数字也要代码�
   带 --rescan：重新扫一遍页面（web/ 下的 .html/.js）和后面给的目录（部署时传平台代码 demo/，让平台回话里的中文也进字体），
     把扫到的字写回 css/fonts-chars.txt，再生成。
   版本：fontTools 4.62.1 + brotli 1.2.0（woff2 压缩），Python 3.11。换了版本，压出来的字节可能不一样。
+
+FONTSX0X_20260927：内容页（白皮书 wp.html）的字另外放一份 css/fonts-extra.css，不进上面那份核心字表。
+  为什么分开：首页是单文件，把 fonts.css 原样内联进去 —— 核心字表多一个字，首页的字节就变了，
+    私钥外发检查、GitHub 上公开的那一份、每小时的指纹巡检全都要跟着重来。白皮书加字不该牵动铸造页。
+  做法：--rescan 时核心字表跳过 EXTRA_PAGES；这些页面里【核心字表没有的字】写进 css/fonts-extra-chars.txt，
+    按它生成 css/fonts-extra.css —— 同一个字体族「0x Mono」、同样的粗细范围，只是 unicode-range 只含这些新字，
+    浏览器按字挑字体，两份拼起来就是完整的一套。两份不重叠：生成时把核心字表里已有的字剔掉。
+  不带 --rescan 时两份都按各自的字表生成，逐字节可复现（GitHub 上的字体检查两份都比）。
+  只改了内容页：带 --rescan-extra —— 只重扫 EXTRA_PAGES、只重写 fonts-extra-chars.txt，核心字表和 fonts.css 逐字节不变。
 """
 import glob
 import hashlib
@@ -39,6 +48,9 @@ from fontTools.varLib import instancer
 HERE = os.path.dirname(os.path.abspath(__file__))
 OUT = os.path.join(HERE, "css", "fonts.css")
 CHARS = os.path.join(HERE, "css", "fonts-chars.txt")
+EXTRA_PAGES = ("wp.html",)      # FONTSX0X_20260927：内容页 —— 它们的字进 fonts-extra.css，不进核心字表
+OUT_X = os.path.join(HERE, "css", "fonts-extra.css")
+CHARS_X = os.path.join(HERE, "css", "fonts-extra-chars.txt")
 SRC_SHA256 = {   # 完整值（20260924 从上面两个钉住的网址下载实测）；改了源字体这里要一起改
     "JetBrainsMono": "48715a42ec242c21e9f02692891e147d022299a52e48d5e413e1a942193ffeda",
     "NotoSansSC": "a3041811a78c361b1de50f953c805e0244951c21c5bd412f7232ef0d899af0da",
@@ -57,7 +69,8 @@ def collect(dirs):
     for d in dirs:
         for ext in ("*.html", "*.js", "*.mjs", "css/*.css"):
             files += glob.glob(os.path.join(d, ext)) + glob.glob(os.path.join(d, "js", ext))
-    files = sorted({f for f in files if not f.endswith(("noble.js", ".test.mjs", "fonts.css")) and ".bak" not in f})
+    files = sorted({f for f in files if not f.endswith(("noble.js", ".test.mjs", "fonts.css", "fonts-extra.css")) and ".bak" not in f
+                    and os.path.basename(f) not in EXTRA_PAGES})
     chars = set()
     for f in files:
         chars |= set(io.open(f, encoding="utf-8").read())
@@ -130,6 +143,7 @@ def main(argv):
         print(__doc__); return 2
     jbm, noto = argv[1], argv[2]
     rescan = "--rescan" in argv
+    rescan_x = rescan or "--rescan-extra" in argv      # FONTSX0X：只重扫内容页的字，核心字表一个字不动
     extra = argv[argv.index("--rescan") + 1:] if rescan else []
     for p, key in ((jbm, "JetBrainsMono"), (noto, "NotoSansSC")):
         h = hashlib.sha256(open(p, "rb").read()).hexdigest()
@@ -172,6 +186,49 @@ def main(argv):
     print("  英文字体 %d 字 %d 字节 · 中文字体 %d 字（%d 个改成两格宽）%d 字节" % (len(lat_cp), len(lat_b), len(cjk_cp), widened, len(cjk_b)))
     print("  两套字体都没有、会退回系统字体的：%s" % ("".join(chr(c) for c in miss) or "（没有）"))
     print("  写出 %s  %d 字节  sha256 %s" % (os.path.relpath(OUT, HERE), len(body.encode()), hashlib.sha256(body.encode()).hexdigest()[:16]))
+    return build_extra(jbm, noto, chars, jc, nc, rescan_x)
+
+
+def build_extra(jbm, noto, core_chars, jc, nc, rescan):
+    """FONTSX0X_20260927：内容页的字 → css/fonts-extra.css（只放核心字表里没有的字，两份不重叠）。"""
+    import base64
+    if rescan:
+        pages = [os.path.join(HERE, p) for p in EXTRA_PAGES if os.path.exists(os.path.join(HERE, p))]
+        got = set()
+        for f in pages:
+            got |= set(io.open(f, encoding="utf-8").read())
+        new = sorted(c for c in got - core_chars if c not in "\r\n")
+        print("  内容页 %d 个（%s），核心字表之外的字 %d 个 → 写进 %s" % (len(pages), ", ".join(os.path.basename(p) for p in pages) or "无",
+                                                                       len(new), os.path.relpath(CHARS_X, HERE)))
+        if len(pages) != len(EXTRA_PAGES):
+            print("★ 内容页少了（要 %d 个，找到 %d 个）—— 扫不到 != 没有字，停" % (len(EXTRA_PAGES), len(pages))); return 2
+        io.open(CHARS_X, "w", encoding="utf-8", newline="\n").write("".join(new) + "\n")
+    if not os.path.exists(CHARS_X):
+        print("  （没有 %s，不生成 fonts-extra.css）" % os.path.relpath(CHARS_X, HERE)); return 0
+    xs = set(io.open(CHARS_X, encoding="utf-8").read().rstrip("\n")) - core_chars
+    lat = sorted(ord(c) for c in xs if ord(c) in jc and not is_cjk(ord(c)) and ord(c) >= 0x20)
+    cjk = sorted(ord(c) for c in xs if ord(c) in nc and ord(c) not in jc)
+    css = ["/* fonts-extra.css —— 由 web/build-fonts.py 生成，别手改。FONTSX0X_20260927",
+           "   白皮书等内容页用到、而核心字表（fonts-chars.txt）里没有的字。字体族同样叫「%s」，跟 fonts.css 按 unicode-range 分工、互不重叠。 */" % FAMILY]
+    n_lat = n_cjk = widened = 0
+    faces = []
+    if cjk:
+        cjk_b, cjk_have, widened = build(noto, cjk, (400, 700), widen=True)
+        cp = sorted(set(cjk) & cjk_have); n_cjk = len(cp)
+        if cp: faces.append((cjk_b, cp))
+    if lat:
+        lat_b, lat_have, _ = build(jbm, lat, (400, 800))
+        cp = sorted(set(lat) & lat_have); n_lat = len(cp)
+        if cp: faces.append((lat_b, cp))
+    for data, cps in faces:   # 粗细范围跟 fonts.css 一样写 400 800（原因见上面 main 里那段注释）
+        css.append("@font-face{font-family:\"%s\";font-style:normal;font-weight:400 800;font-display:block;" % FAMILY)
+        css.append("  src:url(data:font/woff2;base64,%s) format(\"woff2\");" % base64.b64encode(data).decode("ascii"))
+        css.append("  unicode-range:%s}" % ranges(cps))
+    body = "\n".join(css) + "\n"
+    io.open(OUT_X, "w", encoding="utf-8", newline="\n").write(body)
+    miss = sorted(ord(c) for c in xs if ord(c) >= 0x20 and ord(c) not in jc and ord(c) not in nc and not c.isspace())
+    print("  内容页字体：英文 %d 字 · 中文 %d 字（%d 个改成两格宽）· 两套都没有的：%s" % (n_lat, n_cjk, widened, "".join(chr(c) for c in miss) or "（没有）"))
+    print("  写出 %s  %d 字节  sha256 %s" % (os.path.relpath(OUT_X, HERE), len(body.encode()), hashlib.sha256(body.encode()).hexdigest()[:16]))
     return 0
 
 
