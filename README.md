@@ -15,6 +15,8 @@ This repository does one thing: **it lets you confirm two facts yourself, withou
 
 Prefer an animated version first? **[0x000000000.com/ppt](https://0x000000000.com/ppt)** — the 6 steps, why you do not need to trust us, why we cannot get your private key, and where the proof is. That page's file is here too (`ppt.html`).
 
+The home page also has a **free address-poisoning check** for TRON and a list of **security news** (incidents and research findings, each with its source). The check sends the platform one thing only: the address you pasted (see the table below).
+
 The white paper: **[0x000000000.com/wp](https://0x000000000.com/wp)** — what runs today, the scam we work against (address poisoning), what we build next, and how to check each claim yourself. Its file is here too (`wp.html`).
 
 ## How it works (one paragraph)
@@ -57,9 +59,10 @@ One file, one fingerprint: opened on the website it shows only "Download"; downl
 | Waiting for payment / minting | Asks for order progress and the payment address — **nothing of yours is sent** | Must carry no content |
 | Collect | One signature (proves it is you) | Same as above, deterministic |
 | Receipt | One signature made with the complete key you built | Deterministic; the platform does not hold your half and could not forge it |
+| Free check (only when you use it) | The TRON address you pasted into the check box; if you also filled in your own address, that address in a second request | Exactly one field, equal to the address you pasted. The check runs it while your half of the key is already in the page's memory |
 
 The page **connects nowhere else**. The check also really goes offline: "Make key" completes offline with 0 requests in the meantime; after collecting, "Build my key" and "Export wallet file" complete offline with 0 requests.
-A few more: opened as the website, the file shows only "Download" and no steps; downloaded and opened offline from the start, both TRON and EVM can be chosen and a key can be made — also when the network is down but the browser thinks it is online (requests just hang): the choice is there the moment the page opens, it does not wait for them; a first-time visitor sees English, and switching to Chinese after making a key keeps the key. The check code is `test/noleak.cjs` — anyone can run it.
+A few more: opened as the website, the file shows only "Download" and no steps; downloaded and opened offline from the start, both TRON and EVM can be chosen and a key can be made — also when the network is down but the browser thinks it is online (requests just hang): the choice is there the moment the page opens, it does not wait for them; a first-time visitor sees English, and switching to Chinese after making a key keeps the key; the two links in the top bar go to `/ppt` and `/wp` (in the downloaded copy they open a new window, so the page you are working in stays open). The check code is `test/noleak.cjs` — anyone can run it.
 
 ## The wallet file (exported in step 5)
 
