@@ -22,6 +22,22 @@ const dict = {
     // PPTNAV0X_20260924：顶栏导航 → 0x000000000.com/ppt（6 步说明书 / 白皮书）
     navPpt: '说明书 · 6 步看懂',
     navWp: '白皮书',   // WPNAV0X_20260928
+    // CONTRACT0X_20260928：三种铸造各一页、各一个名字（DSJ「名字和页面要不一样，不要让人给混了」）+ 首页三张入口卡片 + 以太坊类各链同址
+    navVanity: '个人靓号', navContract: '合约靓号', navToken: '发币地址定制',
+    ecHead: '三样东西，各有各的一页 —— 不会混',
+    ec1T: '防骗提醒', ec1D: '有人仿你的地址，第一时间告诉你：每周免费提醒一次；要实时的，是付费提醒。', ec1Go: '去看提醒 →',
+    ec2T: '个人靓号（就是这一页）', ec2D: '你自己的钱包地址，私钥只在你自己手里。0x 开头的那种，在以太坊、BSC、Base 等各条链上都是同一个地址。', ec2Go: '往下看价格 ↓',
+    ec3T: '给项目方', ec3D: '合约地址、代币地址也能挑 —— 我们只算「盐」，不碰任何钥匙；各条链同一个地址。', ec3a: '合约靓号 →', ec3b: '发币地址定制 →',
+    heroEvm: '0x 开头的靓号：同一把私钥，在以太坊、BSC、Polygon、Arbitrum、Optimism、Base、Avalanche C 链这些以太坊类的链上都是同一个地址 —— 买一个，这些链都能用。每条链上的钱是分开记的，转账时选对链。',
+    // CONTRACT0X_20260928：防混第 1、2 条 —— 页首「你现在在」+ 三格对照表（表里的字跟 js/c2app.js 的 cmpRows 逐字相同，order-ui.test 第 8 段比对）
+    hereBig: '你现在在：个人靓号（给个人、商家）',
+    hereSub: '你自己的钱包地址，私钥只在你手里 —— 一共六步，第 1 步断网也能做。',
+    cmpHead: '三个铸造页，别走错：',
+    cmpWhat: '是什么', cmpWhat1: '你自己的钱包地址', cmpWhat2: '你部署的合约的地址', cmpWhat3: '你发的币的合约地址',
+    cmpFor: '给谁', cmpFor1: '个人、商家', cmpFor2: '项目方', cmpFor3: '发币的人、发币平台',
+    cmpKey: '钥匙', cmpKey1: '钥匙只在你手里（你造一半、我们算另一半）', cmpKey2: '不碰任何钥匙（只算盐）', cmpKey3: '不碰任何钥匙（只算盐）',
+    cmpEvm: '以太坊类各条链', cmpEvm1: '同一个地址（同一把钥匙）', cmpEvm2: '同一个地址（CreateX）', cmpEvm3: '同一个地址（CreateX）',
+    cmpWhere: '去哪',
     // TICKER0X_20260924：顶栏那一行一直在「打字」的话。第一句是 DSJ 要的那句意思，另外两句是能自己核对的证据。
     ticker: ['我们不要你的信任 —— 我们给你证据。', '私钥从不离开你的电脑 —— 发给我们的每一句话都列给你看。', '这个页面 = GitHub 上公开的那份，一字不差 —— 你自己核对。'],
     tickerSr: '我们不要你的信任 —— 我们给你证据。',
@@ -254,6 +270,20 @@ const dict = {
     heroCta: 'Start minting →',
     navPpt: 'How it works · 6 steps',
     navWp: 'White paper',
+    navVanity: 'Vanity Wallet', navContract: 'Vanity Contract', navToken: 'Token Address',
+    ecHead: 'Three things, three pages - so they never get mixed up',
+    ec1T: 'Scam alerts', ec1D: 'Know as soon as someone imitates your address: one free alert a week; real-time alerts are paid.', ec1Go: 'See alerts →',
+    ec2T: 'Vanity Wallet (this page)', ec2D: 'Your own wallet address - the private key stays only with you. A 0x one is the same address on Ethereum, BSC, Base and the other chains.', ec2Go: 'See prices ↓',
+    ec3T: 'For project teams', ec3D: 'Contract and token addresses can be chosen too - we only compute a salt and never touch any key; the same address on every chain.', ec3a: 'Vanity Contract →', ec3b: 'Token Address →',
+    heroEvm: '0x vanity addresses: the same private key gives the same address on Ethereum, BSC, Polygon, Arbitrum, Optimism, Base, Avalanche C-Chain and other Ethereum-type chains - buy one, use it on all of them. Funds on each chain are kept separately, so pick the right chain when you send.',
+    hereBig: 'You are on: Vanity Wallet (for individuals and merchants)',
+    hereSub: 'Your own wallet address, and only you hold the private key - six steps, and step 1 works offline.',
+    cmpHead: 'Three minting pages - make sure you are on the right one:',
+    cmpWhat: 'What', cmpWhat1: 'Your own wallet address', cmpWhat2: 'The address of a contract you deploy', cmpWhat3: 'The contract address of a token you issue',
+    cmpFor: 'For', cmpFor1: 'Individuals, merchants', cmpFor2: 'Project teams', cmpFor3: 'Token issuers, launch platforms',
+    cmpKey: 'Keys', cmpKey1: 'Only you hold the key (you make half, we compute the other half)', cmpKey2: 'No keys at all (we only compute a salt)', cmpKey3: 'No keys at all (we only compute a salt)',
+    cmpEvm: 'Across EVM chains', cmpEvm1: 'Same address (same key)', cmpEvm2: 'Same address (CreateX)', cmpEvm3: 'Same address (CreateX)',
+    cmpWhere: 'Where',
     ticker: ["We don't ask for your trust - we give you proof.", 'Your private key never leaves your computer - every message sent to us is listed for you.', 'This page = the public copy on GitHub, byte for byte - verify it yourself.'],
     tickerSr: "We don't ask for your trust - we give you proof.",
     gsEvm0: '0x0000000000 · prefix 10', gsEvm8: '0x8888888888 · prefix 10', gsTron: 'TXooooo… · TRON prefix 6',
@@ -1562,6 +1592,8 @@ try {
 } catch (e) {}
 const toOrder = (smooth) => { const g = $('#secOrder'); if (g) g.scrollIntoView({ behavior: smooth && !reducedMotion ? 'smooth' : 'auto', block: 'start' }); };
 { const b = $('#heroCta'); if (b) b.addEventListener('click', () => toOrder(true)); }
+// CONTRACT0X_20260928：入口卡片「个人靓号（就是这一页）」—— 只滚到价格那一块，不碰地址栏
+{ const b = $('#ecVanity'); if (b) b.addEventListener('click', () => { const h = document.querySelector('.hero'); if (h) h.scrollIntoView({ behavior: reducedMotion ? 'auto' : 'smooth', block: 'start' }); }); }
 // PPTNAV0X_20260924：说明书在 0x000000000.com/ppt。下载到电脑上的这一份（file://）要写完整网址、开新窗口 ——
 //   不然点一下就离开了这一页，内存里造好的钥匙和做到一半的单就没了。页脚的 FAQ / 订单查询同理（原来是相对路径，下载版点了是死链）。
 if (!/^https?:$/.test(location.protocol)) {

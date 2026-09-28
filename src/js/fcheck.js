@@ -47,6 +47,10 @@
       caseH: '最像的一宗真案子', src: '来源',
       vfLive: (v) => '✅ 认证过：这个地址在 @' + v.name + '（' + (v.tier === 'yellow' ? '黄勾 · 商家 / 项目方' : '蓝勾 · 个人') + '）的收款名片上',
       vfNotice: (v) => '⏳ 这个地址登记在 @' + v.name + ' 名下，正在公示（还没生效）',
+      // CONTRACT0X_20260928：登记的是合约（发的币、部署的合约）—— 说「官方合约」；证明的是「只有它认证过的部署地址部署得出」
+      vfLiveC: (v) => '✅ 这是 @' + v.name + '（' + (v.tier === 'yellow' ? '黄勾 · 商家 / 项目方' : '蓝勾 · 个人') + '）登记的官方合约',
+      vfNoticeC: (v) => '⏳ 这个合约登记在 @' + v.name + ' 名下，正在公示（还没生效）',
+      vfWhatC: '我们核过：这个合约只可能是它名下认证过的部署地址部署出来的。名字一样、地址不一样的币，就不是它登记的这一个。',
       vfWhat: '认证证明的是「这些地址、这个官网、这个频道在同一个人手里」，不证明谁是好人。',
       vfLike: (l) => '⛔ 先别转：它长得像 @' + l.name + ' 认证过的地址，但不是同一个',
       vfLikeWhy: (l) => '要付钱给 @' + l.name + '，只从它的收款名片上复制地址。',
@@ -91,6 +95,9 @@
       caseH: 'The closest real case', src: 'Source',
       vfLive: (v) => '✅ Verified: this address is on the payment card of @' + v.name + ' (' + (v.tier === 'yellow' ? 'gold check · business / project' : 'blue check · personal') + ')',
       vfNotice: (v) => '⏳ This address is registered to @' + v.name + ', on public notice (not live yet)',
+      vfLiveC: (v) => '✅ This is the official contract registered by @' + v.name + ' (' + (v.tier === 'yellow' ? 'gold check · business / project' : 'blue check · personal') + ')',
+      vfNoticeC: (v) => '⏳ This contract is registered to @' + v.name + ' and is on public notice (not live yet)',
+      vfWhatC: 'We checked: only a deployer address verified by this account could have deployed this contract. A token with the same name at a different address is not the one it registered.',
       vfWhat: 'A verification proves that these addresses, this website and this channel are in the same hands - not that anyone is a good person.',
       vfLike: (l) => '⛔ Stop: it looks like an address verified by @' + l.name + ', but it is NOT the same one',
       vfLikeWhy: (l) => 'To pay @' + l.name + ', copy the address only from its payment card.',
@@ -153,8 +160,9 @@
     if (!vf) return '';
     const card = (n) => (/^[a-z0-9_]{3,20}$/.test(n) ? '<p><a href="' + SITE + '/@' + n + '" target="_blank" rel="noopener noreferrer">' + esc(T('vfCard')(n)) + '</a></p>' : '');
     const v = vf.verified, l = vf.like;
-    if (v && typeof v.name === 'string') return '<div class="fc-card lv-' + (v.status === 'live' ? 'green' : 'amber') + '"><div class="fc-h">' + esc(T(v.status === 'live' ? 'vfLive' : 'vfNotice')(v)) + '</div>'
-      + '<p class="fc-dim">' + esc(T('vfWhat')) + '</p>' + card(v.name) + '</div>';
+    if (v && typeof v.name === 'string') { const c = v.contract === true ? 'C' : '';
+      return '<div class="fc-card lv-' + (v.status === 'live' ? 'green' : 'amber') + '"><div class="fc-h">' + esc(T((v.status === 'live' ? 'vfLive' : 'vfNotice') + c)(v)) + '</div>'
+      + '<p class="fc-dim">' + esc(T('vfWhat' + c)) + '</p>' + card(v.name) + '</div>'; }
     if (l && typeof l.name === 'string' && typeof l.address === 'string') return '<div class="fc-card lv-red"><div class="fc-h">' + esc(T('vfLike')(l)) + '</div>'
       + pair(addr, T('thisL'), l.address, '@' + l.name + ' · ' + T('vfL'), l.head, l.tail, '', chain) + '<p>' + esc(T('vfLikeWhy')(l)) + '</p>' + card(l.name) + '</div>';
     return '';
