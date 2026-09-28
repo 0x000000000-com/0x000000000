@@ -23,6 +23,8 @@ Payment cards: **0x000000000.com/@name** — the page a verified person or busin
 
 Vanity contracts and token addresses: **[0x000000000.com/contract](https://0x000000000.com/contract)** and **[0x000000000.com/token](https://0x000000000.com/token)** — for project teams and token issuers: a contract address that is easy to recognise and the same on every EVM chain. No key is involved at all: we compute only a salt, which works through CreateX and only for your own deployer address; you check it on your own computer and deploy it yourself. Each page is one file, here too (`0x000000000-contract.html`, `0x000000000-token.html`), put together from `src/` by `src/build-c2.mjs`.
 
+Free Generator and Zero board: **[0x000000000.com/free](https://0x000000000.com/free)** — short vanity addresses computed on your own computer, free. The whole key is made in your browser and **the page sends no requests at all**: the leak check below opens it in a real browser, generates addresses, and counts every request the page makes — it must be zero. It pins one end only (start or end; pinning both ends is what copying someone else's address needs) and goes up to 7 characters for EVM, 5 for TRON. The page is one file, here too (`0x000000000-free.html`), put together from `src/` by `src/build-free.mjs`. **[0x000000000.com/zero](https://0x000000000.com/zero)** is the Zero board: EVM addresses with the most zeros right after 0x; joining needs a tiny transfer from the address to another address of yours (the page is `zero.html` here).
+
 Official Telegram bot: **@OxOOOOOOOOObot** — spelled with the capital letter O, not the digit zero, because Telegram names cannot start with a digit. Any other bot or account using our name is not us.
 
 ## How it works (one paragraph)
@@ -50,9 +52,9 @@ One file, one fingerprint: opened on the website it shows only "Download"; downl
 
 | | What it is | Where to look |
 |---|---|---|
-| **1. The page is this one file** | The website home page = `0x000000000.html` here = the file you get from "Download the minting page" on the website, **byte for byte**. The explainer at `0x000000000.com/ppt` = `ppt.html` here, the white paper at `0x000000000.com/wp` = `wp.html` here, every payment card page `0x000000000.com/@name` = `card.html` here, and the vanity contract and token address pages `0x000000000.com/contract` and `0x000000000.com/token` = `0x000000000-contract.html` and `0x000000000-token.html` here. All their fingerprints are in `SHA256SUMS`. Every change leaves a public record here that cannot be deleted. | This page · commit history |
-| **2. Tamper patrol** | **Every hour**, machines at GitHub download the live home page, the download copy, the `/ppt` explainer, the `/wp` white paper, a payment card page and the `/contract` and `/token` pages, and compare them with the fingerprints here. **Any mismatch turns red**, visible to everyone. The check runs on GitHub; the platform cannot touch it. | First badge above |
-| **3. Private-key leak check** | For every new version, machines at GitHub walk through all 6 steps in a **real browser** and check **every single request** the page sends (table below): every field must equal a recomputed value exactly — **one extra field or one extra character turns it red**. | Second badge above |
+| **1. The page is this one file** | The website home page = `0x000000000.html` here = the file you get from "Download the minting page" on the website, **byte for byte**. The explainer at `0x000000000.com/ppt` = `ppt.html` here, the white paper at `0x000000000.com/wp` = `wp.html` here, every payment card page `0x000000000.com/@name` = `card.html` here, the vanity contract and token address pages `0x000000000.com/contract` and `0x000000000.com/token` = `0x000000000-contract.html` and `0x000000000-token.html` here, the Free Generator `0x000000000.com/free` = `0x000000000-free.html` here, and the Zero board `0x000000000.com/zero` = `zero.html` here. All their fingerprints are in `SHA256SUMS`. Every change leaves a public record here that cannot be deleted. | This page · commit history |
+| **2. Tamper patrol** | **Every hour**, machines at GitHub download the live home page, the download copy, the `/ppt` explainer, the `/wp` white paper, a payment card page, the `/contract` and `/token` pages, the `/free` Free Generator and the `/zero` Zero board, and compare them with the fingerprints here. **Any mismatch turns red**, visible to everyone. The check runs on GitHub; the platform cannot touch it. | First badge above |
+| **3. Private-key leak check** | For every new version, machines at GitHub walk through all 6 steps in a **real browser** and check **every single request** the page sends (table below): every field must equal a recomputed value exactly — **one extra field or one extra character turns it red**. The Free Generator page gets its own run: it generates real addresses, opens each saved wallet file with the password, and counts the requests the page sends — **it must be zero**. | Second badge above |
 | **4. Font rebuild** | The page embeds two open-source fonts (see "Fonts" below). Machines at GitHub rebuild them from the official original font files; the result must be **byte-for-byte identical** to what the page carries — that large block of font data holds fonts and nothing else. | Third badge above |
 
 ## Everything the page sends to the platform
@@ -107,9 +109,11 @@ curl -s https://0x000000000.com/wp | shasum -a 256
 curl -s https://0x000000000.com/@0x000000000 | shasum -a 256
 curl -s https://0x000000000.com/contract | shasum -a 256
 curl -s https://0x000000000.com/token | shasum -a 256
+curl -s https://0x000000000.com/free | shasum -a 256
+curl -s https://0x000000000.com/zero | shasum -a 256
 ```
 
-The first must equal the `0x000000000.html` line in `SHA256SUMS`, the second the `ppt.html` line, the third the `wp.html` line, the fourth the `card.html` line (every `/@name` page is that same file), the fifth the `0x000000000-contract.html` line and the sixth the `0x000000000-token.html` line.
+The first must equal the `0x000000000.html` line in `SHA256SUMS`, the second the `ppt.html` line, the third the `wp.html` line, the fourth the `card.html` line (every `/@name` page is that same file), the fifth the `0x000000000-contract.html` line, the sixth the `0x000000000-token.html` line, the seventh the `0x000000000-free.html` line and the eighth the `zero.html` line.
 
 **Rebuild it from source yourself** (`src/` holds the complete page source)
 
@@ -123,7 +127,13 @@ The resulting `rebuilt.html` must be byte-for-byte identical to `0x000000000.htm
 node src/build-c2.mjs src rebuilt
 ```
 
-The two files it writes into `rebuilt/` must be byte-for-byte identical to `0x000000000-contract.html` and `0x000000000-token.html`.
+The two files it writes into `rebuilt/` must be byte-for-byte identical to `0x000000000-contract.html` and `0x000000000-token.html`. The Free Generator page too:
+
+```
+node src/build-free.mjs src rebuilt
+```
+
+The file it writes into `rebuilt/` must be byte-for-byte identical to `0x000000000-free.html`.
 
 **Rebuild the fonts** (Python 3.11, after `pip install fonttools==4.62.1 brotli==1.2.0`)
 
