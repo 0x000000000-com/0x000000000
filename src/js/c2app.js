@@ -21,7 +21,7 @@
       title: { contract: '0x000000000 — 合约靓号', token: '0x000000000 — 发币地址定制' },
       here: { contract: '你现在在：合约靓号（给项目方）', token: '你现在在：发币地址定制（给发币的人）' },
       hereSub: { contract: '合约地址好认、各条链同一个地址。我们只算「盐」—— 这一单不碰任何钥匙。', token: '代币合约地址带上你的币名或吉利号，贴在群里一眼认出是真币。我们只算「盐」—— 这一单不碰任何钥匙。' },
-      navVanity: '个人靓号', navContract: '合约靓号', navToken: '发币地址定制', navWp: '白皮书',
+      navVanity: '个人靓号', navContract: '合约靓号', navToken: '发币地址定制', navFree: '免费生成', navWp: '白皮书',
       trust: '页面代码公开在 GitHub · 这一单不碰任何钥匙 · 零九零自己的钱也是这样防的',
       cmpHead: '三个铸造页，别走错：',
       cmpRows: [['', '个人靓号', '合约靓号', '发币地址定制'],
@@ -127,7 +127,7 @@
       title: { contract: '0x000000000 — Vanity Contract', token: '0x000000000 — Token Address' },
       here: { contract: 'You are on: Vanity Contract (for project teams)', token: 'You are on: Token Address (for token issuers)' },
       hereSub: { contract: 'A contract address people recognize - the same address on every EVM chain. We only compute the "salt": no keys are involved in this order.', token: 'A token contract address that carries your coin name or lucky number - people in the group can tell the real coin at a glance. We only compute the "salt": no keys are involved in this order.' },
-      navVanity: 'Vanity Wallet', navContract: 'Vanity Contract', navToken: 'Token Address', navWp: 'White paper',
+      navVanity: 'Vanity Wallet', navContract: 'Vanity Contract', navToken: 'Token Address', navFree: 'Free Generator', navWp: 'White paper',
       trust: 'Page code published on GitHub · No keys are involved in this order · This is how 0x000000000 protects its own money',
       cmpHead: 'Three minting pages - make sure you are on the right one:',
       cmpRows: [['', 'Vanity Wallet', 'Vanity Contract', 'Token Address'],
@@ -294,7 +294,7 @@
     document.documentElement.lang = lang;
     document.title = pick(t.title);
     txt('ttl', pick(t.title)); txt('hereBig', pick(t.here)); txt('hereSub', pick(t.hereSub));
-    txt('navVanity', t.navVanity); txt('navContract', t.navContract); txt('navToken', t.navToken); txt('navWp', t.navWp);
+    txt('navVanity', t.navVanity); txt('navContract', t.navContract); txt('navToken', t.navToken); txt('navFree', t.navFree); txt('navWp', t.navWp);
     txt('trustBar', t.trust); txt('cmpHead', t.cmpHead);
     var cols = { contract: 2, token: 3 }[PRODUCT];
     $('#cmpTable').innerHTML = t.cmpRows.map(function (r, ri) {

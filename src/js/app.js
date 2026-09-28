@@ -23,7 +23,7 @@ const dict = {
     navPpt: '说明书 · 6 步看懂',
     navWp: '白皮书',   // WPNAV0X_20260928
     // CONTRACT0X_20260928：三种铸造各一页、各一个名字（DSJ「名字和页面要不一样，不要让人给混了」）+ 首页三张入口卡片 + 以太坊类各链同址
-    navVanity: '个人靓号', navContract: '合约靓号', navToken: '发币地址定制',
+    navVanity: '个人靓号', navContract: '合约靓号', navToken: '发币地址定制', navFree: '免费生成',
     ecHead: '三样东西，各有各的一页 —— 不会混',
     ec1T: '防骗提醒', ec1D: '有人仿你的地址，第一时间告诉你：每周免费提醒一次；要实时的，是付费提醒。', ec1Go: '去看提醒 →',
     ec2T: '个人靓号（就是这一页）', ec2D: '你自己的钱包地址，私钥只在你自己手里。0x 开头的那种，在以太坊、BSC、Base 等各条链上都是同一个地址。', ec2Go: '往下看价格 ↓',
@@ -270,7 +270,7 @@ const dict = {
     heroCta: 'Start minting →',
     navPpt: 'How it works · 6 steps',
     navWp: 'White paper',
-    navVanity: 'Vanity Wallet', navContract: 'Vanity Contract', navToken: 'Token Address',
+    navVanity: 'Vanity Wallet', navContract: 'Vanity Contract', navToken: 'Token Address', navFree: 'Free Generator',
     ecHead: 'Three things, three pages - so they never get mixed up',
     ec1T: 'Scam alerts', ec1D: 'Know as soon as someone imitates your address: one free alert a week; real-time alerts are paid.', ec1Go: 'See alerts →',
     ec2T: 'Vanity Wallet (this page)', ec2D: 'Your own wallet address - the private key stays only with you. A 0x one is the same address on Ethereum, BSC, Base and the other chains.', ec2Go: 'See prices ↓',
