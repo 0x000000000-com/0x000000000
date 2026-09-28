@@ -3,10 +3,12 @@
 // 用真浏览器打开网站那【一个文件】，把 6 步走完（造钥匙 → 下单 → 付款 → 铸造 → 取货合钥匙 → 收条），
 // 截下页面发出去的每一个请求，逐个对照【白名单】：只许是下面几种，而且每个字段都要跟重算出来的值逐字相等 ——
 //   下单      POST /api/orders            正好 {chain,prefix,suffix,payChain}，值 = 用户选的
+//             从推荐链接进来的（REF0X_20260928）另外多一个 ref，值只许是链接 / 文件名里带的那个推荐码；没带推荐码的单一个字都不许多
 //   传公钥    POST /api/orders/:id/share   正好 {A,sig}：A = s·G；sig = RFC6979 确定性签名(s, 挑战串)
 //   取货      GET  /api/orders/:id/download?sig=  只许一个 sig = 确定性签名(s, 挑战串)
 //   收条      POST /api/orders/:id/receipt 正好 {sig} = 确定性签名(完整私钥 k, 回执原文)
 //   免费查    POST /api/check              正好 {address} = 用户自己贴进去的那个地址（查的地址、你自己的地址，各一次）
+//   不打算付  POST /api/fw/leave           正好 {reason} = 付款页上点的那一个词（REF0X_20260928 第 8 步；走一遍时点一次「太贵」）
 //   其余      查目录 / 查状态 / 要收款地址 / 模拟付款：不许带任何内容
 // 签名是确定性的（RFC6979），随机数那一格没有空间藏东西；A 由 s 唯一决定。于是请求内容里没有一个字节能夹带私钥（请求的次数和时间间隔不在这项检查的范围内）。
 // 另外还查：断网也能造钥匙；页面只取它自己这一个文件；除了平台接口不连任何别的地方；请求头没有自定义项。
@@ -28,6 +30,8 @@ const DATA = fs.mkdtempSync('/tmp/noleak_');
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 // FREECHECK0X_20260928：免费查那一格里要贴的两个公开地址（查的地址 / 你自己的地址）—— 白名单只认这两个值
 const CHECK_A = 'TQDm3ZVNg4UYz38kc4QAF2Y4TCh6cH98aS', CHECK_MINE = 'TCwMNMzJsGwiJwEWCqDdWpmri5K9cYKqsw';
+// REF0X_20260928：推荐码。第一种单从带 ?ref= 的链接进来（故意写小写，页面要自己转大写），白名单只认这一个值
+const REF_CODE = 'AB23CD';
 let fail = 0; const chk = (ok, m) => { if (!ok) { fail++; console.log('  ★ ' + m); } else console.log('  ✓ ' + m); };
 
 const srv = spawn(process.execPath, [SERVER], {
@@ -83,6 +87,49 @@ async function modes(browser) {
   } catch (e) { errs.push('断网造 TRON 钥匙没做成：' + e.message.split('\n')[0]); }
   await ctx2.close();
   return { site, file, secChain, errs };
+}
+
+// REF0X_20260928：推荐链接。网站上带 ?ref= 进来：「下载」那一块说一句 + 两个下载按钮的文件名带上推荐码（文件内容一个字节不变）+ 地址栏照样洗干净 +
+//   一个请求都不带推荐码；码长得不对（有 0 1 I O、少一位）就当没有。下载到电脑上：文件名里的推荐码（包括浏览器给重名文件加的「 (1)」）
+//   自己填进第 2 步；普通文件名就空着。
+async function refModes(browser) {
+  const html = fs.readFileSync(path.join(PAGE_DIR, 'index.html'), 'utf8'), out = [];
+  const site = async (qs) => {
+    const c = await browser.newContext(); const sent = [], errs = [];
+    await c.route('https://0x000000000.com/**', async (r) => {
+      const u = new URL(r.request().url()); sent.push(r.request().method() + ' ' + u.pathname + u.search + ' ' + (r.request().postData() || ''));
+      if (u.pathname === '/' || u.pathname === '/index.html') return r.fulfill({ status: 200, contentType: 'text/html; charset=utf-8', body: html });
+      if (u.pathname.startsWith('/api/')) return r.fulfill({ response: await r.fetch({ url: 'http://127.0.0.1:8787' + u.pathname + u.search }) });
+      return r.abort();
+    });
+    const p = await c.newPage(); p.on('pageerror', (e) => errs.push(e.message));
+    await p.goto('https://0x000000000.com/' + qs); await sleep(1400);
+    const v = await p.evaluate(() => ({ url: location.href, show: !document.querySelector('#dlRef').hidden, text: document.querySelector('#dlRef').textContent,
+      d1: (document.querySelector('#dlPage') || {}).getAttribute && document.querySelector('#dlPage').getAttribute('download'),
+      d2: (document.querySelector('#dlPage2') || {}).getAttribute && document.querySelector('#dlPage2').getAttribute('download'),
+      h2: (document.querySelector('#dlPage2') || {}).getAttribute && document.querySelector('#dlPage2').getAttribute('href') }));
+    await c.close();
+    return { ...v, sent: sent.filter((x) => x.startsWith('GET /api') || x.startsWith('POST')), errs };
+  };
+  const a = await site('?ref=' + REF_CODE.toLowerCase());
+  out.push([a.show && a.text.includes(REF_CODE) && a.d1 === '0x000000000_ref-' + REF_CODE + '.html' && a.d2 === a.d1 && a.h2 === '0x000000000.html',
+    `网站上从推荐链接进来：「下载」那一块说了推荐码 ${REF_CODE}，两个下载按钮的文件名都是 ${a.d2}（下载的还是同一个 0x000000000.html）`]);
+  out.push([a.url === 'https://0x000000000.com/' && !a.sent.some((x) => x.toUpperCase().includes(REF_CODE)) && !a.errs.length,
+    `地址栏洗成 ${a.url}；网站上发出去的 ${a.sent.length} 个请求一个都不带推荐码` + (a.errs.length ? '；页面报错：' + a.errs.join(' | ') : '')]);
+  const b = await site('?ref=AB0CDE');
+  out.push([!b.show && b.d2 === '0x000000000.html' && !b.errs.length, `推荐码长得不对（有 0）→ 当没有：不说、文件名不变（${b.d2}）`]);
+  const fileOpen = async (name) => {
+    const f = path.join(DATA, name); fs.writeFileSync(f, html);
+    const c = await browser.newContext({ offline: true }); const p = await c.newPage(); const errs = []; p.on('pageerror', (e) => errs.push(e.message));
+    await p.goto('file://' + f); await sleep(1300);
+    const v = await p.evaluate(() => ({ code: (document.querySelector('#refCode') || {}).value, note: (document.querySelector('#refNote') || {}).textContent || '' }));
+    await c.close();
+    return { ...v, errs };
+  };
+  const f1 = await fileOpen('0x000000000_ref-' + REF_CODE + '.html'), f2 = await fileOpen('0x000000000_ref-' + REF_CODE.toLowerCase() + ' (1).html'), f3 = await fileOpen('0x000000000.html');
+  out.push([f1.code === REF_CODE && f1.note.includes(REF_CODE) && f2.code === REF_CODE && f3.code === '' && !f1.errs.length && !f2.errs.length && !f3.errs.length,
+    `下载到电脑上：文件名带推荐码 → 第 2 步自己填好（${f1.code}）；浏览器加了「 (1)」也认（${f2.code}）；普通文件名 → 空着（${f3.code || '空'}）`]);
+  return out;
 }
 
 // OFFLINEHANG0X_20260924：网是断的、浏览器却以为在线（Windows 虚拟网卡那种）—— 请求发出去一直没回音。
@@ -396,7 +443,7 @@ async function ui(browser) {
   return res;
 }
 
-async function walk(browser, N, chain, pos, pre, suf) {
+async function walk(browser, N, chain, pos, pre, suf, ref = '') {
   const ctx = await browser.newContext({ viewport: { width: 1280, height: 900 }, acceptDownloads: true });
   await ctx.addInitScript(() => { try { localStorage.setItem('0xlang2', 'zh'); } catch (e) {} });
   const page = await ctx.newPage();
@@ -406,7 +453,8 @@ async function walk(browser, N, chain, pos, pre, suf) {
     try { x.headers = await r.allHeaders(); } catch (e) { x.headers = r.headers(); } });
   page.on('response', async (r) => { if (new URL(r.url()).port === '8787') { try { resp.push(await r.json()); } catch (e) {} } });
   page.on('websocket', (ws) => { wire.push({ url: ws.url(), method: 'WS', body: '', headers: {} }); });
-  await page.goto('http://127.0.0.1:8080/#secOrder'); await sleep(1500);
+  await page.goto('http://127.0.0.1:8080/' + (ref ? '?ref=' + ref.toLowerCase() : '') + '#secOrder'); await sleep(1500);
+  const refShown = await page.evaluate(() => (document.querySelector('#refCode') || {}).value || '');
   if (chain === 'tron') { await page.click('#chainPick [data-chain="tron"]'); await sleep(300); }
   await page.selectOption('#orderPos', pos); await page.dispatchEvent('#orderPos', 'change');
   await page.fill('#orderPat', pos === 'suffix' ? suf : pre); await page.dispatchEvent('#orderPat', 'input');
@@ -427,6 +475,9 @@ async function walk(browser, N, chain, pos, pre, suf) {
   await page.waitForFunction(() => { const b = document.querySelector('#fcResult'); return !!b && !b.hidden && !!b.querySelector('.fc-card') && !b.querySelector('.lv-dim'); }, null, { timeout: 15000 });
   await page.click('#btnCreate');
   await page.waitForFunction(() => !document.querySelector('#payInfo').hidden, null, { timeout: 15000 });
+  // REF0X_20260928 第 8 步：付款页「不打算付了？」—— 点一次「太贵」再付。白名单只认 {reason:"price"}
+  await page.click('#leaveBox [data-leave="price"]');
+  await page.waitForFunction(() => /收到/.test(document.querySelector('#leaveBox').textContent), null, { timeout: 5000 });
   await page.click('#btnPay');
   await page.waitForFunction(() => /可以取货/.test(document.querySelector('#out4').textContent), null, { timeout: 90000 });
   await page.click('#btnDownload');
@@ -450,7 +501,7 @@ async function walk(browser, N, chain, pos, pre, suf) {
   await page.waitForFunction(() => /收条收到了/.test(document.querySelector('#out6').textContent), null, { timeout: 15000 });
   await sleep(500);
   await ctx.close();
-  return { s, k, wire, resp, offlineReq, offlineReq2, errs, ksName, ksJson, plainBtn };
+  return { s, k, wire, resp, offlineReq, offlineReq2, errs, ksName, ksJson, plainBtn, ref, refShown };
 }
 
 (async () => {
@@ -466,13 +517,19 @@ async function walk(browser, N, chain, pos, pre, suf) {
     const detSig = (priv, msg) => hex(N.sign(keccak_256(Buffer.from(msg, 'utf8')), Buffer.from(priv, 'hex')).toCompactRawBytes());
     const pubOf = (priv) => hex(N.getPublicKey(Buffer.from(priv, 'hex'), false));
     for (let i = 0; i < 40; i++) { await sleep(250); try { const r = await fetch('http://127.0.0.1:8787/api/health'); if (r.ok) break; } catch (e) {} }
+    // REF0X_20260928：推荐码要真存在，平台才收带它的单（不存在 → 400 说人话）—— 直接在平台的库里放一个推荐人。
+    //   用的是假平台（没有推荐人那张表）就跳过：假平台不查推荐码。
+    try { const { DatabaseSync } = require('node:sqlite'); const d = new DatabaseSync(path.join(DATA, 'platform.db'));
+      d.prepare('INSERT OR IGNORE INTO ref_partners (code, tg_id, payout, lang, created_at) VALUES (?,?,?,?,?)').run(REF_CODE, '9001', '0x' + '31'.repeat(20), 'zh', Date.now()); d.close();
+    } catch (e) { console.log('  （平台库里没有推荐人那张表：' + e.message.split('\n')[0] + ' —— 不查推荐码的平台照样收单）'); }
     browser = await chromium.launch();
     // ONLY_UI=1：只跑最后那一段「界面」（拿旧版页面对照新判据时用 —— 旧页面在前面几段就会整段超时，看不出是哪一条红）
-    const CASES = process.env.ONLY_UI ? [] : process.env.ONLY_ONE ? [['evm', 'prefix', 'abc', '']]
-      : [['evm', 'prefix', 'abc', ''], ['tron', 'suffix', '', 'oo'], ['tron', 'both', 'TX', 'o']];
-    for (const [chain, pos, pre, suf] of CASES) {
-      console.log(`== ${chain} ${pos} ${pre}…${suf} ==`);
-      const w = await walk(browser, N, chain, pos, pre, suf);
+    const CASES = process.env.ONLY_UI ? [] : process.env.ONLY_ONE ? [['evm', 'prefix', 'abc', '', REF_CODE]]
+      : [['evm', 'prefix', 'abc', '', REF_CODE], ['tron', 'suffix', '', 'oo', ''], ['tron', 'both', 'TX', 'o', '']];
+    for (const [chain, pos, pre, suf, ref] of CASES) {
+      console.log(`== ${chain} ${pos} ${pre}…${suf}${ref ? ' · 推荐码 ' + ref : ''} ==`);
+      const w = await walk(browser, N, chain, pos, pre, suf, ref);
+      if (ref) chk(w.refShown === ref, `从推荐链接进来（?ref= 写的小写）：第 2 步的推荐码自己填好了 ${w.refShown}`);
       chk(w.offlineReq === 0, `断网点「造钥匙」照样成功，期间请求 ${w.offlineReq} 个`);
       chk(w.offlineReq2 === 0, `拿到另一半后断网：「合成我的钥匙」「导出钱包」照样成功，期间请求 ${w.offlineReq2} 个`);
       const challenge = (w.resp.find((j) => j && typeof j.challenge === 'string') || {}).challenge;
@@ -496,13 +553,17 @@ async function walk(browser, N, chain, pos, pre, suf) {
         else if (x.method === 'GET' && (p === '/api/catalog' || p === '/api/health')) kind = p.slice(5);
         else if (x.method === 'POST' && p === '/api/orders') {
           kind = 'create';
-          if (keys !== 'chain,payChain,prefix,suffix') no('下单带了多余/缺少的字段：' + keys);
-          else if (body.chain !== chain || body.prefix !== pre || body.suffix !== suf || body.payChain !== 'tron') no('下单字段值跟用户选的不一致：' + x.body);
+          if (keys !== (w.ref ? 'chain,payChain,prefix,ref,suffix' : 'chain,payChain,prefix,suffix')) no('下单带了多余/缺少的字段：' + keys);
+          else if (body.chain !== chain || body.prefix !== pre || body.suffix !== suf || body.payChain !== 'tron' || (w.ref && body.ref !== w.ref)) no('下单字段值跟用户选的不一致：' + x.body);
         } else if (x.method === 'POST' && p === '/api/check') {
           kind = 'check';   // FREECHECK0X_20260928
           if (keys !== 'address') no('免费查带了多余/缺少的字段：' + keys);
           else if (![CHECK_A, CHECK_MINE].includes(body.address)) no('免费查带的地址不是用户贴进去的那个：' + x.body.slice(0, 80));
           if (q.length) no('免费查带了查询参数：' + u.search);
+        } else if (x.method === 'POST' && p === '/api/fw/leave') {
+          kind = 'leave';   // REF0X_20260928 第 8 步：只许一个 reason，值只许是点的那一个词
+          if (keys !== 'reason') no('不打算付的原因带了多余/缺少的字段：' + keys);
+          else if (body.reason !== 'price') no('不打算付的原因不是点的那一个：' + x.body.slice(0, 80));
         } else if (/^\/api\/orders\/[0-9a-f]{8}\/share$/.test(p) && x.method === 'POST') {
           kind = 'share';
           if (keys !== 'A,sig') no('传影子带了多余/缺少的字段：' + keys);
@@ -521,11 +582,15 @@ async function walk(browser, N, chain, pos, pre, suf) {
         } else if (/^\/api\/orders\/[0-9a-f]{8}(\/payment)?$/.test(p) && x.method === 'GET') kind = p.endsWith('payment') ? 'payment' : 'status';
         else if (/^\/api\/orders\/[0-9a-f]{8}\/pay-sim$/.test(p) && x.method === 'POST') kind = 'paysim';
         if (!kind) { no('不认识的请求：' + x.method + ' ' + x.url); continue; }
+        // REF0X_20260928 顺手堵上：原来只有目录 / 健康 / 状态 / 收款地址 / 模拟付款 / 免费查查了「不许带查询参数」，
+        //   下单、传影子、收条没查 —— 内容可以藏在网址 ?… 里送出去。现在除了取货（只许一个 sig），哪一种都不许带。
+        if (kind !== 'download' && q.length) no(kind + ' 带了查询参数：' + u.search);
         if (['catalog', 'health', 'status', 'payment', 'paysim', 'preflight'].includes(kind) && (x.body || q.length)) no(kind + ' 不该带任何内容，却带了：' + (x.body || u.search));
         kinds[kind] = (kinds[kind] || 0) + 1;
       }
       chk(bad === 0 && n >= 8 && kinds.share === 1 && kinds.download >= 1 && kinds.receipt === 1 && kinds.create === 1,
         `白名单：打平台的 ${n} 个请求逐个核对，不合格 ${bad} 个 · ${JSON.stringify(kinds)}`);
+      chk(kinds.leave === 1, `不打算付的原因：点了一次「太贵」，发出去 ${kinds.leave || 0} 个请求（要 1 个），只带那一个词`);
       chk(kinds.check === 2, `免费查：钥匙在内存里时查一次，发出去 ${kinds.check || 0} 个请求（要 2 个：查的地址、你自己的地址），每个都只带贴进去的那一个地址`);
       // KSIMPORT0X_20260924：钱包文件导得进钱包 —— TRON 存 .txt（TronLink 只收 .txt）、address 写 41…（TronLink 读得懂的写法）
       const h20 = hex(keccak_256(N.getPublicKey(Buffer.from(w.k, 'hex'), false).subarray(1)).subarray(12));
@@ -545,6 +610,8 @@ async function walk(browser, N, chain, pos, pre, suf) {
     chk(m.secChain === 'tron', '断网选 TRON 造出来的钥匙备份就是 TRON 的（' + m.secChain + '）');
     chk(m.errs.length === 0, '两种打开方式页面都没有报错' + (m.errs.length ? '：' + m.errs.join(' | ') : ''));
     for (const [c, msg] of await hangOpen(browser)) chk(c, msg);
+    console.log('== 推荐链接：网站上 / 下载到电脑上 ==');
+    for (const [c, msg] of await refModes(browser)) chk(c, msg);
     console.log('== 下载版断网打开、后来联网 ==');
     for (const [c, msg] of await netsync(browser)) chk(c, msg);
     console.log('== 第 4 步：等到账 / 正在铸造 / 铸好了 ==');

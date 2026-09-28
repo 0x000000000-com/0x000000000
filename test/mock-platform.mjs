@@ -39,6 +39,8 @@ createServer(async (req, res) => {
   if (req.method === 'POST') { const ch = []; for await (const c of req) ch.push(c); const t = Buffer.concat(ch).toString(); body = t ? JSON.parse(t) : null; }
   if (p === '/api/health') return json(res, 200, FIX.health);
   if (p === '/api/catalog') return json(res, 200, FIX.catalog);
+  // 付款页「不打算付了？」一键原因：真平台只给那个词的次数加一，回 {ok:true}
+  if (p === '/api/fw/leave' && req.method === 'POST') return json(res, 200, { ok: true });
   if (p === '/api/orders' && req.method === 'POST') {
     const id = randomBytes(4).toString('hex');
     const o = { id, chain: body.chain, prefix: body.prefix || '', suffix: body.suffix || '', payChain: body.payChain || 'tron',
