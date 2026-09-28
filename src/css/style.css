@@ -229,6 +229,15 @@ tr.unpriced td{opacity:.72}
   font-size: 14px; padding: 10px 18px; border-radius: 6px; text-decoration: none; }
 .dlgate a.dlbtn:hover { filter: brightness(1.1); }
 .dlgate .dlnote { margin-top: 10px; font-size: 12.5px; color: var(--faint); }
+/* REF0X_20260928：推荐链接进来 → 「下载」那一块最上面一行；第 2 步的推荐码输入框（大写、等宽，6 位一眼看得清） */
+.dlgate .dlref { margin: 0 0 10px; padding: 8px 10px; border: 1px dashed var(--gold-d); border-radius: 8px; font-size: 13px; line-height: 1.6; }
+.dlgate .dlref .copy { margin-left: 6px; }
+.flow-ctl input.refcode { max-width: 12em; text-transform: uppercase; letter-spacing: .12em; font-family: var(--mono, monospace); }
+/* REF0X_20260928 第 8 步：付款页「不打算付了？」一键原因 */
+.step-desc.leave { display: flex; flex-wrap: wrap; gap: 6px 8px; align-items: center; }
+/* REF0X_20260928 第 6 步：招商页的规矩全文（平台现取，一条一行） */
+ol.step-desc.rules { padding-left: 1.8em; }
+ol.step-desc.rules li { margin: 4px 0; }
 /* NETGUIDE0X_20260924：每一步的「断网 / 联网 + 为什么」 */
 .netguide { margin: 12px 0; padding: 10px 12px; border: 1px dashed var(--line2); border-radius: 8px; font-size: 13px; color: var(--dim); }
 .netline { margin: 8px 0 4px; padding: 8px 10px; border-left: 3px solid var(--info); background: rgba(106,169,255,.07);
