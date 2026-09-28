@@ -514,6 +514,16 @@ textarea.c2in{background:#0a0d14;border:1px solid var(--line2);border-radius:6px
 .c2help summary{cursor:pointer;font-size:12.5px;color:var(--dim)}
 .c2page .up{color:var(--up)} .c2page .down{color:var(--down)} .c2page .ok{color:var(--up)} .c2page .dim{color:var(--faint)}
 .c2page button.copy{border:1px solid var(--line2);border-radius:6px;padding:4px 10px}
+/* FREEGEN0X_20260928: free generator page /free (accent: gray, per the nav table in the plan) */
+:root{--fr:#b7c0cf}
+body.p-free{--acc:var(--fr);--acc-d:#5d6674;--acc-bg:rgba(183,192,207,.10)}
+.fg-fix{font-family:var(--mono);color:var(--faint)}
+.fg-addr{margin:6px 0 8px}
+.fg-addr code{font-family:var(--mono);font-size:15px;color:var(--text);word-break:break-all;overflow-wrap:anywhere}
+.fg-pin{color:var(--gold-b);font-weight:700}
+.netguide.ok{border-color:rgba(47,191,143,.45);color:var(--up)}
+/* CMPNARROW0X_20260928: the first column of the comparison tables was 1-2 characters wide on phones (row labels broke into 7 lines) */
+.cmp tr > :first-child{min-width:6.5em}
 </style>
 </head>
 <body class="p-vanity">
@@ -535,7 +545,7 @@ textarea.c2in{background:#0a0d14;border:1px solid var(--line2);border-radius:6px
     <!-- WPNAV0X_20260928：白皮书 0x000000000.com/wp 的入口（首页单文件本来就要重过白名单和 GitHub，这一次一起放进来） -->
     <!-- CONTRACT0X_20260928：DSJ「合约靓号 / 发币地址定制：在网页增加导航…名字和页面要不一样，不要让人给混了」——
          三种铸造各一页、各一个名字；这一页是「个人靓号」，导航上标着「你在这」。 -->
-    <nav class="topnav" aria-label="guide"><a id="navVanity" class="cur" aria-current="page" href="/" data-site="" data-i18n="navVanity">Vanity Wallet</a><a id="navContract" href="/contract" data-site="contract" data-i18n="navContract">Vanity Contract</a><a id="navToken" href="/token" data-site="token" data-i18n="navToken">Token Address</a><a id="navPpt" href="/ppt" data-site="ppt" data-i18n="navPpt">How it works · 6 steps</a><a id="navWp" href="/wp" data-site="wp" data-i18n="navWp">White paper</a></nav>
+    <nav class="topnav" aria-label="guide"><a id="navVanity" class="cur" aria-current="page" href="/" data-site="" data-i18n="navVanity">Vanity Wallet</a><a id="navContract" href="/contract" data-site="contract" data-i18n="navContract">Vanity Contract</a><a id="navToken" href="/token" data-site="token" data-i18n="navToken">Token Address</a><a id="navFree" href="/free" data-site="free" data-i18n="navFree">Free Generator</a><a id="navPpt" href="/ppt" data-site="ppt" data-i18n="navPpt">How it works · 6 steps</a><a id="navWp" href="/wp" data-site="wp" data-i18n="navWp">White paper</a></nav>
     <span class="utc" id="utcClock">--:--:-- UTC</span>
     <span class="lang">
       <button id="btnZh" data-lang="zh">中文</button>
@@ -680,7 +690,7 @@ textarea.c2in{background:#0a0d14;border:1px solid var(--line2);border-radius:6px
           <ul class="proof">
             <li data-i18n="proof1">Your half of the key is created on your own computer and only ever stored there. The platform only receives a public key (public, like a bank account number) and signatures (proof that you hold your half, without revealing it). Everything the minting page says to the platform is listed at its bottom under "Every word this page said to the platform" - check it yourself.</li>
             <li data-i18n="proof2">"Make key" needs no network: switch off Wi-Fi before clicking and it still works.</li>
-            <li><span data-i18n="proof3">This page is a single file, byte-for-byte identical to the copy published on GitHub. GitHub's machines download the live page every hour and compare fingerprints, and run the whole flow in a real browser on every new version to check that no private key is sent - we cannot touch either check.</span> <span class="dim"><span data-i18n="proofVer">page version</span> <span id="buildId">37505c2b55af</span></span></li>
+            <li><span data-i18n="proof3">This page is a single file, byte-for-byte identical to the copy published on GitHub. GitHub's machines download the live page every hour and compare fingerprints, and run the whole flow in a real browser on every new version to check that no private key is sent - we cannot touch either check.</span> <span class="dim"><span data-i18n="proofVer">page version</span> <span id="buildId">daeab0008f8f</span></span></li>
           </ul>
           <div class="proof-links"><a id="dlPage" href="0x000000000.html" download="0x000000000.html" data-i18n="proofDl">Download the minting page to your computer</a> · <a href="https://github.com/0x000000000-com/0x000000000" target="_blank" rel="noopener" data-i18n="proofGh">Verify on GitHub</a></div>
         </div>
@@ -1437,7 +1447,7 @@ const dict = {
     navPpt: '说明书 · 6 步看懂',
     navWp: '白皮书',   // WPNAV0X_20260928
     // CONTRACT0X_20260928：三种铸造各一页、各一个名字（DSJ「名字和页面要不一样，不要让人给混了」）+ 首页三张入口卡片 + 以太坊类各链同址
-    navVanity: '个人靓号', navContract: '合约靓号', navToken: '发币地址定制',
+    navVanity: '个人靓号', navContract: '合约靓号', navToken: '发币地址定制', navFree: '免费生成',
     ecHead: '三样东西，各有各的一页 —— 不会混',
     ec1T: '防骗提醒', ec1D: '有人仿你的地址，第一时间告诉你：每周免费提醒一次；要实时的，是付费提醒。', ec1Go: '去看提醒 →',
     ec2T: '个人靓号（就是这一页）', ec2D: '你自己的钱包地址，私钥只在你自己手里。0x 开头的那种，在以太坊、BSC、Base 等各条链上都是同一个地址。', ec2Go: '往下看价格 ↓',
@@ -1684,7 +1694,7 @@ const dict = {
     heroCta: 'Start minting →',
     navPpt: 'How it works · 6 steps',
     navWp: 'White paper',
-    navVanity: 'Vanity Wallet', navContract: 'Vanity Contract', navToken: 'Token Address',
+    navVanity: 'Vanity Wallet', navContract: 'Vanity Contract', navToken: 'Token Address', navFree: 'Free Generator',
     ecHead: 'Three things, three pages - so they never get mixed up',
     ec1T: 'Scam alerts', ec1D: 'Know as soon as someone imitates your address: one free alert a week; real-time alerts are paid.', ec1Go: 'See alerts →',
     ec2T: 'Vanity Wallet (this page)', ec2D: 'Your own wallet address - the private key stays only with you. A 0x one is the same address on Ethereum, BSC, Base and the other chains.', ec2Go: 'See prices ↓',
