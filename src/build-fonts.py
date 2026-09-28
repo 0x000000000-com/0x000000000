@@ -48,7 +48,11 @@ from fontTools.varLib import instancer
 HERE = os.path.dirname(os.path.abspath(__file__))
 OUT = os.path.join(HERE, "css", "fonts.css")
 CHARS = os.path.join(HERE, "css", "fonts-chars.txt")
-EXTRA_PAGES = ("wp.html", "partners.html", "card.html", "verify.html", "alerts.html")   # FONTSX0X_20260927：内容页 —— 它们的字进 fonts-extra.css，不进核心字表（REF0X_20260928 加招商页；VERIFY0X_20260928 加收款名片、认证页、付费提醒页）
+EXTRA_PAGES = ("wp.html", "partners.html", "card.html", "verify.html", "alerts.html",   # FONTSX0X_20260927：内容页 —— 它们的字进 fonts-extra.css，不进核心字表（REF0X_20260928 加招商页；VERIFY0X_20260928 加收款名片、认证页、付费提醒页）
+               "contract.html", "token.html", "js/c2app.js", "js/salt.js", "js/news-c2.js",   # CONTRACT0X_20260928：合约靓号、发币地址定制两页和它们自己的脚本（首页不引）
+               "c2pages.mjs", "build-c2.mjs")   # 这两页的打包脚本：里面的字只跟这两页有关，不进首页那份核心字表
+# 打包出来的成品（web/build-c2.mjs 的输出）= 上面这些源文件 + 两份字体表 + 样式表，不另外扫：只要文件名以这个开头就跳过
+BUILT_PREFIX = "0x000000000-"
 OUT_X = os.path.join(HERE, "css", "fonts-extra.css")
 CHARS_X = os.path.join(HERE, "css", "fonts-extra-chars.txt")
 SRC_SHA256 = {   # 完整值（20260924 从上面两个钉住的网址下载实测）；改了源字体这里要一起改
@@ -69,8 +73,10 @@ def collect(dirs):
     for d in dirs:
         for ext in ("*.html", "*.js", "*.mjs", "css/*.css"):
             files += glob.glob(os.path.join(d, ext)) + glob.glob(os.path.join(d, "js", ext))
+    # CONTRACT0X_20260928：EXTRA_PAGES 里有了 js/ 下的脚本 —— 按「相对 web/ 的路径」比，不能只比文件名
+    rel = lambda f: os.path.relpath(f, HERE).replace(os.sep, "/")
     files = sorted({f for f in files if not f.endswith(("noble.js", ".test.mjs", "fonts.css", "fonts-extra.css")) and ".bak" not in f
-                    and os.path.basename(f) not in EXTRA_PAGES})
+                    and rel(f) not in EXTRA_PAGES and not os.path.basename(f).startswith(BUILT_PREFIX)})
     chars = set()
     for f in files:
         chars |= set(io.open(f, encoding="utf-8").read())

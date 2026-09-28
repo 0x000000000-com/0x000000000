@@ -23,7 +23,7 @@
 <link rel="stylesheet" href="css/fonts.css">
 <link rel="stylesheet" href="css/style.css">
 </head>
-<body>
+<body class="p-vanity">
 <div class="cosmos" aria-hidden="true">
   <canvas id="space"></canvas>
 </div>
@@ -40,7 +40,9 @@
     <span class="ttl">0x000000000 — Vanity Address Foundry</span>
     <!-- PPTNAV0X_20260924：DSJ「增加导航…把6个步骤详细人话解释…做成WebPPT…0x000000000.com/ppt」 -->
     <!-- WPNAV0X_20260928：白皮书 0x000000000.com/wp 的入口（首页单文件本来就要重过白名单和 GitHub，这一次一起放进来） -->
-    <nav class="topnav" aria-label="guide"><a id="navPpt" href="/ppt" data-site="ppt" data-i18n="navPpt">How it works · 6 steps</a><a id="navWp" href="/wp" data-site="wp" data-i18n="navWp">White paper</a></nav>
+    <!-- CONTRACT0X_20260928：DSJ「合约靓号 / 发币地址定制：在网页增加导航…名字和页面要不一样，不要让人给混了」——
+         三种铸造各一页、各一个名字；这一页是「个人靓号」，导航上标着「你在这」。 -->
+    <nav class="topnav" aria-label="guide"><a id="navVanity" class="cur" aria-current="page" href="/" data-site="" data-i18n="navVanity">Vanity Wallet</a><a id="navContract" href="/contract" data-site="contract" data-i18n="navContract">Vanity Contract</a><a id="navToken" href="/token" data-site="token" data-i18n="navToken">Token Address</a><a id="navPpt" href="/ppt" data-site="ppt" data-i18n="navPpt">How it works · 6 steps</a><a id="navWp" href="/wp" data-site="wp" data-i18n="navWp">White paper</a></nav>
     <span class="utc" id="utcClock">--:--:-- UTC</span>
     <span class="lang">
       <button id="btnZh" data-lang="zh">中文</button>
@@ -81,6 +83,35 @@
       <div class="nc-wrap" id="ncWrap"></div>
     </section>
 
+    <!-- CONTRACT0X_20260928：三张入口卡片（构思 v3 第一章：防骗提醒 · 个人靓号 · 给项目方）—— 三样东西三页，名字、颜色都不一样 -->
+    <section class="ecards" aria-labelledby="ecHead">
+      <div class="nc-head"><span id="ecHead" data-i18n="ecHead">Three things, three pages - so they never get mixed up</span></div>
+      <div class="ec-wrap">
+        <a class="ec ec-alert" href="alerts.html" data-site="alerts.html"><b data-i18n="ec1T">Scam alerts</b><span data-i18n="ec1D">Know as soon as someone imitates your address: one free alert a week; real-time alerts are paid.</span><i data-i18n="ec1Go">See alerts →</i></a>
+        <button type="button" class="ec ec-vanity" id="ecVanity"><b data-i18n="ec2T">Vanity Wallet (this page)</b><span data-i18n="ec2D">Your own wallet address - the private key stays only with you. A 0x one is the same address on Ethereum, BSC, Base and the other chains.</span><i data-i18n="ec2Go">See prices ↓</i></button>
+        <div class="ec ec-proj"><b data-i18n="ec3T">For project teams</b><span data-i18n="ec3D">Contract and token addresses can be chosen too - we only compute a salt and never touch any key; the same address on every chain.</span><i class="ec-links"><a href="/contract" data-site="contract" data-i18n="ec3a">Vanity Contract →</a><a href="/token" data-site="token" data-i18n="ec3b">Token Address →</a></i></div>
+      </div>
+    </section>
+
+    <!-- CONTRACT0X_20260928：构思 v3 第一章「防混的三条规矩」第 1、2 条 —— 三个铸造页的页首都写「你现在在：……」，下面是同一张三格对照表。
+         这一页是个人靓号（主色蓝）。表里的字跟合约靓号页、发币地址定制页逐字相同：order-ui.test 第 8 段拿这里跟 js/c2app.js 那一份比，差一个字就不出包。
+         表里只写「钥匙」「盐」—— 同一张表也放在那两页上，那两页一个「私钥」都不许有。 -->
+    <section class="here" id="hereVw">
+      <div class="here-big" id="hereBig" data-i18n="hereBig">You are on: Vanity Wallet (for individuals and merchants)</div>
+      <div class="here-sub" id="hereSub" data-i18n="hereSub">Your own wallet address, and only you hold the private key - six steps, and step 1 works offline.</div>
+    </section>
+    <section class="block" id="secCmp">
+      <div class="cmp-head" id="cmpHead" data-i18n="cmpHead">Three minting pages - make sure you are on the right one:</div>
+      <div class="tblwrap"><table class="cmp" id="cmpTable">
+        <tr><th></th><th class="cur" data-i18n="navVanity">Vanity Wallet</th><th data-i18n="navContract">Vanity Contract</th><th data-i18n="navToken">Token Address</th></tr>
+        <tr><th data-i18n="cmpWhat">What</th><td class="cur" data-i18n="cmpWhat1">Your own wallet address</td><td data-i18n="cmpWhat2">The address of a contract you deploy</td><td data-i18n="cmpWhat3">The contract address of a token you issue</td></tr>
+        <tr><th data-i18n="cmpFor">For</th><td class="cur" data-i18n="cmpFor1">Individuals, merchants</td><td data-i18n="cmpFor2">Project teams</td><td data-i18n="cmpFor3">Token issuers, launch platforms</td></tr>
+        <tr><th data-i18n="cmpKey">Keys</th><td class="cur" data-i18n="cmpKey1">Only you hold the key (you make half, we compute the other half)</td><td data-i18n="cmpKey2">No keys at all (we only compute a salt)</td><td data-i18n="cmpKey3">No keys at all (we only compute a salt)</td></tr>
+        <tr><th data-i18n="cmpEvm">Across EVM chains</th><td class="cur" data-i18n="cmpEvm1">Same address (same key)</td><td data-i18n="cmpEvm2">Same address (CreateX)</td><td data-i18n="cmpEvm3">Same address (CreateX)</td></tr>
+        <tr><th data-i18n="cmpWhere">Where</th><td class="cur">0x000000000.com</td><td>0x000000000.com/contract</td><td>0x000000000.com/token</td></tr>
+      </table></div>
+    </section>
+
     <pre class="boot" id="boot" aria-label="boot sequence"></pre>
 
     <section class="hero">
@@ -99,6 +130,8 @@
         <!-- CLEANURL0X_20260924：原来是 <a href="#secOrder">，一点地址栏就多出 #secOrder。按钮只滚动，不碰地址栏。 -->
         <div class="gs-item cta"><button type="button" id="heroCta" data-i18n="heroCta">Start minting →</button></div>
       </div>
+      <!-- CONTRACT0X_20260928（构思 v3 第七章「以太坊类各链同一个地址」：零成本，只改页面文案）-->
+      <p class="hero-evm" id="heroEvm" data-i18n="heroEvm">0x vanity addresses: the same private key gives the same address on Ethereum, BSC, Polygon, Arbitrum, Optimism, Base, Avalanche C-Chain and other Ethereum-type chains - buy one, use it on all of them. Funds on each chain are kept separately, so pick the right chain when you send.</p>
     </section>
 
     <!-- CATMODAL0X_20260923：DSJ 原话「把 Get-VanityCatalog 收起来，用户想看的时候点开，
