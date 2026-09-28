@@ -27,6 +27,7 @@ const dict = {
     tickerSr: '我们不要你的信任 —— 我们给你证据。',
     gsEvm0: '0x0000000000 · 前缀10位', gsEvm8: '0x8888888888 · 前缀10位', gsTron: 'TXooooo… · TRON 前缀6位',
     footTrack: '订单查询',
+    footPartners: '招商',                    // REF0X_20260928 第 6 步：招商页
     // TRUST0X_20260923：原来还写着「OFAC 制裁筛查 · 大额阈值 KYC」—— 代码里一行都没有（grep 0 处），
     //   「开源工具可审计」那时也还没公开。页面上每一句都得是真的，假话比没话更伤信任。
     foot1: '页面代码公开在 GitHub，可逐字节核对 · 定制区无托管 · 收款支持 TRON / BSC 上的 USDT',
@@ -47,6 +48,9 @@ const dict = {
     dlGetBtn: '下载铸造页面',
     dlNote: '下载下来的这个文件在你自己手里，我们以后改不了它。它跟 GitHub 上公开的那份一个字节都不差，你可以自己核对（上面「到 GitHub 核对」）。',
     dlResume: (id) => '要接着做订单 ' + id + '：打开你电脑上的铸造页面，在最下面「输入订单号接着做」那里填这个订单号。',
+    // REF0X_20260928：推荐链接进来的人，网站上「下载铸造页面」那一块最上面说一句
+    refBanner: (c) => '推荐码 ' + c + ' 已经记下：用下面的按钮下载的铸造页会自动带上它（第 2 步）。',
+    refCopy: '复制推荐码', refCopied: '已复制',
     netGuide: '你现在用的是下载到自己电脑上的铸造页。每一步都标了：🔌 = 这一步建议断网做，🌐 = 这一步要联网。每一步都写了为什么。',
     offlineErr: '现在没联网，这一步发不出去。连上网再点一次 —— 前面做好的都还在，不用重来。',
     sentHead: '这一页跟平台说过的每一句话',
@@ -64,13 +68,14 @@ const dict = {
       catalog: '看价目表 —— 没带你的任何东西',
       check: '免费查一个地址 —— 带了你贴的那个地址（平台查完不存、不记日志）',
       health: '看平台在不在线 —— 没带你的任何东西',
-      create: '下单 —— 告诉平台：哪条链、什么图案、用哪条链付款',
+      create: '下单 —— 告诉平台：哪条链、什么图案、用哪条链付款（填了推荐码的话还有推荐码）',
       share: '交「影子」—— 一个公开的数（像银行卡号）加一个签名，证明你手里有那一半钥匙；钥匙本身没发',
       payment: '问收款地址 —— 没带你的任何东西',
       status: '问进度 —— 没带你的任何东西',
       paysim: '测试用的模拟付款 —— 没带你的任何东西',
       download: '取货 —— 带了一个签名，证明是你本人来取',
       receipt: '交收条 —— 带了一个签名，证明你拿到了',
+      leave: '说不打算付的原因 —— 只带了你点的那一个词（没有订单号）',
       other: '其他',
     },
     foot2: '平台永远不会索要你的私钥或备份文件 —— 任何索要私钥的消息都是钓鱼。',
@@ -134,12 +139,19 @@ const dict = {
       s3descLive: '下面这个收款地址是这一单专用的。用你自己的钱包，按上面写的那条链，转【正好这个金额】的 USDT 过去就行。',
       net3: '🌐 这一步要联网。为什么：你要从交易所或钱包把 USDT 转到下面这个地址；这一页要连着网，才能看到钱到了没有。',
       payChainLbl: '你想用哪条链付款',
+      refLbl: '推荐码（可选）', refPh: '6 位，比如 AB23CD',
+      refFrom: (c) => '推荐码 ' + c + ' 是从推荐链接带过来的；不对可以改，也可以清空。',
+      refBad: '推荐码是 6 位：数字 2-9 和英文字母（没有 0、1、I、O）—— 看看有没有抄错；没有推荐码就空着。',
       payChainOffline: '现在还没联网，付款方式还没取到 —— 连上网以后点一下这里，所有能用的付款链都会出来。',
       payPickNow: '付款方式刚取到（刚才没联网）：上面「你想用哪条链付款」现在可以选了。选好再点一次「下单」。',
       payInfo2: (a, amt, c, net) => '用 ' + net + ' 转 ' + amt + ' USDT 到  ' + a + '   · 到账后还要等 ' + c + ' 个确认',
       copyAddr: '复制地址',
       pay: '就当已付款（原型）', payLive: '我转好了，开始盯',
       payNote: '每一单的收款地址都不一样，我们靠地址认单，所以别用别的单子的地址。转完这一页会自己往下走，不用刷新；也可以直接关掉，回头在下面「我的订单」里找回来。',
+      // REF0X_20260928 第 8 步（每一步的记录）：付款页一键原因。只发四个词之一，不带订单号
+      leaveAsk: '不打算付了？点一个原因告诉我们（可以不点；只发你点的那一个词，不带订单号）：',
+      leaveOpt: { price: '太贵', confusing: '看不懂', trust: '不放心', browsing: '只是看看' },
+      leaveThanks: '收到，谢谢 —— 我们会照着改。',
       paying: '正在模拟到账…', payingLive: '正在盯这个地址（每 2.5 秒看一眼）…',
       watching: '开始盯链上这个地址…',
       // MINTLIVE4_20260924：DSJ「虽然有说我们开做，但是也放个显示正在铸造的一个小动态让用户更直观……不然用户会一直在等，
@@ -242,6 +254,7 @@ const dict = {
     tickerSr: "We don't ask for your trust - we give you proof.",
     gsEvm0: '0x0000000000 · prefix 10', gsEvm8: '0x8888888888 · prefix 10', gsTron: 'TXooooo… · TRON prefix 6',
     footTrack: 'Track an order',
+    footPartners: 'Partners',
     foot1: 'page code published on GitHub, verifiable byte for byte · custom zone non-custodial · USDT on TRON / BSC',
     proof1: 'Your half of the key is created on your own computer and only ever stored there. The platform only receives a public key (public, like a bank account number) and signatures (proof that you hold your half, without revealing it). Everything the minting page says to the platform is listed at its bottom under "Every word this page said to the platform" - check it yourself.',
     proof2: '"Make key" needs no network: switch off Wi-Fi before clicking and it still works.',
@@ -257,6 +270,8 @@ const dict = {
     dlGetBtn: 'Download the minting page',
     dlNote: 'The downloaded file stays in your hands - we can never change it afterwards. It is byte-for-byte identical to the copy published on GitHub, so you can check it yourself ("Verify on GitHub" above).',
     dlResume: (id) => 'To continue order ' + id + ': open the minting page on your computer and enter this order number at the bottom.',
+    refBanner: (c) => 'Referral code ' + c + ' is saved: the minting page you download with the button below fills it in for you (step 2).',
+    refCopy: 'Copy code', refCopied: 'Copied',
     netGuide: 'You are using the minting page downloaded to your own computer. Every step is marked: 🔌 = best done offline, 🌐 = needs the internet. Each step says why.',
     offlineErr: 'You are offline, so this step could not be sent. Reconnect and click again - everything you already did is still here.',
     sentHead: 'Every word this page said to the platform',
@@ -274,13 +289,14 @@ const dict = {
       catalog: 'read the price list - carried nothing of yours',
       check: 'free check of an address - carried the address you pasted (the platform stores and logs nothing)',
       health: 'checked the platform is online - carried nothing of yours',
-      create: 'order - told the platform which chain, which pattern and which payment chain',
+      create: 'order - told the platform which chain, which pattern and which payment chain (and the referral code, if you filled one in)',
       share: 'handed in the "shadow" - a public number (like a bank account number) plus a signature proving you hold your half; the key itself was not sent',
       payment: 'asked for the payment address - carried nothing of yours',
       status: 'asked for progress - carried nothing of yours',
       paysim: 'test-only simulated payment - carried nothing of yours',
       download: 'collect - carried a signature proving it is you',
       receipt: 'receipt - carried a signature proving you got it',
+      leave: 'said why you are not paying - carried only the one word you tapped (no order number)',
       other: 'other',
     },
     foot2: 'The platform will never ask for your private key or backup file - any message asking for keys is phishing.',
@@ -341,12 +357,18 @@ const dict = {
       s3descLive: 'The address below belongs to this order only. Send exactly that amount of USDT from your own wallet, on the chain named above.',
       net3: '🌐 Needs the internet. Why: you send USDT from your exchange or wallet to the address below, and this page has to be online to see the payment arrive.',
       payChainLbl: 'Which chain do you want to pay on',
+      refLbl: 'Referral code (optional)', refPh: '6 characters, e.g. AB23CD',
+      refFrom: (c) => 'Referral code ' + c + ' came with the referral link; change it or clear it if it is not right.',
+      refBad: 'A referral code has 6 characters: digits 2-9 and letters (no 0, 1, I or O) - check for a typo, or leave it empty.',
       payChainOffline: 'Not online yet, so the payment options have not loaded - once you are back online, click here and every available chain will show up.',
       payPickNow: 'Payment options just loaded (you were offline): pick the chain you want to pay on above, then click "Place order" again.',
       payInfo2: (a, amt, c, net) => 'Send ' + amt + ' USDT over ' + net + ' to  ' + a + '   - then ' + c + ' confirmations',
       copyAddr: 'Copy address',
       pay: 'Count it as paid (prototype)', payLive: 'Sent it - start watching',
       payNote: 'Every order gets its own address and that is how we match payments, so never reuse another order\'s address. The page moves on by itself - no refresh needed. You can also close it and come back through "My orders" below.',
+      leaveAsk: 'Not going to pay? Tap a reason (optional - only that one word is sent, no order number):',
+      leaveOpt: { price: 'Too expensive', confusing: 'Hard to follow', trust: 'Not sure it is safe', browsing: 'Just looking' },
+      leaveThanks: 'Got it, thank you - we will use it to improve.',
       paying: 'Simulating payment...', payingLive: 'Watching that address (every 2.5s)...',
       watching: 'Watching that address on-chain...',
       mint4Wait: (d) => 'Waiting for your payment to land - ' + d + ' so far. It usually shows up within a minute of sending; this line changes by itself when it does.',
@@ -458,6 +480,7 @@ function applyStaticLang() {
   $('#btnEn').classList.toggle('active', lang === 'en');
   if (window.KeyCore && window.KeyCore.setLang) window.KeyCore.setLang(lang);   // keycore 的提示（图案不合法之类）跟着换
   const dr = $('#dlResumeMsg'); if (dr && dr.dataset.order) dr.textContent = t('dlResume')(dr.dataset.order);
+  if (typeof renderRef === 'function') renderRef();              // REF0X：推荐码那一句跟着换语言
   tickerRestart();
   if (typeof window.fcLang === 'function') window.fcLang();   // FREECHECK0X_20260928：免费查、快讯自己画出来的字也跟着换
 }
@@ -640,6 +663,20 @@ function rememberOrder(id) {
 function forgetOrder(id) {
   try { localStorage.setItem(MY_KEY, JSON.stringify(myOrders().filter((x) => x !== id))); } catch (e) {}
 }
+// ── REF0X_20260928：推荐码 ────────────────────────────────────────────────
+// 网站上（0x000000000.com）：带 ?ref= 进来 → 记在这个浏览器里（换一个推荐链接进来就换成新的）；「下载铸造页面」的文件名带上它 ——
+//   0x000000000_ref-AB23CD.html：文件内容一个字节都不变（跟 GitHub 上那份指纹照样一样），只是名字不同。
+// 下载到电脑上的那一份（file://）：从自己的文件名里读回来（浏览器给重名文件加的「 (1)」也认），填进第 2 步；他可以改、可以清空。
+//   ★ 这一段在下面「洗干净地址栏」之前跑 —— 洗完 ?ref= 就没了。只存在这个浏览器里，不发给任何人（下单时他没清空才随单一起发）。
+const REF_RE = /^[2-9A-HJ-NP-Z]{6}$/, REF_KEY = 'zn_ref';
+const refNorm = (x) => String(x == null ? '' : x).trim().toUpperCase();
+const REF_FROM = (() => {
+  try { const q = refNorm(new URLSearchParams(location.search).get('ref')); if (REF_RE.test(q)) { try { localStorage.setItem(REF_KEY, q); } catch (e) {} return { code: q, from: 'link' }; } } catch (e) {}
+  try { const m = decodeURIComponent(location.pathname || '').match(/_ref-([2-9A-HJ-NP-Za-hj-np-z]{6})(?:\s*\(\d+\))?\.html?$/); const c = m ? refNorm(m[1]) : '';
+        if (REF_RE.test(c)) { try { localStorage.setItem(REF_KEY, c); } catch (e) {} return { code: c, from: 'file' }; } } catch (e) {}
+  try { const v = refNorm(localStorage.getItem(REF_KEY)); if (REF_RE.test(v)) return { code: v, from: 'saved' }; } catch (e) {}
+  return { code: '', from: '' };
+})();
 let RESUME = null;   // 由 wireOrderFlow 挂上（它要用向导里的闭包）
 let KEEPKEY = null;  // 同上：切语言重画之后把内存里的钥匙装回第 1 步（LANGKEEP0X_20260924）
 
@@ -652,6 +689,7 @@ function sentKind(method, path) {
   if (p === '/api/health') return 'health';
   if (method === 'POST' && p === '/api/check') return 'check';   // FREECHECK0X_20260928
   if (method === 'POST' && p === '/api/orders') return 'create';
+  if (method === 'POST' && p === '/api/fw/leave') return 'leave';   // REF0X_20260928 第 8 步
   if (/\/share$/.test(p)) return 'share';
   if (/\/payment$/.test(p)) return 'payment';
   if (/\/pay-sim$/.test(p)) return 'paysim';
@@ -811,6 +849,10 @@ function renderSteps() {
     '<div class="flow-ctl"><span class="lbl">' + esc(f.payChainLbl) + '</span>' +
       '<select id="payChain" aria-label="payment chain"></select></div>' +
     '<div class="step-desc" id="payChainNote"></div>' +
+    // REF0X_20260928：推荐码（可选）。从推荐链接下载的那一份会自己填上；他可以改、可以清空
+    '<div class="flow-ctl"><span class="lbl">' + esc(f.refLbl) + '</span>' +
+      '<input id="refCode" class="refcode" maxlength="6" spellcheck="false" autocomplete="off" aria-label="referral code" placeholder="' + esc(f.refPh) + '" value="' + esc(REF_FROM.code) + '"></div>' +
+    '<div class="step-desc" id="refNote">' + (REF_FROM.code ? esc(f.refFrom(REF_FROM.code)) : '') + '</div>' +
     '<div class="flow-ctl"><button class="run" id="btnCreate" disabled>' + esc(f.create) + '</button></div>' +
     '<pre class="step-out" id="out2" hidden></pre>';
   stepsEl.appendChild(li2);
@@ -821,6 +863,7 @@ function renderSteps() {
     '<div class="flow-ctl" id="payInfo" hidden></div>' +
     '<div class="flow-ctl"><button class="run" id="btnPay" disabled>' + esc(IS_LIVE ? f.payLive : f.pay) + '</button></div>' +
     note(f.payNote, 'dim') +
+    '<div class="step-desc leave" id="leaveBox" hidden></div>' +      // REF0X_20260928 第 8 步：「不打算付了？」一键原因
     '<pre class="step-out" id="out3" hidden></pre>';
   stepsEl.appendChild(li3);
 
@@ -1081,8 +1124,21 @@ function wireOrderFlow(f) {
     pi.innerHTML = '<span class="lbl">' + esc(f.payInfo2(pay.body.address, pay.body.amountUsdt, pay.body.confirmationsRequired, pay.body.chain + ' · USDT-' + pay.body.network)) + '</span>' +
       '<button class="copy" data-copycmd="' + esc(pay.body.address) + '">' + esc(f.copyAddr) + '</button>';
     $('#btnPay').disabled = false;
+    showLeave();
     return true;
   }
+  // REF0X_20260928 第 8 步（每一步的记录，构思 v3 第三章第 2 条「离开原因」）：付款页上一键选原因 —— 只发一个词（四选一），
+  //   不带订单号、不带别的；点过就收起、不再问。他点「我转好了」就收起（他在付了）。
+  function showLeave() {
+    const box = $('#leaveBox'); if (!box || box.dataset.done) return;
+    box.innerHTML = esc(f.leaveAsk) + ' ' + Object.keys(f.leaveOpt).map((k) => '<button class="chip" data-leave="' + k + '">' + esc(f.leaveOpt[k]) + '</button>').join(' ');
+    box.hidden = false;
+  }
+  $('#leaveBox').addEventListener('click', (e) => {
+    const b = e.target.closest('[data-leave]'); if (!b) return;
+    const box = $('#leaveBox'); box.dataset.done = '1'; box.textContent = f.leaveThanks;
+    api('/api/fw/leave', 'POST', { reason: b.dataset.leave });
+  });
   $('#btnCreate').addEventListener('click', async () => {
     const out = $('#out2'); out.hidden = false; out.innerHTML = '';
     const sec = orderState.sec;
@@ -1090,13 +1146,17 @@ function wireOrderFlow(f) {
     // NETSYNC0X_20260924：目录还没拿到（断网打开的页面）→ 当场补拿；付款链表是刚补到、他还没看过 → 先让他选，再点一次
     if (!CATALOG || !HEALTH_OK) await sync();
     if (payNeedsLook) { payNeedsLook = false; return outLine(out, f.payPickNow, 'warn'); }
+    const ref = refNorm(($('#refCode') || {}).value);                  // REF0X：空着 = 不带；填了就必须长得像推荐码（真假由平台查）
+    if (ref && !REF_RE.test(ref)) return outLine(out, f.refBad, 'err');
     const btn = $('#btnCreate'); btn.disabled = true;
     const payChain = ($('#payChain') || {}).value || 'tron';
-    const res = await api('/api/orders', 'POST', { chain: sec.chain, prefix: sec.prefix, suffix: sec.suffix, payChain });
+    const res = await api('/api/orders', 'POST', { chain: sec.chain, prefix: sec.prefix, suffix: sec.suffix, payChain, ...(ref ? { ref } : {}) });
     if (res.code !== 200) { showApiError(out, res); btn.disabled = false; return; }
     orderState.orderId = res.body.orderId;
     orderState.challenge = res.body.challenge;
     rememberOrder(res.body.orderId);                    // 这个浏览器记住自己下过的单,关了页面还找得回来
+    if (ref) { try { localStorage.setItem(REF_KEY, ref); } catch (e) {} }   // REF0X：下次在这个浏览器里下单照样带上（「终身」那一条）
+    { const r = $('#refCode'); if (r) r.disabled = true; }
     outLine(out, f.created + ' ' + res.body.orderId, 'ok');
     outLine(out, f.keepId(res.body.orderId), 'dim');
     if (!(await uploadShare(out))) { btn.disabled = false; return; }
@@ -1137,6 +1197,7 @@ function wireOrderFlow(f) {
   };
   $('#btnPay').addEventListener('click', async () => {
     const out = $('#out3'); out.hidden = false; out.innerHTML = '';
+    { const lb = $('#leaveBox'); if (lb && !lb.dataset.done) lb.hidden = true; }   // 他在付了：不再问为什么不付
     if (IS_LIVE) {
       outLine(out, f.payingLive, 'dim');
       $('#btnPay').disabled = true;
@@ -1268,7 +1329,7 @@ function wireOrderFlow(f) {
     stepsEl.querySelectorAll('#chainPick [data-chain]').forEach((b) => b.classList.toggle('active', b.dataset.chain === PICKED));
     if (o.payChain && $('#payChain')) $('#payChain').value = o.payChain;
     const hint = $('#patHint'); if (hint) { hint.className = 'step-desc'; hint.textContent = f.resumeHint(o.patternText || o.pattern, o.amountUsdt); }
-    ['#btnGen', '#btnCreate', '#orderPos', '#orderPat', '#orderPat2', '#payChain'].forEach((sel) => { const e = $(sel); if (e) e.disabled = true; });
+    ['#btnGen', '#btnCreate', '#orderPos', '#orderPat', '#orderPat2', '#payChain', '#refCode'].forEach((sel) => { const e = $(sel); if (e) e.disabled = true; });
     stepsEl.querySelectorAll('#chainPick [data-chain]').forEach((b) => { b.disabled = true; });
     const o1 = $('#out1'); o1.hidden = false; o1.innerHTML = '';
     outLine(o1, f.resuming(o.id, o.patternText || o.pattern, (o.chain || 'evm').toUpperCase()), 'ok');
@@ -1457,6 +1518,23 @@ setInterval(tickUtc, 1000);
 //   下载到电脑上双击打开（file://）→ 6 步。本机测试（127.0.0.1 / localhost）也走 6 步 —— GitHub 上的私钥外发检查就在本机跑。
 const ON_SITE = /(^|\.)0x000000000\.com$/i.test(location.hostname);
 [['#dlGate', !ON_SITE], ['#flowWrap', ON_SITE], ['#secOrders', ON_SITE]].forEach(([sel, hide]) => { const e = $(sel); if (e) e.hidden = hide; });
+// REF0X_20260928：网站上有推荐码 → 下载的文件名带上它 + 「下载」那一块最上面说一句（带复制按钮）
+function renderRef() {
+  const box = $('#dlRef'); if (!box) return;
+  const c = REF_FROM.code;
+  box.hidden = !(ON_SITE && c);
+  if (box.hidden) return;
+  box.innerHTML = '<span>' + esc(t('refBanner')(c)) + '</span> <button type="button" class="copy" id="refCopyBtn" data-code="' + esc(c) + '">' + esc(t('refCopy')) + '</button>';
+}
+if (ON_SITE && REF_FROM.code) {
+  ['#dlPage', '#dlPage2'].forEach((sel) => { const a = $(sel); if (a) a.setAttribute('download', '0x000000000_ref-' + REF_FROM.code + '.html'); });
+  document.addEventListener('click', (e) => {
+    const b = e.target.closest && e.target.closest('#refCopyBtn'); if (!b) return;
+    const done = () => { b.textContent = t('refCopied'); setTimeout(() => { b.textContent = t('refCopy'); }, 1200); };
+    try { navigator.clipboard.writeText(b.dataset.code).then(done, () => {}); } catch (err) { /* 复制不了：码就印在旁边 */ }
+  });
+}
+renderRef();
 document.querySelectorAll('.buildIdCopy').forEach((e) => { e.textContent = ($('#buildId') || {}).textContent || ''; });
 // CLEANURL0X_20260924：DSJ「我不喜欢看见这样的域名，后面带着#secOrder。我要很干净的0x000000000.com而已！」
 //   ① 「开始铸造」原来是 <a href="#secOrder">，点一下地址栏就多出 #secOrder —— 改成按钮：只滚动，不碰地址栏。
