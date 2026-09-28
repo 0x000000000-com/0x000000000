@@ -4,6 +4,8 @@
 //   ★ 不存任何东西：查过的地址、「你自己的地址」都只在这一页的内存里，关掉页面就没了；「你自己的地址」单独查一次，
 //     跟你要付钱的地址比，是在这里（你的浏览器里）用 judge.js 比的 —— 服务器不知道这两个地址是一起查的。
 //   唯一记在浏览器里的：快讯细条被你点 × 关掉的时间（24 小时后再出现）。
+//   VERIFY0X_20260928：服务器顺手回一个 vf —— 这个地址是不是认证过的（✅ @某某）、像不像某个认证地址（⛔ 先别转）。
+//     以太坊类地址（0x…）投毒记录那一半还没开，但认证这一半照查。
 (function () {
   if (typeof ZJ === 'undefined' || typeof NEWS === 'undefined') return;
   const TX = 'https://tronscan.org/#/transaction/';
@@ -18,7 +20,7 @@
       minePh: '你自己的波场地址（只留在这一页里）',
       mineNote: '你自己的地址会单独查一次；两个地址的比对在你的浏览器里做 —— 我们不知道这两个是一起查的，也不存。',
       checking: '正在看链上记录……（十几秒）',
-      evm: '以太坊类地址（0x…）的免费查还没开，先开的是波场。',
+      evm: '以太坊类地址（0x…）这一次只查了它是不是认证过的地址；有没有被投毒还没开查，先开的是波场。',
       bad: '这不是有效的波场地址（T 开头、34 位、校验码要对）—— 很可能抄错了一位。回到对方给你地址的原始地方，重新复制一次。',
       mineBad: '「你自己的地址」不是有效的波场地址，这一次只查了上面那一个。',
       same: '两个地址是同一个。',
@@ -43,6 +45,12 @@
       watch: '想以后自动知道？在 Telegram 找 @' + BOT + '，私聊发「/watch 你的地址」—— 每周免费提醒；会记下什么，它开之前会先问你。',
       copyWatch: '复制这句', copied: '复制好了',
       caseH: '最像的一宗真案子', src: '来源',
+      vfLive: (v) => '✅ 认证过：这个地址在 @' + v.name + '（' + (v.tier === 'yellow' ? '黄勾 · 商家 / 项目方' : '蓝勾 · 个人') + '）的收款名片上',
+      vfNotice: (v) => '⏳ 这个地址登记在 @' + v.name + ' 名下，正在公示（还没生效）',
+      vfWhat: '认证证明的是「这些地址、这个官网、这个频道在同一个人手里」，不证明谁是好人。',
+      vfLike: (l) => '⛔ 先别转：它长得像 @' + l.name + ' 认证过的地址，但不是同一个',
+      vfLikeWhy: (l) => '要付钱给 @' + l.name + '，只从它的收款名片上复制地址。',
+      vfCard: (n) => '打开 @' + n + ' 的收款名片 ↗', vfL: '认证',
       nsTag: '快讯', nsAll: '全部快讯', nsHide: '关掉 24 小时',
       cardsH: '安全快讯 · 真实发生过的', allBtn: '看全部 66 宗 →',
       modalT: '安全快讯 · 66 宗真案子，每一条都带来源', catAll: '全部',
@@ -56,7 +64,7 @@
       minePh: 'Your own TRON address (stays on this page only)',
       mineNote: 'Your own address is checked separately, and the comparison happens here in your browser - we never learn that the two go together, and we store neither.',
       checking: 'Reading the chain history… (a few seconds)',
-      evm: 'Free checks for EVM addresses (0x…) are not open yet - TRON comes first.',
+      evm: 'For EVM addresses (0x…) this only checked whether it is a verified address; poisoning checks for them are not open yet - TRON comes first.',
       bad: 'This is not a valid TRON address (starts with T, 34 characters, the checksum must match) - one character was probably copied wrong. Copy it again from where the other person originally gave it to you.',
       mineBad: 'Your own address is not a valid TRON address, so only the address above was checked.',
       same: 'Both addresses are the same.',
@@ -81,6 +89,12 @@
       watch: 'Want to know automatically? Find @' + BOT + ' on Telegram and send "/watch your address" in a private chat - a free weekly alert; it tells you exactly what it stores before it starts.',
       copyWatch: 'Copy this', copied: 'Copied',
       caseH: 'The closest real case', src: 'Source',
+      vfLive: (v) => '✅ Verified: this address is on the payment card of @' + v.name + ' (' + (v.tier === 'yellow' ? 'gold check · business / project' : 'blue check · personal') + ')',
+      vfNotice: (v) => '⏳ This address is registered to @' + v.name + ', on public notice (not live yet)',
+      vfWhat: 'A verification proves that these addresses, this website and this channel are in the same hands - not that anyone is a good person.',
+      vfLike: (l) => '⛔ Stop: it looks like an address verified by @' + l.name + ', but it is NOT the same one',
+      vfLikeWhy: (l) => 'To pay @' + l.name + ', copy the address only from its payment card.',
+      vfCard: (n) => 'Open @' + n + '\'s payment card ↗', vfL: 'verified',
       nsTag: 'NEWS', nsAll: 'All news', nsHide: 'hide for 24 hours',
       cardsH: 'Security news · things that really happened', allBtn: 'See all 66 cases →',
       modalT: 'Security news · 66 real cases, each with its source', catAll: 'All',
@@ -108,13 +122,13 @@
   const utc = (ts) => (ts ? new Date(ts).toISOString().slice(0, 16).replace('T', ' ') + ' UTC' : '—');
 
   // 两条地址上下对齐：一样的位绿色、不一样的红色（波场开头的 T、以太坊类的 0x 是灰的 —— 每个地址都有）
-  function marked(a, head, tail) {
-    const p = ZJ.pre('tron'), n = a.length;
+  function marked(a, head, tail, chain) {
+    const p = ZJ.pre(chain || 'tron'), n = a.length;
     return [...a].map((c, i) => '<i class="' + (i < p ? 'pf' : i < p + head || i >= n - tail ? 'ok' : 'no') + '">' + esc(c) + '</i>').join('');
   }
-  function pair(top, topL, bot, botL, head, tail, extra) {
-    return '<div class="fc-pair"><div class="fc-row"><b>' + esc(topL) + '</b><code>' + marked(top, head, tail) + '</code></div>'
-      + '<div class="fc-row"><b>' + esc(botL) + '</b><code>' + marked(bot, head, tail) + '</code></div>'
+  function pair(top, topL, bot, botL, head, tail, extra, chain) {
+    return '<div class="fc-pair"><div class="fc-row"><b>' + esc(topL) + '</b><code>' + marked(top, head, tail, chain) + '</code></div>'
+      + '<div class="fc-row"><b>' + esc(botL) + '</b><code>' + marked(bot, head, tail, chain) + '</code></div>'
       + '<div class="fc-why">' + esc(T('sameTxt')(head, tail)) + (extra ? ' · ' + extra : '') + '</div></div>';
   }
   const caseFind = (needle) => NEWS.find((x) => x.w[1].includes(needle) || x.a[1].includes(needle));
@@ -133,10 +147,29 @@
       + x.s.map((s) => '<a href="' + esc(s[1]) + '" target="_blank" rel="noopener noreferrer">' + esc(s[0]) + ' ↗</a>').join(' · ') + '</div></article>';
   }
 
+  // ── 认证：✅ 这个地址在谁的名片上 / ⛔ 长得像谁的认证地址（服务器回的 vf；名字、地址都先过一遍样子再用）──
+  const SITE = /^https?:$/.test(location.protocol) ? '' : 'https://0x000000000.com';   // 下载到电脑上的那一份：链接写完整网址
+  function vfBlock(vf, addr, chain) {
+    if (!vf) return '';
+    const card = (n) => (/^[a-z0-9_]{3,20}$/.test(n) ? '<p><a href="' + SITE + '/@' + n + '" target="_blank" rel="noopener noreferrer">' + esc(T('vfCard')(n)) + '</a></p>' : '');
+    const v = vf.verified, l = vf.like;
+    if (v && typeof v.name === 'string') return '<div class="fc-card lv-' + (v.status === 'live' ? 'green' : 'amber') + '"><div class="fc-h">' + esc(T(v.status === 'live' ? 'vfLive' : 'vfNotice')(v)) + '</div>'
+      + '<p class="fc-dim">' + esc(T('vfWhat')) + '</p>' + card(v.name) + '</div>';
+    if (l && typeof l.name === 'string' && typeof l.address === 'string') return '<div class="fc-card lv-red"><div class="fc-h">' + esc(T('vfLike')(l)) + '</div>'
+      + pair(addr, T('thisL'), l.address, '@' + l.name + ' · ' + T('vfL'), l.head, l.tail, '', chain) + '<p>' + esc(T('vfLikeWhy')(l)) + '</p>' + card(l.name) + '</div>';
+    return '';
+  }
+  function renderEvm(a, vf) {
+    const box = $$('fcResult');
+    box.innerHTML = vfBlock(vf, a, 'evm') + '<div class="fc-card lv-amber"><p>' + esc(T('evm')) + '</p></div><p class="fc-tip">' + esc(T('tip')) + '</p>';
+    box.hidden = false;
+  }
+
   // ── 查询结果 ──
-  function render(r, own, mineN, note) {
+  function render(r, own, mineN, note, vf) {
     const L = [], i = LI(), lvl = { poisoner: 'red', targeted: 'amber', lookalike: 'amber', caution: 'amber', clean: 'green', empty: 'green' };
     const v = r.verdict === 'clean' && !r.window.n ? 'empty' : r.verdict;
+    L.push(vfBlock(vf, r.address, 'tron'));
     if (own) {
       const ml = { poison: 'red', acted: 'red', red: 'red', yellow: 'amber', known: 'green', none: 'green' }[own.level] || 'green';
       L.push('<div class="fc-card lv-' + ml + '"><div class="fc-h">' + esc(T('mineH')[own.level] || '') + '<span class="fc-dim">' + esc(T('mineCmp')(mineN)) + '</span></div>'
@@ -179,11 +212,17 @@
     if (busy) return;
     const a = ($$('fcAddr').value || '').trim(), me = ($$('fcMine').value || '').trim();
     if (!a) { $$('fcAddr').focus(); return; }
-    if (/^0x[0-9a-fA-F]{40}$/.test(a)) return msg(T('evm'));
-    if (!tronOk(a)) return msg(T('bad'), 'red');
+    const evm = /^0x[0-9a-fA-F]{40}$/.test(a);
+    if (!evm && !tronOk(a)) return msg(T('bad'), 'red');
     busy = true; $$('fcGo').disabled = true; msg(T('checking'), 'dim');
     try {
       const r = await api('/api/check', 'POST', { address: a });
+      if (r.code === 400) { msg(errOf(r), 'red'); return; }   // 服务器说地址不对（比如以太坊类地址大小写校验码对不上）
+      if (evm) {
+        if (r.code !== 200 || !r.body || !r.body.evm) { msg(T('net') + errOf(r), 'amber'); return; }
+        last = { evm: true, a, vf: r.body.vf || null };
+        renderEvm(a, last.vf); return;
+      }
       if (r.code !== 200 || !r.body || !r.body.result) { msg(T('net') + errOf(r), 'amber'); return; }
       let own = null, mineN = 0, note = '';
       if (me && me === a) note = T('same');
@@ -196,8 +235,8 @@
           own = ZJ.judge(a, known, ev, 'tron'); mineN = known.length;
         } else note = T('net') + errOf(m);
       }
-      last = { r: r.body.result, own, mineN, note };
-      render(last.r, own, mineN, note);
+      last = { r: r.body.result, own, mineN, note, vf: r.body.vf || null };
+      render(last.r, own, mineN, note, last.vf);
     } finally { busy = false; $$('fcGo').disabled = false; }
   }
 
@@ -284,7 +323,7 @@
     const mi = $$('fcMine'); if (mi) mi.placeholder = T('minePh');
     const x = $$('nsX'); if (x) x.title = T('nsHide');
     phRestart(); nsShow(); cards(); drawNews();
-    if (last) render(last.r, last.own, last.mineN, last.note);
+    if (last) { if (last.evm) renderEvm(last.a, last.vf); else render(last.r, last.own, last.mineN, last.note, last.vf); }
   };
 
   const form = $$('fcForm'); if (!form) return;

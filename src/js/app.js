@@ -28,6 +28,8 @@ const dict = {
     gsEvm0: '0x0000000000 · 前缀10位', gsEvm8: '0x8888888888 · 前缀10位', gsTron: 'TXooooo… · TRON 前缀6位',
     footTrack: '订单查询',
     footPartners: '招商',                    // REF0X_20260928 第 6 步：招商页
+    footVerify: '认证 · 收款名片',           // VERIFY0X_20260928：认证页、付费提醒页
+    footAlerts: '付费提醒',
     // TRUST0X_20260923：原来还写着「OFAC 制裁筛查 · 大额阈值 KYC」—— 代码里一行都没有（grep 0 处），
     //   「开源工具可审计」那时也还没公开。页面上每一句都得是真的，假话比没话更伤信任。
     foot1: '页面代码公开在 GitHub，可逐字节核对 · 定制区无托管 · 收款支持 TRON / BSC 上的 USDT',
@@ -214,8 +216,10 @@ const dict = {
       s6desc: '用刚合成的完整钥匙给一句话签个名交回来。平台手上没有你的那一半，这个签名平台自己造不出来 —— 收到就等于双方都认这一单交付完成了。',
       net6: '🌐 这一步要联网。为什么：要把「我拿到了」的签名交给平台，这一单才算结清。不交也不影响你已经拿到的钥匙。',
       receiptBtn: '签收条并提交',
-      receiptSkip: '可以不交，不影响你已经拿到的钥匙。交了这一单算结清，结清之后你仍然可以随时免费重新下载同一个 b。',
+      receiptSkip: '可以不交，不影响你已经拿到的钥匙。交了这一单算结清，结清之后你仍然可以随时免费重新下载同一个 b；还送你一个月实时防投毒提醒。',
       receiptOk: '收条收到了，这一单结清。',
+      perkOk: '送你一个月实时防投毒提醒（个人档，最多盯 5 个波场地址）：点下面这个链接，在官方机器人里领（一单一次）。',
+      perkLink: '领首月实时提醒 ↗',
       receiptBad: '签不出来 —— 手上的 b 跟这张收条对不上。',
       noReceipt: '还没有收条可签，先完成上一步。',
       copied: '已复制 ✓',
@@ -255,6 +259,8 @@ const dict = {
     gsEvm0: '0x0000000000 · prefix 10', gsEvm8: '0x8888888888 · prefix 10', gsTron: 'TXooooo… · TRON prefix 6',
     footTrack: 'Track an order',
     footPartners: 'Partners',
+    footVerify: 'Verification · payment cards',
+    footAlerts: 'Paid alerts',
     foot1: 'page code published on GitHub, verifiable byte for byte · custom zone non-custodial · USDT on TRON / BSC',
     proof1: 'Your half of the key is created on your own computer and only ever stored there. The platform only receives a public key (public, like a bank account number) and signatures (proof that you hold your half, without revealing it). Everything the minting page says to the platform is listed at its bottom under "Every word this page said to the platform" - check it yourself.',
     proof2: '"Make key" needs no network: switch off Wi-Fi before clicking and it still works.',
@@ -424,8 +430,10 @@ const dict = {
       s6desc: 'Sign one phrase with the key you just built. The platform does not hold your half, so it could not forge this signature - receiving it means both sides agree the order is delivered.',
       net6: '🌐 Needs the internet. Why: the "I got it" signature has to reach the platform to settle the order. Skipping it does not affect the key you already have.',
       receiptBtn: 'Sign and send receipt',
-      receiptSkip: 'Optional. Skipping it does not affect the key you already hold. Filing it settles the order, and you can still re-download the same b for free afterwards.',
+      receiptSkip: 'Optional. Skipping it does not affect the key you already hold. Filing it settles the order, and you can still re-download the same b for free afterwards; it also gets you a free month of real-time poisoning alerts.',
       receiptOk: 'Receipt filed - order settled.',
+      perkOk: 'A free month of real-time poisoning alerts (Personal plan, up to 5 TRON addresses): open the link below and claim it in the official bot (once per order).',
+      perkLink: 'Claim the free month ↗',
       receiptBad: 'Cannot sign - the b on hand does not match this receipt.',
       noReceipt: 'No receipt to sign yet - finish the step above.',
       copied: 'Copied',
@@ -1284,6 +1292,14 @@ function wireOrderFlow(f) {
     const res = await api('/api/orders/' + orderState.orderId + '/receipt', 'POST', { sig: r.sig });
     if (res.code !== 200) { showApiError(out, res); return; }
     outLine(out, f.receiptOk, 'ok');
+    // VERIFY0X_20260928（构思 v3 第九章 13「好」）：买靓号的送首月实时提醒 —— 平台回一个一单一次的领取链接，先过一遍样子再放
+    const pk = res.body && res.body.perk;
+    if (pk && typeof pk.link === 'string' && /^https:\/\/t\.me\/[A-Za-z0-9_]{5,32}\?start=p_[2-9A-HJ-NP-Z]{10}$/.test(pk.link)) {
+      outLine(out, f.perkOk, 'ok');
+      const d = document.createElement('div'), a = document.createElement('a');
+      a.href = pk.link; a.target = '_blank'; a.rel = 'noopener noreferrer'; a.textContent = f.perkLink;
+      d.appendChild(a); out.appendChild(d);
+    }
     $('#btnReceipt').disabled = true;
     setStatus('settled');
   });
