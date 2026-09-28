@@ -43,19 +43,20 @@ createServer(async (req, res) => {
   if (p === '/api/fw/leave' && req.method === 'POST') return json(res, 200, { ok: true });
   if (p === '/api/orders' && req.method === 'POST') {
     const id = randomBytes(4).toString('hex');
-    const o = { id, chain: body.chain, prefix: body.prefix || '', suffix: body.suffix || '', payChain: body.payChain || 'tron',
+    const o = { id, chain: body.chain, prefix: body.prefix || '', suffix: body.suffix || '', payChain: body.payChain || 'bsc',   // PAYBSC0X_20260928：全网只收 BSC
+     
       challenge: randomBytes(32).toString('hex'), nonce: randomBytes(16).toString('hex'), status: 'created' };
     orders.set(id, o);
     return json(res, 200, { orderId: id, challenge: o.challenge, status: 'created', chain: o.chain, kind: o.prefix && o.suffix ? 'both' : o.suffix ? 'suffix' : 'prefix',
-      prefix: o.prefix, suffix: o.suffix, pattern: o.prefix, amountUsdt: 1, payChain: o.payChain, mintTimeText: '1.0 小时', refundDeadlineText: '1.0 小时' });
+      prefix: o.prefix, suffix: o.suffix, pattern: o.prefix, amountUsdt: 1, payChain: o.payChain, mintTimeText: '1.0 小时', mintTimeTextEn: '1.0 h', mintTimeTextId: '1.0 jam', refundDeadlineText: '1.0 小时', refundDeadlineTextEn: '1.0 h', refundDeadlineTextId: '1.0 jam' });
   }
   const m = p.match(/^\/api\/orders\/([0-9a-f]{8})(\/[a-z-]+)?$/);
   const o = m && orders.get(m[1]);
   if (!o) return json(res, 404, { error: 'not found' });
   const act = m[2] || '';
   if (act === '/share' && req.method === 'POST') { o.A = body.A; o.status = 'share_uploaded'; return json(res, 200, { status: 'share_uploaded' }); }
-  if (act === '/payment') return json(res, 200, { chain: 'TRON', payChain: 'tron', network: 'TRC20', contract: 'TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t', address: 'TQKVqVrjBFHjUo7HjcuPMMYbDVSSNumHR9', amountUsdt: 1, confirmationsRequired: 19 });
-  if (act === '/pay-sim' && req.method === 'POST') { o.status = 'mining'; setTimeout(() => { mint(o); o.status = 'found'; }, 500); return json(res, 200, { status: 'watching', sim: true, queue: false, confirmationsRequired: 19 }); }
+  if (act === '/payment') return json(res, 200, { chain: 'BSC', payChain: 'bsc', network: 'BEP20', contract: '0x55d398326f99059fF775485246999027B3197955', address: '0x1111111111111111111111111111111111111111', amountUsdt: 1, confirmationsRequired: 15 });
+  if (act === '/pay-sim' && req.method === 'POST') { o.status = 'mining'; setTimeout(() => { mint(o); o.status = 'found'; }, 500); return json(res, 200, { status: 'watching', sim: true, queue: false, confirmationsRequired: 15 }); }
   if (act === '/download' && req.method === 'GET') {
     if (!url.searchParams.get('sig') || !o.found) return json(res, 403, { error: 'need signature' });
     return json(res, 200, { b: o.b.toString(), variant: 0, address: o.found, pattern: o.prefix, downloadsLeft: 49, note: '' });

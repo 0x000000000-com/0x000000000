@@ -13,6 +13,8 @@
 // 签名是确定性的（RFC6979），随机数那一格没有空间藏东西；A 由 s 唯一决定。于是请求内容里没有一个字节能夹带私钥（请求的次数和时间间隔不在这项检查的范围内）。
 // 另外还查：断网也能造钥匙；页面只取它自己这一个文件；除了平台接口不连任何别的地方；请求头没有自定义项。
 //
+// PAYBSC0X_20260928：全网只收 BSC —— 下单的付款链只许是 bsc；「断网打开、后来联网」那几段另外假装平台开着两条付款链（回包里补一条 TRON），
+//   照样测「补拿到新的付款链要先让他选一次」；只收 BSC 的真实情况单独一段。IDLANG0X_20260928：多测切到印尼文不丢钥匙、页面上没有汉字。
 // 用法：cd test && npm ci && npx playwright install --with-deps chromium
 //       node noleak.cjs ../0x000000000.html ./mock-platform.mjs ./node_modules
 const { chromium } = require('playwright');
@@ -172,7 +174,7 @@ async function hangOpen(browser) {
 async function netsync(browser) {
   const html = fs.readFileSync(path.join(PAGE_DIR, 'index.html'), 'utf8');
   const res = [], ctxs = []; const ok = (c, m) => res.push([!!c, m]);
-  const open = async (net) => {
+  const open = async (net, two = true) => {
     const st = { NET: net === 'up', orders: [] };
     const c = await browser.newContext({ acceptDownloads: true, offline: net === 'event' }); ctxs.push(c);
     await c.addInitScript(() => { try { localStorage.setItem('0xlang2', 'zh'); } catch (e) {} });
@@ -182,6 +184,11 @@ async function netsync(browser) {
       if (u.pathname === '/api/orders' && r.request().method() === 'POST') st.orders.push(JSON.parse(r.request().postData() || '{}'));
       let resp; try { resp = await r.fetch({ url: 'http://127.0.0.1:8787' + u.pathname + u.search }); } catch (e) { return r.abort('connectionrefused'); }
       if (u.pathname === '/api/health') { const j = await resp.json(); j.mode = 'live'; return r.fulfill({ response: resp, body: JSON.stringify(j) }); }
+      if (u.pathname === '/api/catalog' && two) {             // 假装平台开着两条付款链（线上只收 BSC）：测「补拿到新的一条要先让他选」
+        const j = await resp.json();
+        if (Array.isArray(j.payChains) && !j.payChains.some((x) => x.id === 'tron')) j.payChains.push({ id: 'tron', label: 'TRON', short: 'TRC20', confirmations: 19, note: '', noteEn: '' });
+        return r.fulfill({ response: resp, body: JSON.stringify(j) });
+      }
       return r.fulfill({ response: resp });
     });
     const f = path.join(DATA, 'netsync-' + net + '-' + ctxs.length + '.html'); fs.writeFileSync(f, html);
@@ -200,10 +207,10 @@ async function netsync(browser) {
   const run = async (name, fn) => { try { await fn(); } catch (e) { ok(false, name + ' 没走完：' + String(e.message).split('\n')[0].slice(0, 100)); } };
   await run('断网打开 · 没有 online 事件 · 直接点下单', async () => {
     const x = await open('silent');
-    ok((await x.pays()) === 'tron' && /还没联网/.test(await x.p.textContent('#payChainNote')), '断网打开：付款链只有缺省那一条，并且写明要联网才看得全');
+    ok((await x.pays()) === 'bsc' && /还没联网/.test(await x.p.textContent('#payChainNote')), '断网打开：付款链只有缺省那一条（BSC），并且写明要联网才看得全');
     await x.up(); await x.p.click('#btnCreate'); await sleep(1500);
     ok(/付款方式刚取到/.test(await x.out2()) && x.st.orders.length === 0, '连上网（浏览器没发 online 事件）直接点下单：先补拿付款链、不建单、叫他先选');
-    ok((await x.pays()) === 'tron / bsc', '补拿之后付款链有 TRON 和 BSC（' + (await x.pays()) + '）');
+    ok((await x.pays()) === 'bsc / tron', '（平台开两条时）补拿之后付款链有 BSC 和 TRON（' + (await x.pays()) + '）');
     ok(/我转好了/.test(await x.btnPay()), '第 3 步换成了真收款字样（' + (await x.btnPay()) + '）');
     await x.p.selectOption('#payChain', 'bsc', { timeout: 3000 }); await x.p.click('#btnCreate'); await x.placed();
     ok(x.st.orders.length === 1 && x.st.orders[0].payChain === 'bsc' && await x.paid(), '选了 BSC 再点下单：建单用的就是 BSC，付款信息出来了');
@@ -212,21 +219,29 @@ async function netsync(browser) {
   await run('断网打开 · 没有 online 事件 · 先点付款链', async () => {
     const x = await open('silent'); await x.up();
     await x.p.click('#payChain'); await x.p.keyboard.press('Escape'); await sleep(1500);
-    ok((await x.pays()) === 'tron / bsc', '连上网后点一下付款链：TRON 和 BSC 都出来了（' + (await x.pays()) + '）');
+    ok((await x.pays()) === 'bsc / tron', '（平台开两条时）连上网后点一下付款链：两条都出来了（' + (await x.pays()) + '）');
     await x.p.selectOption('#payChain', 'bsc', { timeout: 3000 }); await x.p.click('#btnCreate'); await x.placed();
     ok(x.st.orders.length === 1 && x.st.orders[0].payChain === 'bsc' && !/付款方式刚取到/.test(await x.out2()) && await x.paid(), '选好 BSC 点下单：一次就建单，不再多问');
   });
   await run('一直在线', async () => {
     const x = await open('up');
-    ok((await x.pays()) === 'tron / bsc', '一直在线：付款链一打开就是 TRON 和 BSC');
+    ok((await x.pays()) === 'bsc / tron', '（平台开两条时）一直在线：付款链一打开就是两条');
     await x.p.click('#btnCreate'); await x.placed();
     ok(x.st.orders.length === 1 && !/付款方式刚取到/.test(await x.out2()) && await x.paid(), '一直在线点下单：直接建单，不多问一句');
   });
   await run('断网打开 · 有 online 事件', async () => {
     const x = await open('event'); await x.up(); await sleep(1500);
-    ok((await x.pays()) === 'tron / bsc' && /我转好了/.test(await x.btnPay()), '浏览器知道断网又连上：自己补到 TRON 和 BSC，第 3 步是真收款字样');
+    ok((await x.pays()) === 'bsc / tron' && /我转好了/.test(await x.btnPay()), '（平台开两条时）浏览器知道断网又连上：自己补到两条，第 3 步是真收款字样');
     await x.p.click('#btnCreate'); await sleep(800);
     ok(/付款方式刚取到/.test(await x.out2()) && x.st.orders.length === 0, '付款链是背后补到的、他还没看过：点下单先叫他选一次');
+  });
+  await run('只收 BSC（线上的样子）· 断网打开 · 连上网直接下单', async () => {
+    const x = await open('silent', false);
+    ok((await x.pays()) === 'bsc', '断网打开：付款链就是 BSC 那一条');
+    await x.up(); await x.p.click('#btnCreate'); await x.placed();
+    ok(x.st.orders.length === 1 && x.st.orders[0].payChain === 'bsc' && !/付款方式刚取到/.test(await x.out2()) && await x.paid() && (await x.pays()) === 'bsc',
+      '平台只收 BSC：连上网直接点下单 —— 一次就建单（BSC），不多问一句');
+    ok(x.errs.length === 0, '页面没有报错' + (x.errs.length ? '：' + x.errs.join(' | ') : ''));
   });
   for (const c of ctxs) await c.close().catch(() => {});
   return res;
@@ -314,7 +329,7 @@ async function offlineAll(browser) {
   const html = fs.readFileSync(path.join(PAGE_DIR, 'index.html'), 'utf8');
   const res = []; const ok = (c, m) => res.push([!!c, m]);
   const mk = await (await fetch('http://127.0.0.1:8787/api/orders', { method: 'POST', headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ chain: 'tron', prefix: 'TXo', suffix: '', payChain: 'tron' }) })).json();
+    body: JSON.stringify({ chain: 'tron', prefix: 'TXo', suffix: '', payChain: 'bsc' }) })).json();
   const oid = mk.orderId;
   ok(/^[0-9a-f]{8}$/.test(oid || ''), '先在平台上建一张单，放进两份页面的「我的订单」（' + oid + '）');
   const snap = () => ({
@@ -355,7 +370,7 @@ async function offlineAll(browser) {
     const b = await B.p.evaluate(snap);
     const diff = Object.keys(a).filter((k) => JSON.stringify(a[k]) !== JSON.stringify(b[k]));
     ok(diff.length === 0, '断网打开、联网后碰一下：整页跟一直在线那份逐项一样' + (diff.length ? '（不一样的：' + diff.map((k) => k + ' → ' + JSON.stringify(b[k]).slice(0, 60)).join(' ｜ ') + '）' : ''));
-    ok(a.orders.includes(oid) && a.pay.length >= 2 && a.nets.length === 6, '对照的那份本身是完整的（订单在、付款方式 ' + a.pay.length + ' 条、6 步都有联网说明）');
+    ok(a.orders.includes(oid) && a.pay.length >= 1 && a.nets.length === 6, '对照的那份本身是完整的（订单在、付款方式 ' + a.pay.length + ' 条、6 步都有联网说明）');
     ok(A.errs.length === 0 && B.errs.length === 0, '两份页面都没报错' + ([...A.errs, ...B.errs].length ? '：' + [...A.errs, ...B.errs].join(' | ') : ''));
     await A.c.close(); await B.c.close();
   } catch (e) { ok(false, '整页对照没走完：' + String(e.message).split('\n')[0].slice(0, 100)); }
@@ -437,6 +452,14 @@ async function ui(browser) {
       out1: document.querySelector('#out1').textContent, head: document.querySelector('#steps > li .step-head').textContent, lang: document.documentElement.lang }));
     ok(kept.lang === 'zh' && /钥匙还在/.test(kept.out1) && kept.create && kept.gen && /造一把只有你有的钥匙/.test(kept.head),
       '造好钥匙以后切到中文：六步换成中文，钥匙还在，「下单」直接能点（不用重新选文件）');
+  });
+  await step('再切印尼文', async () => {
+    await p2.click('#btnId', T); await sleep(900);
+    const k2 = await p2.evaluate(() => ({ create: !document.querySelector('#btnCreate').disabled, lang: document.documentElement.lang,
+      head: document.querySelector('#steps > li .step-head').textContent,
+      zh: (document.body.innerText.replace(/中文/g, '').match(/[一-鿿]/g) || []).length }));
+    ok(k2.lang === 'id' && k2.create && /Buat kunci/.test(k2.head) && k2.zh === 0,
+      `再切到印尼文（IDLANG0X）：六步换成印尼文、钥匙还在、「下单」能点；页面上汉字 ${k2.zh} 个（不算「中文」按钮）`);
   });
   ok(errs2.length === 0, '下载版页面没报错' + (errs2.length ? '：' + errs2.join(' | ') : ''));
   await c2.close();
@@ -554,7 +577,7 @@ async function walk(browser, N, chain, pos, pre, suf, ref = '') {
         else if (x.method === 'POST' && p === '/api/orders') {
           kind = 'create';
           if (keys !== (w.ref ? 'chain,payChain,prefix,ref,suffix' : 'chain,payChain,prefix,suffix')) no('下单带了多余/缺少的字段：' + keys);
-          else if (body.chain !== chain || body.prefix !== pre || body.suffix !== suf || body.payChain !== 'tron' || (w.ref && body.ref !== w.ref)) no('下单字段值跟用户选的不一致：' + x.body);
+          else if (body.chain !== chain || body.prefix !== pre || body.suffix !== suf || body.payChain !== 'bsc' || (w.ref && body.ref !== w.ref)) no('下单字段值跟用户选的不一致：' + x.body);
         } else if (x.method === 'POST' && p === '/api/check') {
           kind = 'check';   // FREECHECK0X_20260928
           if (keys !== 'address') no('免费查带了多余/缺少的字段：' + keys);

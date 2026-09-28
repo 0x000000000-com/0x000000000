@@ -7,20 +7,13 @@
   ],
   "payChains": [
    {
-    "id": "tron",
-    "label": "TRON",
-    "short": "TRC20",
-    "confirmations": 19,
-    "note": "手续费低、到账快，大部分交易所提 USDT 默认就是这条。",
-    "noteEn": "Low fees and fast; most exchanges send USDT on this chain by default."
-   },
-   {
     "id": "bsc",
     "label": "BSC",
     "short": "BEP20",
     "confirmations": 15,
     "note": "手续费同样很低。地址是 0x 开头那种，跟以太坊一样。",
-    "noteEn": "Fees are low too. The address starts with 0x, the same kind as Ethereum."
+    "noteEn": "Fees are low too. The address starts with 0x, the same kind as Ethereum.",
+    "noteId": "Biayanya juga rendah. Alamatnya diawali 0x, sama seperti Ethereum."
    }
   ],
   "chains": [
@@ -41,7 +34,9 @@
     "alphabet": "0123456789abcdef",
     "pos": [],
     "caseSensitive": false,
-    "priced": true
+    "priced": true,
+    "labelEn": "EVM address",
+    "labelId": "alamat EVM"
    },
    {
     "id": "tron",
@@ -57,7 +52,9 @@
      "9ABCDEFGHJKLMNPQRSTUVWXYZ"
     ],
     "caseSensitive": true,
-    "priced": true
+    "priced": true,
+    "labelEn": "TRON address",
+    "labelId": "alamat TRON"
    }
   ],
   "rows": [
@@ -77,7 +74,11 @@
     "costUsd": 4,
     "customUsd": 90,
     "mintable": true,
-    "orderable": true
+    "orderable": true,
+    "kindLabelEn": "prefix",
+    "kindLabelId": "awalan",
+    "mintTimeTextEn": "1.0 h",
+    "mintTimeTextId": "1.0 jam"
    },
    {
     "chain": "tron",
@@ -95,7 +96,11 @@
     "costUsd": 4,
     "customUsd": 90,
     "mintable": true,
-    "orderable": true
+    "orderable": true,
+    "kindLabelEn": "prefix",
+    "kindLabelId": "awalan",
+    "mintTimeTextEn": "1.0 h",
+    "mintTimeTextId": "1.0 jam"
    },
    {
     "chain": "tron",
@@ -113,7 +118,11 @@
     "costUsd": 4,
     "customUsd": 90,
     "mintable": true,
-    "orderable": true
+    "orderable": true,
+    "kindLabelEn": "suffix",
+    "kindLabelId": "akhiran",
+    "mintTimeTextEn": "1.0 h",
+    "mintTimeTextId": "1.0 jam"
    },
    {
     "chain": "tron",
@@ -131,10 +140,16 @@
     "costUsd": 4,
     "customUsd": 90,
     "mintable": true,
-    "orderable": true
+    "orderable": true,
+    "kindLabelEn": "prefix + suffix",
+    "kindLabelId": "awalan + akhiran",
+    "mintTimeTextEn": "1.0 h",
+    "mintTimeTextId": "1.0 jam"
    }
   ],
-  "note": "测试用的模拟目录（只含秒出的小档）"
+  "note": "测试用的模拟目录（只含秒出的小档）",
+  "noteEn": "Mock catalog for tests (only the tiers that finish in seconds)",
+  "noteId": "Katalog tiruan untuk pengujian (hanya tingkat yang selesai dalam hitungan detik)"
  },
  "health": {
   "ok": true,

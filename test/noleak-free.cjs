@@ -5,7 +5,7 @@
 //   ① 页面发出去的请求：除了打开页面那一次，一个都没有（没有接口、没有图片、没有字体、没有 WebSocket）
 //   ② 断网也能生成：先打开再断网；另一种是下载下来、一开始就断网双击打开
 //   ③ 存下来的钱包文件，用你设的密码解开，得到的钥匙算出来的地址 = 页面上显示的那个地址，而且对得上图案
-//   ④ 只钉一头：页面上只有「钉开头 / 钉结尾」两个选项；超过上限（以太坊类 7 位、波场 5 位）的点不了「开始」
+//   ④ 只钉开头、最多 5 位（FREEPRE0X_20260928：钉结尾拿掉了，不给 7 位）：页面上没有「钉哪一头」的选项；超过 5 位的打不进去，判法也不认
 // 用法：cd test && npm ci && npx playwright install --with-deps chromium
 //       node noleak-free.cjs ../0x000000000-free.html ./node_modules
 const { chromium } = require('playwright');
@@ -45,7 +45,7 @@ function b58(buf) { let n = BigInt('0x' + buf.toString('hex')), s = ''; while (n
   const browser = await chromium.launch();
   const all = [];
   async function generate(page, chain, where, pat) {
-    await page.click(`#chainPick [data-chain="${chain}"]`); await page.click(`#wherePick [data-where="${where}"]`);
+    await page.click(`#chainPick [data-chain="${chain}"]`);   // FREEPRE0X：只钉开头，没有「钉哪一头」可点
     await page.fill('#patIn', pat); await sleep(100);
     await page.click('#btnGo');
     await page.waitForSelector('#ksBox:not([hidden])', { timeout: 120000 });
@@ -74,19 +74,19 @@ function b58(buf) { let n = BigInt('0x' + buf.toString('hex')), s = ''; while (n
     let ws = 0; page.on('websocket', () => { ws++; });
     await page.goto('https://0x000000000.com/free'); await sleep(800);
     await ctx.setOffline(true); await sleep(300);
-    const where = await page.$$eval('#wherePick [data-where]', (b) => b.map((x) => x.getAttribute('data-where')).join(','));
-    chk(where === 'prefix,suffix', '只钉一头：页面上只有「钉开头 / 钉结尾」（' + where + '）');
-    for (const [c, w, p] of [['evm', 'prefix', 'abc'], ['tron', 'suffix', 'oo'], ['tron', 'prefix', 'X']]) {
+    const where = await page.$$eval('#wherePick [data-where]', (b) => b.length);
+    chk(where === 0, '只钉开头：页面上没有「钉哪一头」的选项（找到 ' + where + ' 个）');
+    for (const [c, w, p] of [['evm', 'prefix', 'abc'], ['tron', 'prefix', 'Xo'], ['tron', 'prefix', 'X']]) {
       const r = await generate(page, c, w, p);
       chk(r.macOk && r.derived === r.shown && r.hit, `${c} ${w} 「${p}」：页面显示 ${r.shown}；钱包文件（${r.name}）用密码解开 → 钥匙算出来的地址一样、对得上图案`);
     }
-    // 超过上限：输入框最多收 7 / 5 个字，多的打不进去；页面里的判法也不认（有人改输入框也没用）
-    await page.click('#chainPick [data-chain="evm"]'); await page.fill('#patIn', '12345678'); await sleep(100);
+    // 超过上限：输入框最多收 5 个字，多的打不进去；页面里的判法也不认（有人改输入框也没用）：6 位、钉结尾、两头都钉
+    await page.click('#chainPick [data-chain="evm"]'); await page.fill('#patIn', '1234567'); await sleep(100);
     const v1 = await page.inputValue('#patIn');
-    await page.click('#chainPick [data-chain="tron"]'); await page.click('#wherePick [data-where="suffix"]'); await page.fill('#patIn', 'abcdef'); await sleep(100);
+    await page.click('#chainPick [data-chain="tron"]'); await page.fill('#patIn', 'Abcdefg'); await sleep(100);
     const v2 = await page.inputValue('#patIn');
-    const rule = await page.evaluate(() => [FreeGen.problem('evm', 'prefix', '12345678'), FreeGen.problem('tron', 'suffix', 'abcdef'), FreeGen.problem('evm', 'both', 'ab')].every((x) => x !== null));
-    chk(v1.length <= 7 && v2.length <= 5 && rule, `超过上限打不进去（以太坊类只收下 ${v1.length} 位、波场 ${v2.length} 位）；判法也不认 8 位 / 6 位 / 两头都钉`);
+    const rule = await page.evaluate(() => [FreeGen.problem('evm', 'prefix', '123456'), FreeGen.problem('tron', 'prefix', 'TAbcdef'), FreeGen.problem('evm', 'suffix', 'ab'), FreeGen.problem('tron', 'suffix', 'oo'), FreeGen.problem('evm', 'both', 'ab')].every((x) => x !== null));
+    chk(v1.length <= 5 && v2.length <= 5 && rule, `超过上限打不进去（以太坊类只收下 ${v1.length} 位、波场 ${v2.length} 位）；判法也不认 6 位 / 钉结尾 / 两头都钉`);
     chk(errs.length === 0, '页面没有报错' + (errs.length ? '：' + errs.slice(0, 2).join(' | ') : ''));
     chk(ws === 0, '没有 WebSocket');
     await ctx.close();
@@ -97,8 +97,8 @@ function b58(buf) { let n = BigInt('0x' + buf.toString('hex')), s = ''; while (n
     ctx2.on('request', (r) => all.push(r.url()));
     const p2 = await ctx2.newPage();
     await p2.goto(pathToFileURL(f).href); await sleep(800);
-    const r2 = await generate(p2, 'evm', 'suffix', 'ff');
-    chk(r2.macOk && r2.derived === r2.shown && r2.hit, `下载下来、一开始就断网打开：evm suffix 「ff」→ ${r2.shown}，钱包文件解开对得上`);
+    const r2 = await generate(p2, 'evm', 'prefix', 'ff');
+    chk(r2.macOk && r2.derived === r2.shown && r2.hit, `下载下来、一开始就断网打开：evm prefix 「ff」→ ${r2.shown}，钱包文件解开对得上`);
     await ctx2.close();
     const net = all.filter((u) => !/^(blob:|data:)/.test(u) && u !== 'https://0x000000000.com/free' && u !== pathToFileURL(f).href);
     chk(net.length === 0, `页面发出去的请求：除了打开页面那一次，${net.length} 个` + (net.length ? '：' + net.slice(0, 5).join(' | ') : ''));
