@@ -47,6 +47,7 @@
     <span class="lang">
       <button id="btnZh" data-lang="zh">中文</button>
       <button id="btnEn" data-lang="en">EN</button>
+      <button id="btnId" data-lang="id">ID</button>
     </span>
   </div>
   <!-- TICKER0X_20260924：DSJ「在网页横梁上做一个像打代码出现的一段字…一直重复…我们不骗取用户信任，我们提供证明」 -->
@@ -87,9 +88,9 @@
     <section class="ecards" aria-labelledby="ecHead">
       <div class="nc-head"><span id="ecHead" data-i18n="ecHead">Three things, three pages - so they never get mixed up</span></div>
       <div class="ec-wrap">
-        <a class="ec ec-alert" href="alerts.html" data-site="alerts.html"><b data-i18n="ec1T">Scam alerts</b><span data-i18n="ec1D">Know as soon as someone imitates your address: one free alert a week; real-time alerts are paid.</span><i data-i18n="ec1Go">See alerts →</i></a>
-        <button type="button" class="ec ec-vanity" id="ecVanity"><b data-i18n="ec2T">Vanity Wallet (this page)</b><span data-i18n="ec2D">Your own wallet address - the private key stays only with you. A 0x one is the same address on Ethereum, BSC, Base and the other chains.</span><i data-i18n="ec2Go">See prices ↓</i></button>
-        <div class="ec ec-proj"><b data-i18n="ec3T">For project teams</b><span data-i18n="ec3D">Contract and token addresses can be chosen too - we only compute a salt and never touch any key; the same address on every chain.</span><i class="ec-links"><a href="/contract" data-site="contract" data-i18n="ec3a">Vanity Contract →</a><a href="/token" data-site="token" data-i18n="ec3b">Token Address →</a></i></div>
+        <a class="ec ec-alert" href="alerts.html" data-site="alerts.html"><b data-i18n="ec1T">Scam alerts</b><span data-i18n="ec1S">Know when someone imitates your address</span><i data-i18n="ec1Go">See alerts →</i></a>
+        <button type="button" class="ec ec-vanity" id="ecVanity"><b data-i18n="ec2T">Vanity Wallet (this page)</b><span data-i18n="ec2S">Your own address - only you hold the key</span><i data-i18n="ec2Go">See prices ↓</i></button>
+        <div class="ec ec-proj"><b data-i18n="ec3T">For project teams</b><span data-i18n="ec3S">Contract and token addresses - no keys involved</span><i class="ec-links"><a href="/contract" data-site="contract" data-i18n="ec3a">Vanity Contract →</a><a href="/token" data-site="token" data-i18n="ec3b">Token Address →</a></i></div>
       </div>
     </section>
 
@@ -98,10 +99,9 @@
          表里只写「钥匙」「盐」—— 同一张表也放在那两页上，那两页一个「私钥」都不许有。 -->
     <section class="here" id="hereVw">
       <div class="here-big" id="hereBig" data-i18n="hereBig">You are on: Vanity Wallet (for individuals and merchants)</div>
-      <div class="here-sub" id="hereSub" data-i18n="hereSub">Your own wallet address, and only you hold the private key - six steps, and step 1 works offline.</div>
     </section>
     <section class="block" id="secCmp">
-      <div class="cmp-head" id="cmpHead" data-i18n="cmpHead">Three minting pages - make sure you are on the right one:</div>
+      <details class="fold"><summary class="cmp-head" id="cmpHead" data-i18n="cmpHead">Three minting pages - make sure you are on the right one:</summary>
       <div class="tblwrap"><table class="cmp" id="cmpTable">
         <tr><th></th><th class="cur" data-i18n="navVanity">Vanity Wallet</th><th data-i18n="navContract">Vanity Contract</th><th data-i18n="navToken">Token Address</th></tr>
         <tr><th data-i18n="cmpWhat">What</th><td class="cur" data-i18n="cmpWhat1">Your own wallet address</td><td data-i18n="cmpWhat2">The address of a contract you deploy</td><td data-i18n="cmpWhat3">The contract address of a token you issue</td></tr>
@@ -109,7 +109,7 @@
         <tr><th data-i18n="cmpKey">Keys</th><td class="cur" data-i18n="cmpKey1">Only you hold the key (you make half, we compute the other half)</td><td data-i18n="cmpKey2">No keys at all (we only compute a salt)</td><td data-i18n="cmpKey3">No keys at all (we only compute a salt)</td></tr>
         <tr><th data-i18n="cmpEvm">Across EVM chains</th><td class="cur" data-i18n="cmpEvm1">Same address (same key)</td><td data-i18n="cmpEvm2">Same address (CreateX)</td><td data-i18n="cmpEvm3">Same address (CreateX)</td></tr>
         <tr><th data-i18n="cmpWhere">Where</th><td class="cur">0x000000000.com</td><td>0x000000000.com/contract</td><td>0x000000000.com/token</td></tr>
-      </table></div>
+      </table></div></details>
     </section>
 
     <pre class="boot" id="boot" aria-label="boot sequence"></pre>
@@ -118,7 +118,17 @@
       <!-- LOGO0X_20260924：品牌名前面放 logo（九零阵 + 正中那个 x 比金色的零大一点） -->
       <div class="hero-id"><span class="logo-mark" aria-hidden="true"></span><div class="hero-brand">0x000000000</div></div>
       <div class="hero-tag" data-i18n="heroTag">VANITY ADDRESS MINT · NON-CUSTODIAL SPLIT-KEY</div>
-      <div class="hero-mission" data-i18n="heroMission">Pay in USDT. You make half the key on your own machine, we mint the other half - the full key can only be assembled by you.</div>
+      <!-- LESSTEXT0X_20260928（少字 B，DSJ 选的）：「你一半 + 我们一半」画成一张图，替掉原来那一整句 -->
+      <figure class="kd" aria-labelledby="kdCap">
+        <div class="kd-row">
+          <div class="kd-box kd-you"><b class="kd-t">s</b><span data-i18n="kdYou">Your half</span><small data-i18n="kdYouSub">only on your computer</small></div>
+          <span class="kd-op" aria-hidden="true">+</span>
+          <div class="kd-box kd-ours"><b class="kd-t">b</b><span data-i18n="kdOurs">Our half</span><small data-i18n="kdOursSub">found by our GPUs</small></div>
+          <span class="kd-op" aria-hidden="true">=</span>
+          <div class="kd-box kd-key"><b class="kd-t"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="8" cy="15" r="4"/><path d="M11 12l8-8M16 7l2 2"/></svg></b><span data-i18n="kdKey">Your full key</span><small data-i18n="kdKeySub">put together only on your computer</small></div>
+        </div>
+        <figcaption id="kdCap" data-i18n="kdCap">We only ever hold your shadow A and b - even together they cannot make your key.</figcaption>
+      </figure>
       <!-- HEROSYNC0X_20260923：这三张卡曾经写死成【已经取消的档位】(前缀8位 15-35 USDT),
            在公网上卖了不存在的产品。页面上显示的就是下面这份静态的（没有 renderHero 去覆盖它 —— 20260924 核对过，app.js 里没有这个函数），
            所以它必须是真在卖的：出包前 _mk0xdep.py 的 HEROSYNC 闸会把下面每个 data-pat 拿去跟价目表对一遍,对不上就不许出包。
@@ -131,7 +141,8 @@
         <div class="gs-item cta"><button type="button" id="heroCta" data-i18n="heroCta">Start minting →</button></div>
       </div>
       <!-- CONTRACT0X_20260928（构思 v3 第七章「以太坊类各链同一个地址」：零成本，只改页面文案）-->
-      <p class="hero-evm" id="heroEvm" data-i18n="heroEvm">0x vanity addresses: the same private key gives the same address on Ethereum, BSC, Polygon, Arbitrum, Optimism, Base, Avalanche C-Chain and other Ethereum-type chains - buy one, use it on all of them. Funds on each chain are kept separately, so pick the right chain when you send.</p>
+      <details class="fold"><summary data-i18n="evmSum">One 0x address works on every Ethereum-type chain</summary>
+      <p class="hero-evm" id="heroEvm" data-i18n="heroEvm">0x vanity addresses: the same private key gives the same address on Ethereum, BSC, Polygon, Arbitrum, Optimism, Base, Avalanche C-Chain and other Ethereum-type chains - buy one, use it on all of them. Funds on each chain are kept separately, so pick the right chain when you send.</p></details>
     </section>
 
     <!-- CATMODAL0X_20260923：DSJ 原话「把 Get-VanityCatalog 收起来，用户想看的时候点开，
@@ -181,14 +192,15 @@
       <div class="prompt">PS C:\0x000000000&gt; <span class="cmd">New-VanityOrder -Zone Custom</span></div>
       <div class="out">
         <div class="zone safe">
-          <span class="zt" data-i18n="safeTitle">[SAFE] CUSTOM ZONE · NON-CUSTODIAL</span><br>
+          <span class="zt" data-i18n="safeTitle">[SAFE] CUSTOM ZONE · NON-CUSTODIAL</span>
+          <details class="fold"><summary data-i18n="proofSum">How you can check this yourself</summary>
           <span data-i18n="safeBody">All we ever hold is your shadow A and the other half, b. Those two together still cannot produce your private key - it only ever gets assembled on your own computer.</span>
           <!-- TRUST0X_20260923：每一条都是用户自己能核对的事实 -->
           <ul class="proof">
             <li data-i18n="proof1">Your half of the key is created on your own computer and only ever stored there. The platform only receives a public key (public, like a bank account number) and signatures (proof that you hold your half, without revealing it). Everything the minting page says to the platform is listed at its bottom under "Every word this page said to the platform" - check it yourself.</li>
             <li data-i18n="proof2">"Make key" needs no network: switch off Wi-Fi before clicking and it still works.</li>
             <li><span data-i18n="proof3">This page is a single file, byte-for-byte identical to the copy published on GitHub. GitHub's machines download the live page every hour and compare fingerprints, and run the whole flow in a real browser on every new version to check that no private key is sent - we cannot touch either check.</span> <span class="dim"><span data-i18n="proofVer">page version</span> <span id="buildId"><!--BUILD_ID--></span></span></li>
-          </ul>
+          </ul></details>
           <div class="proof-links"><a id="dlPage" href="0x000000000.html" download="0x000000000.html" data-i18n="proofDl">Download the minting page to your computer</a> · <a href="https://github.com/0x000000000-com/0x000000000" target="_blank" rel="noopener" data-i18n="proofGh">Verify on GitHub</a></div>
         </div>
         <!-- DLONLY0X_20260924：DSJ「直接改成全下载到电脑模式，网站上的6个步骤也直接撤掉，6个步骤只显示在下载到电脑页面」。
@@ -197,14 +209,19 @@
           <!-- REF0X_20260928：从推荐链接进来的人，这里说一句「推荐码已经记下，下载的铸造页会自动带上」（内容由 app.js 画，没有推荐码就不显示） -->
           <div class="dlref" id="dlRef" hidden></div>
           <div class="zt" data-i18n="dlHead">Mint on your own computer</div>
+          <!-- LESSTEXT0X_20260928：六步画成一条带图标的路线（app.js 按语言画）；点一步看一句话，「展开细节」里是铸造页上那一步的完整说明 -->
+          <div class="route-head" data-i18n="routeHead">Download it, open it, follow 6 steps:</div>
+          <ol class="route" id="route"></ol>
+          <div class="route-detail" id="routeDetail" aria-live="polite"></div>
+          <a class="dlbtn" id="dlPage2" href="0x000000000.html" download="0x000000000.html" data-i18n="dlGetBtn">Download the minting page</a>
+          <details class="fold"><summary data-i18n="dlMore">Why download it?</summary>
           <div data-i18n="dlWhy">Minting a vanity address involves your private key. To keep that key on your own computer from start to finish, making the key, ordering, collecting and building the key all happen in a page you download to your computer - not on this website.</div>
           <ol>
             <li data-i18n="dlStep1">Click the button below to download the minting page (a single file: 0x000000000.html).</li>
             <li data-i18n="dlStep2">Double-click it on your computer to open it (Chrome or Edge).</li>
             <li data-i18n="dlStep3">Follow its 6 steps. Each step tells you in plain words whether to go offline or stay online, and why.</li>
           </ol>
-          <a class="dlbtn" id="dlPage2" href="0x000000000.html" download="0x000000000.html" data-i18n="dlGetBtn">Download the minting page</a>
-          <div class="dlnote" data-i18n="dlNote">The downloaded file stays in your hands - we can never change it afterwards. It is byte-for-byte identical to the copy published on GitHub, so you can check it yourself ("Verify on GitHub" above).</div>
+          <div class="dlnote" data-i18n="dlNote">The downloaded file stays in your hands - we can never change it afterwards. It is byte-for-byte identical to the copy published on GitHub, so you can check it yourself ("Verify on GitHub" above).</div></details>
           <div class="step-desc warn" id="dlResumeMsg"></div>
         </div>
         <div id="flowWrap" hidden>
@@ -261,12 +278,13 @@
     <div class="prompt cursor-line">PS C:\0x000000000&gt;<span class="caret" aria-hidden="true">█</span></div>
 
     <footer class="foot">
-      <div><a href="faq.html" data-site="faq.html">FAQ</a> · <a href="partners.html" data-site="partners.html" data-i18n="footPartners">Partners</a> · <a href="verify.html" data-site="verify.html" data-i18n="footVerify">Verification · payment cards</a> · <a href="alerts.html" data-site="alerts.html" data-i18n="footAlerts">Paid alerts</a> · <a href="track.html" data-site="track.html" data-i18n="footTrack">Track an order</a> · <a href="admin.html">Admin</a> · <span data-i18n="foot1">page code published on GitHub, verifiable byte for byte · custom zone non-custodial · USDT on TRON / BSC</span></div>
+      <div><a href="faq.html" data-site="faq.html">FAQ</a> · <a href="partners.html" data-site="partners.html" data-i18n="footPartners">Partners</a> · <a href="verify.html" data-site="verify.html" data-i18n="footVerify">Verification · payment cards</a> · <a href="alerts.html" data-site="alerts.html" data-i18n="footAlerts">Paid alerts</a> · <a href="track.html" data-site="track.html" data-i18n="footTrack">Track an order</a> · <a href="admin.html">Admin</a> · <span data-i18n="foot1">page code published on GitHub, verifiable byte for byte · custom zone non-custodial · USDT on BSC (BEP20) only</span></div>
       <!-- FREECHECK0X_20260928：构思 v3 第三章第 1 条（DSJ：「这句话是精髓」）—— 每一页最底下固定放这几句 -->
       <div class="warnline" data-i18n="footNever">0x000000000 will never ask you to connect your wallet, to sign or approve anything for us in a wallet app, or to send us money to "verify". Anyone who asks is fake.</div>
-      <div class="dimline" data-i18n="footSign">The minting page signs a few times inside the page (placing the order, collecting, filing the receipt), with the key made and built for that order on your own computer. It signs a short proof text - never a transfer, never an approval - only to prove the order is yours.</div>
-      <div class="dimline" data-i18n="footOne">The only official website: 0x 000 000 000 .com (nine zeros after 0x) · 0x000000000 has not issued any token · bookmark it and always come in from the bookmark.</div>
       <div class="warnline" data-i18n="foot2">The platform will never ask for your private key or backup file - any message asking for keys is phishing.</div>
+      <details class="fold dimline"><summary data-i18n="footMore">The only official website: 0x000000000.com (nine zeros)</summary>
+      <div class="dimline" data-i18n="footSign">The minting page signs a few times inside the page (placing the order, collecting, filing the receipt), with the key made and built for that order on your own computer. It signs a short proof text - never a transfer, never an approval - only to prove the order is yours.</div>
+      <div class="dimline" data-i18n="footOne">The only official website: 0x 000 000 000 .com (nine zeros after 0x) · 0x000000000 has not issued any token · bookmark it and always come in from the bookmark.</div></details>
     </footer>
   </div>
 </main>
