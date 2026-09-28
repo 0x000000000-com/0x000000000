@@ -30,6 +30,11 @@ jobs:
           cmp /tmp/c2/0x000000000-contract.html 0x000000000-contract.html
           cmp /tmp/c2/0x000000000-token.html 0x000000000-token.html
           echo "Rebuilt from source: both pages identical to the published files · 从源码重新拼出来的两页，跟公开的一模一样"
+      - name: Rebuild the Free Generator page from src/ - must equal the published file byte for byte · 用 src/ 重新拼免费生成页，必须跟公开的文件逐字节相同
+        run: |
+          node src/build-free.mjs src /tmp/fg
+          cmp /tmp/fg/0x000000000-free.html 0x000000000-free.html
+          echo "Rebuilt from source: identical to the published file · 从源码重新拼出来的免费生成页，跟公开的一模一样"
       - name: Install a real browser · 装真浏览器
         working-directory: test
         run: |
@@ -38,3 +43,6 @@ jobs:
       - name: Walk all 6 steps in a real browser and check every request the page sends · 用真浏览器走完 6 步，逐个核对页面发出去的每一个请求
         working-directory: test
         run: node noleak.cjs ../0x000000000.html ./mock-platform.mjs ./node_modules
+      - name: Free Generator - generate real addresses in a real browser, open each wallet file, and count every request the page sends (must be none) · 免费生成页：真浏览器真的生成几个地址，打开每个钱包文件核对，数页面发出去的每一个请求（必须是 0 个）
+        working-directory: test
+        run: node noleak-free.cjs ../0x000000000-free.html ./node_modules
