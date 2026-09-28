@@ -39,5 +39,6 @@ jobs:
           check "https://0x000000000.com/free" 0x000000000-free.html
           check "https://0x000000000.com/0x000000000-free.html" 0x000000000-free.html
           check "https://0x000000000.com/zero" zero.html
+          check "https://0x000000000.com/zero.html" zero.html
           if [ $bad -eq 0 ]; then echo "Match: the site serves exactly the files published here · 一致：网站上跑的就是这里公开的这几份"; fi
           exit $bad
