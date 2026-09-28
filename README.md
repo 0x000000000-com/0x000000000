@@ -19,6 +19,10 @@ The home page also has a **free address-poisoning check** for TRON and a list of
 
 The white paper: **[0x000000000.com/wp](https://0x000000000.com/wp)** — what runs today, the scam we work against (address poisoning), what we build next, and how to check each claim yourself. Its file is here too (`wp.html`).
 
+Payment cards: **0x000000000.com/@name** — the page a verified person or business shows to the people who pay them: every verified address with a copy button and a QR code, and a box that tells you, inside your browser, whether the address you are about to pay is one of them. The page's file is here too (`card.html`); the addresses on it are read from the platform when the page opens. Ours is [0x000000000.com/@0x000000000](https://0x000000000.com/@0x000000000).
+
+Official Telegram bot: **@OxOOOOOOOOObot** — spelled with the capital letter O, not the digit zero, because Telegram names cannot start with a digit. Any other bot or account using our name is not us.
+
 ## How it works (one paragraph)
 
 Your key is split in two. **Your half is generated in your own browser** and saved as `my-secret-s.json` on your own computer; the platform only receives its **public key** (public, like a bank account number) and a **signature** (proof that you hold your half, without revealing it). The platform mints the other half, `b`, on its GPUs and hands it to you, and **joining the two halves into the complete private key also happens in your own browser**. A private key cannot be derived from a public key — that is the security foundation of Bitcoin, Ethereum and TRON.
@@ -44,8 +48,8 @@ One file, one fingerprint: opened on the website it shows only "Download"; downl
 
 | | What it is | Where to look |
 |---|---|---|
-| **1. The page is this one file** | The website home page = `0x000000000.html` here = the file you get from "Download the minting page" on the website, **byte for byte**. The explainer at `0x000000000.com/ppt` = `ppt.html` here, and the white paper at `0x000000000.com/wp` = `wp.html` here. All their fingerprints are in `SHA256SUMS`. Every change leaves a public record here that cannot be deleted. | This page · commit history |
-| **2. Tamper patrol** | **Every hour**, machines at GitHub download the live home page, the download copy, the `/ppt` explainer and the `/wp` white paper, and compare them with the fingerprints here. **Any mismatch turns red**, visible to everyone. The check runs on GitHub; the platform cannot touch it. | First badge above |
+| **1. The page is this one file** | The website home page = `0x000000000.html` here = the file you get from "Download the minting page" on the website, **byte for byte**. The explainer at `0x000000000.com/ppt` = `ppt.html` here, the white paper at `0x000000000.com/wp` = `wp.html` here, and every payment card page `0x000000000.com/@name` = `card.html` here. All their fingerprints are in `SHA256SUMS`. Every change leaves a public record here that cannot be deleted. | This page · commit history |
+| **2. Tamper patrol** | **Every hour**, machines at GitHub download the live home page, the download copy, the `/ppt` explainer, the `/wp` white paper and a payment card page, and compare them with the fingerprints here. **Any mismatch turns red**, visible to everyone. The check runs on GitHub; the platform cannot touch it. | First badge above |
 | **3. Private-key leak check** | For every new version, machines at GitHub walk through all 6 steps in a **real browser** and check **every single request** the page sends (table below): every field must equal a recomputed value exactly — **one extra field or one extra character turns it red**. | Second badge above |
 | **4. Font rebuild** | The page embeds two open-source fonts (see "Fonts" below). Machines at GitHub rebuild them from the official original font files; the result must be **byte-for-byte identical** to what the page carries — that large block of font data holds fonts and nothing else. | Third badge above |
 
@@ -60,7 +64,7 @@ One file, one fingerprint: opened on the website it shows only "Download"; downl
 | Collect | One signature (proves it is you) | Same as above, deterministic |
 | Receipt | One signature made with the complete key you built | Deterministic; the platform does not hold your half and could not forge it |
 | Not paying (only if you tap a reason) | One word out of four: too expensive, hard to follow, not sure it is safe, just looking — no order number | Exactly one field, equal to the word you tapped |
-| Free check (only when you use it) | The TRON address you pasted into the check box; if you also filled in your own address, that address in a second request | Exactly one field, equal to the address you pasted. The check runs it while your half of the key is already in the page's memory |
+| Free check (only when you use it) | The address you pasted into the check box (a TRON address, or an EVM 0x… address — for those only the verification is looked up); if you also filled in your own address, that address in a second request | Exactly one field, equal to the address you pasted. The check runs it while your half of the key is already in the page's memory |
 
 The page **connects nowhere else**. The check also really goes offline: "Make key" completes offline with 0 requests in the meantime; after collecting, "Build my key" and "Export wallet file" complete offline with 0 requests.
 A few more: opened as the website, the file shows only "Download" and no steps; downloaded and opened offline from the start, both TRON and EVM can be chosen and a key can be made — also when the network is down but the browser thinks it is online (requests just hang): the choice is there the moment the page opens, it does not wait for them; a first-time visitor sees English, and switching to Chinese after making a key keeps the key; the two links in the top bar go to `/ppt` and `/wp` (in the downloaded copy they open a new window, so the page you are working in stays open); a referral link (`?ref=CODE`) only makes the downloaded file's name carry the code — the file's bytes stay the same, and no request carries the code until you order. The check code is `test/noleak.cjs` — anyone can run it.
@@ -79,7 +83,7 @@ The whole page uses code-style fonts: **JetBrains Mono** for Latin letters, digi
 
 So that the page looks the same offline and never contacts a font website, the fonts are embedded in the page, keeping only the characters the page uses (listed in `src/css/fonts-chars.txt`). `src/build-fonts.py` regenerates `src/css/fonts.css` from the official Google Fonts files (URLs pinned to fixed commits, fingerprints at the top of the script), byte for byte, for anyone who runs it.
 
-Characters used only by the white paper are kept in a second file, `src/css/fonts-extra.css` (listed in `src/css/fonts-extra-chars.txt`), so adding text to the white paper never changes a single byte of the minting page. The same script regenerates both files, and the font check compares both.
+Characters used only by the white paper and the other text pages (payment cards, partners, verification, alerts) are kept in a second file, `src/css/fonts-extra.css` (listed in `src/css/fonts-extra-chars.txt`), so adding text to those pages never changes a single byte of the minting page. The same script regenerates both files, and the font check compares both.
 
 ## Check it yourself (pick any)
 
@@ -98,9 +102,10 @@ The fingerprint must match the one in `SHA256SUMS`.
 curl -s https://0x000000000.com/ | shasum -a 256
 curl -s https://0x000000000.com/ppt | shasum -a 256
 curl -s https://0x000000000.com/wp | shasum -a 256
+curl -s https://0x000000000.com/@0x000000000 | shasum -a 256
 ```
 
-The first must equal the `0x000000000.html` line in `SHA256SUMS`, the second the `ppt.html` line, the third the `wp.html` line.
+The first must equal the `0x000000000.html` line in `SHA256SUMS`, the second the `ppt.html` line, the third the `wp.html` line, the fourth the `card.html` line (every `/@name` page is that same file).
 
 **Rebuild it from source yourself** (`src/` holds the complete page source)
 
