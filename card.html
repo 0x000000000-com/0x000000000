@@ -63,7 +63,7 @@ code.snip{display:block;background:#0a0d14;border:1px solid var(--line2);border-
     <span class="logo-mark" aria-hidden="true"></span>
     <span class="ttl" id="ttl">0x000000000 — payment card</span>
     <span class="utc" id="utcClock">--:--:-- UTC</span>
-    <span class="lang"><button type="button" data-lang-btn="zh">中文</button><button type="button" data-lang-btn="en">EN</button></span>
+    <span class="lang"><button type="button" data-lang-btn="zh">中文</button><button type="button" data-lang-btn="en">EN</button><button type="button" data-lang-btn="id">ID</button></span>
   </div>
   <div id="app" aria-live="polite"><p class="sub">…</p></div>
   <noscript><p>This page needs JavaScript to read the card from the platform. 这一页要开 JavaScript 才读得到名片。</p></noscript>
@@ -163,15 +163,59 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
       officialUrl: 'The only official website: 0x 000 000 000 .com (nine zeros after 0x) · 0x000000000 has not issued any token.',
       links: [['/', 'Home'], ['/verify.html', 'What verification is'], ['/alerts.html', 'Paid alerts'], ['/wp', 'White paper']],
     },
+    // IDLANG0X_20260928：印尼文（DSJ「增加印尼文」）。键、数组长度、函数参数跟 en 一一对应。
+    id: {
+      title: (n) => '@' + n + ' — kartu pembayaran 0x000000000', loading: 'Membaca kartu dari platform…',
+      live: (c) => '✅ @' + c.name + ' · ' + (c.tier === 'yellow' ? 'centang kuning (bisnis / proyek)' : 'centang biru (pribadi)') + ' · terverifikasi selama ' + c.days + ' hari',
+      notice: (c) => '⏳ @' + c.name + ' · dalam masa pengumuman, aktif pada ' + utc(c.noticeUntil),
+      noticeNote: 'Dalam masa pengumuman: belum aktif. Selama 48 jam siapa pun bisa melaporkannya di bot resmi; sampai saat itu, konfirmasikan dengan pemiliknya lewat cara lain sebelum membayar.',
+      expired: (c) => '✗ @' + c.name + ' · verifikasi kedaluwarsa', expiredNote: 'Kartu ini sudah kedaluwarsa dan kehilangan ✅-nya. Konfirmasikan lagi dengan pemiliknya sebelum membayar - jangan membayar dari kartu yang kedaluwarsa.',
+      revoked: (c) => '✗ @' + c.name + ' · verifikasi dicabut', revokedNote: '0x000000000 mencabut verifikasi ini setelah memeriksa sebuah laporan. Jangan membayar dari kartu ini.',
+      what: 'Yang dibuktikan 0x000000000: alamat, situs web, dan kanal di bawah ini dikendalikan oleh @{n} - bukan bahwa mereka orang baik.',
+      copyFromHere: 'Salin dari sini - jangan pernah dari chat atau riwayat transfer Anda. Riwayat itulah tempat pelaku peracunan alamat beraksi.',
+      addrHead: (a) => (a.chain === 'evm' ? 'EVM (BSC, Ethereum, Base… alamat sama)' : 'TRON') + (a.label ? ' · ' + LBL.id[a.label] : ''),
+      removing: (a) => '⏳ keluar dari kartu ini pada ' + utc(a.effectiveAt),
+      check2: (h, t) => 'Sebelum membayar, bandingkan kedua ujung: awal <b>' + esc(h) + '</b> · akhir <b>' + esc(t) + '</b>',
+      copy: 'Salin alamat', copied: '✓ Tersalin', copyFail: 'Tidak bisa menyalin: tekan lama / pilih alamat di atas', qr: 'Kode QR', qrHide: 'Sembunyikan kode QR',
+      hard: (i) => 'Untuk memalsukan alamat yang diawali "' + i.pattern + '"' + (i.end === 'tail' ? ' dan juga diakhiri ' + i.checkText : '') + ', penipu butuh <b>' + dur(i.days, 'id') + '</b> di RTX 5090 dan sekitar <b>' + usd(i.usd, 'id') + '</b>.',
+      hardSuf: (i) => 'Untuk memalsukan alamat yang diawali ' + i.checkText + ' dan diakhiri "' + i.pattern + '", penipu butuh <b>' + dur(i.days, 'id') + '</b> di RTX 5090 dan sekitar <b>' + usd(i.usd, 'id') + '</b>.',
+      whyBtn: 'Mengapa?', whyHide: 'Sembunyikan',
+      why: ['Mereka bisa memakai metode yang sama dengan kami: siapa pun bisa menyewa GPU, dan perangkat lunak semacam ini tersedia untuk umum.', 'Bagian sulitnya adalah jumlah karakter: alamat cantik hanya perlu cocok dengan polanya; alamat palsu juga harus cocok dengan ujung yang lain - 6 karakter lagi.',
+        'Setiap karakter tambahan melipatgandakan jumlah percobaan (16x untuk EVM, 58x untuk TRON); 6 karakter tambahan di EVM berarti 16.7 juta kali lebih sulit.', 'Alamat hanya bisa dihitung maju dari kunci, tidak pernah mundur dari alamat yang Anda inginkan - semua orang harus mencoba kunci satu per satu.',
+        'Seperti nomor telepon: nomor berawalan 8888 mudah dicari; nomor berawalan 8888 yang juga berakhir dengan 6 digit terakhir Anda butuh pencarian sepuluh juta kali lebih banyak.', 'Jujur saja: ini harga untuk memalsukan satu alamat ini; menargetkan banyak orang sekaligus jauh lebih murah - jadi tetap salin dari kartu dan bandingkan sebelum membayar.'],
+      pendingHead: '⏳ Perubahan tertunda (saluran notifikasi mana pun bisa membatalkannya dalam 48 jam)',
+      adding: (a) => 'Alamat baru ' + a.address + ' (berlaku ' + utc(a.effectiveAt) + ') - jangan membayar ke alamat ini sebelum itu',
+      pend: (p) => ({ domain: 'situs web baru', x: 'akun X baru', tgch: 'kanal TG baru', group: 'grup peringatan baru', add_channel: 'saluran notifikasi baru', remove_channel: 'saluran notifikasi dihapus' }[p.kind] || p.kind) + (p.value ? ' → ' + p.value : '') + ' (berlaku ' + utc(p.effectiveAt) + ')',
+      verifyHead: 'Bandingkan sekali lagi sebelum mengirim', verifyPh: 'Tempel alamat yang akan Anda kirimi', verifyBtn: 'Bandingkan',
+      vfSame: (a) => '✅ Itu persis alamat yang diverifikasi @{n} (' + (a.chain === 'evm' ? 'EVM' : 'TRON') + ').',
+      vfAdding: (a) => '⏳ Alamat itu sedang ditambahkan oleh @{n} dan belum aktif (' + utc(a.effectiveAt) + ') - jangan membayar ke sana sebelum itu.',
+      vfLike: (a, h, t) => '⛔ Alamat ini mirip ' + a.address + ' milik @{n} (' + h + ' karakter pertama dan ' + t + ' karakter terakhir cocok) tetapi BUKAN alamat yang sama - jangan kirim! Beginilah cara kerja peracunan alamat.',
+      vfNone: '✗ Itu bukan alamat yang diverifikasi oleh @{n}. Uang untuk @{n} hanya dikirim ke alamat-alamat di atas.', vfBad: 'Itu tidak terlihat seperti alamat (TRON: T + 33 karakter; EVM: 0x + 40).',
+      vfLocal: 'Dibandingkan di browser Anda - alamat yang Anda tempel tidak dikirim ke mana pun.',
+      site: 'Situs web', x: 'X', tg: 'Kanal TG', since: 'Terverifikasi sejak', until: 'Berlaku sampai',
+      refHead: 'Ingin alamat yang semudah ini dikenali?', refLink: 'Pesan lewat link referal @{n}',
+      badgeHead: 'Pasang lencana ini di situs web Anda (mengarah kembali ke kartu ini):', copySnip: 'Salin kode',
+      news: 'Kasus nyata · Januari 2026 · Ethereum · 4,556 ETH (sekitar $12.4M): penipu meniru alamat deposit yang ia pakai untuk penyelesaian OTC, dan ia menyalin alamat palsu itu dari riwayat transfernya.', newsSrc: 'sumber',
+      none: (n) => '✗ Tidak ada verifikasi @' + n, noneNote: 'Kartu asli selalu menampilkan ✅ dan "terverifikasi selama N hari". Ada yang mengirimi Anda link ini sebagai kartunya? Jangan bayar dulu - periksa dengan bot resmi: /card nama.',
+      down: 'Kartu tidak bisa dibaca saat ini (platform tidak bisa dihubungi) - daripada menampilkan alamat yang mungkin salah, halaman ini tidak menampilkan apa pun. Coba lagi sebentar lagi, atau tanyakan ke bot resmi: /card ',
+      emptyHead: 'Cari kartu pembayaran', emptyPh: 'sebuah nama, mis. alice', go: 'Buka',
+      official: '✅ @0x000000000 · resmi', officialSub: 'Kartu kami sendiri: situs web resmi, bot resmi, kode open source.',
+      oSite: 'Situs web (buka hanya dari bookmark Anda)', oBot: 'Bot resmi (satu-satunya akun Telegram kami)', oGit: 'Kode open source', oPay: 'Membayar 0x000000000: alamat pembayaran hanya muncul di halaman pesanan Anda sendiri setelah Anda memesan. Jika seseorang mengirimi Anda "alamat pembayaran kami" di chat, jangan bayar.', oToken: '0x000000000 tidak pernah menerbitkan token apa pun.',
+      never: '0x000000000 tidak akan pernah meminta Anda menghubungkan dompet, menandatangani atau menyetujui apa pun untuk kami di aplikasi dompet, atau mengirim uang untuk "verifikasi". Siapa pun yang meminta itu adalah palsu.',
+      never2: 'Platform tidak akan pernah meminta kunci privat atau file cadangan Anda - pesan apa pun yang meminta kunci adalah phishing.',
+      officialUrl: 'Satu-satunya situs resmi: 0x 000 000 000 .com (sembilan angka nol setelah 0x) · 0x000000000 tidak pernah menerbitkan token apa pun.',
+      links: [['/', 'Beranda'], ['/verify.html', 'Apa itu verifikasi'], ['/alerts.html', 'Peringatan berbayar'], ['/wp', 'Whitepaper']],
+    },
   };
-  const LBL = { zh: { pay: '收款', contract: '合约', multisig: '多签', team: '团队', other: '其他' }, en: { pay: 'payments', contract: 'contract', multisig: 'multisig', team: 'team', other: 'other' } };
+  const LBL = { zh: { pay: '收款', contract: '合约', multisig: '多签', team: '团队', other: '其他' }, en: { pay: 'payments', contract: 'contract', multisig: 'multisig', team: 'team', other: 'other' },
+    id: { pay: 'pembayaran', contract: 'kontrak', multisig: 'multisig', team: 'tim', other: 'lainnya' } };
   const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   const utc = (ts) => (ts ? new Date(ts).toISOString().slice(0, 16).replace('T', ' ') + ' UTC' : '—');
   const grp = (n) => String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-  const dur = (days, l) => days >= 730 ? (l === 'zh' ? '约 ' + grp(days / 365) + ' 年' : 'about ' + grp(days / 365) + ' years') : days >= 2 ? (l === 'zh' ? '约 ' + grp(days) + ' 天' : 'about ' + grp(days) + ' days') : (l === 'zh' ? '约 ' + grp(days * 24) + ' 小时' : 'about ' + grp(days * 24) + ' hours');
-  const usd = (x, l) => l === 'zh' ? (x >= 1e8 ? '约 ' + grp(x / 1e8) + ' 亿美元' : x >= 1e4 ? '约 ' + grp(x / 1e4) + ' 万美元' : '约 ' + grp(x) + ' 美元') : (x >= 1e6 ? '$' + grp(x / 1e6) + ' million' : '$' + grp(x));
+  const dur = (days, l) => days >= 730 ? (l === 'zh' ? '约 ' + grp(days / 365) + ' 年' : l === 'id' ? 'sekitar ' + grp(days / 365) + ' tahun' : 'about ' + grp(days / 365) + ' years') : days >= 2 ? (l === 'zh' ? '约 ' + grp(days) + ' 天' : l === 'id' ? 'sekitar ' + grp(days) + ' hari' : 'about ' + grp(days) + ' days') : (l === 'zh' ? '约 ' + grp(days * 24) + ' 小时' : l === 'id' ? 'sekitar ' + grp(days * 24) + ' jam' : 'about ' + grp(days * 24) + ' hours');
+  const usd = (x, l) => l === 'zh' ? (x >= 1e8 ? '约 ' + grp(x / 1e8) + ' 亿美元' : x >= 1e4 ? '约 ' + grp(x / 1e4) + ' 万美元' : '约 ' + grp(x) + ' 美元') : (x >= 1e6 ? '$' + grp(x / 1e6) + (l === 'id' ? ' juta' : ' million') : '$' + grp(x));
   const LANG_KEY = '0xlang2';
-  let lang = (() => { try { const v = localStorage.getItem(LANG_KEY); return v === 'zh' || v === 'en' ? v : 'en'; } catch (e) { return 'en'; } })();
+  let lang = (() => { try { const v = localStorage.getItem(LANG_KEY); return v === 'zh' || v === 'en' || v === 'id' ? v : 'en'; } catch (e) { return 'en'; } })();   // IDLANG0X_20260928：多一种印尼文 id
   const $ = (s, r = document) => r.querySelector(s);
   const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; };
   const html = (tag, cls, h) => { const e = el(tag, cls); e.innerHTML = h; return e; };   // 只给我们自己拼的、已经 esc 过的字用

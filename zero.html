@@ -67,7 +67,7 @@ td.num{font-variant-numeric:tabular-nums;white-space:nowrap}
     <span class="logo-mark" aria-hidden="true"></span>
     <span class="ttl" id="ttl">0x000000000 — Zero board</span>
     <span class="utc" id="utcClock">--:--:-- UTC</span>
-    <span class="lang"><button type="button" data-lang-btn="zh">中文</button><button type="button" data-lang-btn="en">EN</button></span>
+    <span class="lang"><button type="button" data-lang-btn="zh">中文</button><button type="button" data-lang-btn="en">EN</button><button type="button" data-lang-btn="id">ID</button></span>
     <nav class="topnav" aria-label="products"><a id="navVanity" href="/">Vanity Wallet</a><a id="navContract" href="/contract">Vanity Contract</a><a id="navToken" href="/token">Token Address</a><a id="navFree" href="/free">Free Generator</a><a id="navWp" href="/wp">White paper</a></nav>
   </div>
   <section class="here"><div class="here-big" id="hereBig">Zero board: how many zeros right after 0x</div><div class="here-sub" id="hereSub"></div></section>
@@ -110,7 +110,7 @@ td.num{font-variant-numeric:tabular-nums;white-space:nowrap}
   var $ = function (s) { return document.querySelector(s); };
   var esc = function (x) { return String(x == null ? '' : x).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); };
   var LANG_KEY = '0xlang2';
-  var lang = (function () { try { var v = localStorage.getItem(LANG_KEY); return v === 'zh' || v === 'en' ? v : 'en'; } catch (e) { return 'en'; } })();
+  var lang = (function () { try { var v = localStorage.getItem(LANG_KEY); return v === 'zh' || v === 'en' || v === 'id' ? v : 'en'; } catch (e) { return 'en'; } })();   // IDLANG0X_20260928：多一种印尼文 id
   var D = {
     zh: {
       ttl: '0x000000000 — 零之榜', navVanity: '个人靓号', navContract: '合约靓号', navToken: '发币地址定制', navFree: '免费生成', navWp: '白皮书',
@@ -127,7 +127,7 @@ td.num{font-variant-numeric:tabular-nums;white-space:nowrap}
       already: function (r) { return '这个地址已经在榜上：第 ' + r + ' 名。'; },
       netFail: '连不上平台（断网了？）—— 过一会再试。',
       honestH: '照实说',
-      honest: ['只收以太坊类地址：波场地址里根本没有 0 这个字。', '开头至少 5 个 0 才能上榜。免费生成能在你自己的电脑上算到 7 个 0；更多的交给显卡（个人靓号）。',
+      honest: ['只收以太坊类地址：波场地址里根本没有 0 这个字。', '开头至少 5 个 0 才能上榜。免费生成能在你自己的电脑上算到 5 个 0（正好够上榜）；更多的交给显卡（个人靓号）。',
         '我们证明的是「这个地址在你手里」，不证明你是谁。榜上不放任何人自己写的字（免得有人拿榜单打广告、冒充）—— 认证过的地址会带上认证名字。',
         '零头是转给你自己的另一个地址：钱不经过我们，也不用把钱包连到这个网站。'],
       toFree: '去免费生成', toVanity: '去个人靓号',
@@ -150,13 +150,37 @@ td.num{font-variant-numeric:tabular-nums;white-space:nowrap}
       already: function (r) { return 'This address is already on the board: #' + r + '.'; },
       netFail: 'Cannot reach the platform (offline?) - try again shortly.',
       honestH: 'Honestly',
-      honest: ['EVM addresses only: TRON addresses have no 0 at all.', 'At least 5 zeros at the start to go on the board. The Free Generator can reach 7 zeros on your own computer; more is a job for the GPU (Vanity Wallet).',
+      honest: ['EVM addresses only: TRON addresses have no 0 at all.', 'At least 5 zeros at the start to go on the board. The Free Generator can reach 5 zeros on your own computer (just enough for the board); more is a job for the GPU (Vanity Wallet).',
         'We prove that the address is in your hands, not who you are. The board shows no text written by anyone (so nobody can use it to advertise or impersonate) - verified addresses carry their verified name.',
         'The tiny amount goes to another address of yours: the money never passes through us, and you never connect a wallet to this website.'],
       toFree: 'Go to the Free Generator', toVanity: 'Go to Vanity Wallet',
       footLinks: 'FAQ · Partners · Verification · Paid alerts',
       footNever: '0x000000000 will never ask you to connect your wallet, to sign or approve anything for us in a wallet app, or to send us money to "verify". Anyone who asks is fake.',
       footOne: 'The only official website: 0x 000 000 000 .com (nine zeros after 0x) · 0x000000000 has not issued any token · bookmark it and always come in from the bookmark.'
+    },
+    // IDLANG0X_20260928：印尼文（DSJ「增加印尼文」）。键、数组长度、函数参数跟 en 一一对应。
+    id: {
+      ttl: '0x000000000 — Papan Nol', navVanity: 'Dompet Cantik', navContract: 'Kontrak Cantik', navToken: 'Alamat Token', navFree: 'Generator Gratis', navWp: 'Whitepaper',
+      hereBig: 'Papan Nol: berapa banyak angka nol tepat setelah 0x', hereSub: 'Ini matematika - tidak ada yang bisa memalsukannya. Ikut serta bersifat sukarela, dan Anda harus membuktikan dulu bahwa alamat itu milik Anda.',
+      boardH: 'Papan', cols: ['#', 'Alamat', 'Nol di awal', 'Bergabung', 'Terverifikasi'],
+      empty: 'Belum ada yang masuk papan - jadilah yang pertama.', total: function (n) { return n + ' alamat di papan (100 teratas ditampilkan di sini)'; }, loadFail: 'Papan tidak bisa dimuat (offline?) - muat ulang untuk mencoba lagi.',
+      joinH: 'Bergabung', leaveH: 'Keluar',
+      joinSteps: ['Ketik alamat Anda (diawali 0x, minimal 5 angka nol di awal)', 'Klik "Minta tantangan": kami memberi Anda sejumlah kecil yang acak', 'Dari alamat ini, kirim jumlah itu di BSC ke alamat Anda yang lain (uangnya tidak pernah melewati kami; biayanya di bawah 1 sen)', 'Tempel kembali hash transaksinya lalu klik "Serahkan"'],
+      leaveSteps: ['Ketik alamat yang ada di papan', 'Klik "Minta tantangan": kami memberi Anda sejumlah kecil yang acak', 'Dari alamat ini, kirim jumlah itu di BSC ke alamat Anda yang lain', 'Tempel kembali hash transaksinya lalu klik "Serahkan" - alamat itu keluar dari papan'],
+      addrL: 'Alamat Anda', addrPh: '0x00000...', ask: 'Minta tantangan', toLeave: 'Keluar dari papan?', toJoin: 'Masuk ke papan?',
+      task: function (a, t, e) { return 'Dari <b>' + esc(a) + '</b>, kirim <b>' + esc(t) + '</b> di BSC ke alamat Anda yang lain (jumlahnya persis), dalam 24 jam (sebelum ' + esc(e) + ' UTC). Lalu tempel hash transaksinya di bawah.'; },
+      txL: 'Hash transaksi', txPh: '0x plus 64 karakter', prove: 'Serahkan',
+      joined: function (r, z) { return 'Anda masuk papan: #' + r + ' (' + z + ' angka nol di awal)'; }, left: 'Alamat itu sudah keluar dari papan.',
+      already: function (r) { return 'Alamat ini sudah ada di papan: #' + r + '.'; },
+      netFail: 'Tidak bisa menghubungi platform (offline?) - coba lagi sebentar lagi.',
+      honestH: 'Jujur saja',
+      honest: ['Hanya alamat EVM: alamat TRON sama sekali tidak memiliki 0.', 'Minimal 5 angka nol di awal untuk masuk papan. Generator Gratis bisa mencapai 5 angka nol di komputer Anda sendiri (pas untuk masuk papan); lebih dari itu adalah tugas GPU (Dompet Cantik).',
+        'Kami membuktikan bahwa alamat itu ada di tangan Anda, bukan siapa Anda. Papan ini tidak menampilkan teks yang ditulis siapa pun (agar tidak ada yang memakainya untuk beriklan atau menyamar) - alamat yang terverifikasi membawa nama verifikasinya.',
+        'Jumlah kecil itu dikirim ke alamat Anda yang lain: uangnya tidak pernah melewati kami, dan Anda tidak pernah menghubungkan dompet ke situs web ini.'],
+      toFree: 'Ke Generator Gratis', toVanity: 'Ke Dompet Cantik',
+      footLinks: 'FAQ · Mitra · Verifikasi · Peringatan berbayar',
+      footNever: '0x000000000 tidak akan pernah meminta Anda menghubungkan dompet, menandatangani atau menyetujui apa pun untuk kami di aplikasi dompet, atau mengirim uang untuk "verifikasi". Siapa pun yang meminta itu adalah palsu.',
+      footOne: 'Satu-satunya situs resmi: 0x 000 000 000 .com (sembilan angka nol setelah 0x) · 0x000000000 tidak pernah menerbitkan token apa pun · simpan di bookmark dan selalu masuk dari bookmark.'
     }
   };
   var T = function () { return D[lang]; };
@@ -167,7 +191,8 @@ td.num{font-variant-numeric:tabular-nums;white-space:nowrap}
       .then(function (r) { return r.json().catch(function () { return {}; }).then(function (j) { return { code: r.status, body: j }; }); })
       .catch(function () { return { code: 0, body: {} }; });
   }
-  var errOf = function (r) { var b = r.body || {}; return r.code === 0 ? T().netFail : ((lang === 'en' ? b.errorEn : b.error) || b.error || ('HTTP ' + r.code)); };
+  // 平台回的话：中文 error · 英文 errorEn · 印尼文 errorId（没有就退回英文、再退回中文）
+  var errOf = function (r) { var b = r.body || {}; return r.code === 0 ? T().netFail : ((lang === 'id' ? (b.errorId || b.errorEn) : lang === 'en' ? b.errorEn : b.error) || b.error || ('HTTP ' + r.code)); };
   function addrHtml(a) { var m = /^0x(0*)(.*)$/.exec(a) || [a, '', a.slice(2)]; return '0x<span class="z">' + esc(m[1]) + '</span>' + esc(m[2]); }
   function day(ms) { try { return new Date(ms).toISOString().slice(0, 10); } catch (e) { return '—'; } }
   function renderBoard() {
