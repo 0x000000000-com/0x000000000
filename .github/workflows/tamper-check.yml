@@ -6,6 +6,14 @@ name: Live page tamper patrol
 # This check runs on GitHub machines; the platform cannot touch it.
 # 每小时一次：到 0x000000000.com 下载网站首页、「下载铸造页面」那一份、说明书 /ppt、白皮书 /wp、收款名片页（/@名字）、合约靓号页 /contract、发币地址定制页 /token、免费生成页 /free、零之榜 /zero，跟这个仓库里公开的指纹比。
 # 不一致就变红 —— 说明网站上跑的不是这里公开的这一份。这个检查在 GitHub 的机器上跑，平台插不上手。
+# PATROLGRACE0X_20260928 (the owner chose this): right after a new version is published here, the site keeps serving the previous
+# published version for the few minutes until the deploy finishes - that used to turn this check red for no reason.
+# Now, for 3 hours after SHA256SUMS changes, the previous published fingerprint also passes (as a notice, not an error).
+# The site can still never serve bytes that were not published here: only the current or the previous published version passes,
+# and the previous one only inside those 3 hours. The time comes from this repository's own history, which the platform cannot write.
+# 公开新版本之后、上线之前那几分钟，网站上还是上一个公开版本 —— 原来这里会无缘无故变红。
+# 现在：SHA256SUMS 换版之后 3 小时内，上一个公开版本的指纹也算过（记一条提示，不算错）。
+# 网站上照样不可能出现没在这里公开过的字节：只有当前版本、或者（3 小时内）上一个公开版本能过。时间取自这个仓库自己的提交记录，平台写不进来。
 on:
   schedule:
     - cron: '7 * * * *'
@@ -17,28 +25,46 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - name: Download the live pages and compare fingerprints with the published ones · 下载线上页面，跟公开版本比指纹
+        env:
+          BASE: https://0x000000000.com
+          GRACE_HOURS: '3'
         run: |
           bad=0
+          # When the current fingerprints were published, and what they were before · 当前指纹什么时候公开的、换版之前是什么
+          last=$(git log -1 --format=%ct -- SHA256SUMS)
+          prevc=$(git log -1 --format=%H -- SHA256SUMS)
+          git show "$prevc^:SHA256SUMS" > "$RUNNER_TEMP/prev.sums" 2>/dev/null || : > "$RUNNER_TEMP/prev.sums"
+          age=$(( $(date +%s) - last ))
+          grace=$(( GRACE_HOURS * 3600 ))
+          echo "Current fingerprints published $((age / 60)) min ago · 当前指纹 $((age / 60)) 分钟前公开"
           check() {
             want=$(awk -v f="$2" '$2==f{print $1}' SHA256SUMS)
-            got=$(curl -fsSL --retry 3 --retry-delay 5 -H 'Cache-Control: no-cache' "$1" | sha256sum | cut -d' ' -f1)
-            echo "$1  ->  $got  (published $2 / 公开的 $2: $want)"
-            if [ -z "$want" ] || [ "$got" != "$want" ]; then echo "::error::Live page differs from the published version / 线上这一份跟公开版本不一致: $1"; bad=1; fi
+            prev=$(awk -v f="$2" '$2==f{print $1}' "$RUNNER_TEMP/prev.sums")
+            got=$(curl -fsSL --retry 3 --retry-delay 5 -H 'Cache-Control: no-cache' "$BASE$1" | sha256sum | cut -d' ' -f1)
+            echo "$BASE$1  ->  $got  (published $2 / 公开的 $2: $want)"
+            if [ -n "$want" ] && [ "$got" = "$want" ]; then return; fi
+            if [ -n "$prev" ] && [ "$got" = "$prev" ] && [ "$age" -lt "$grace" ]; then
+              echo "::notice::Still the previous published version, $((age / 60)) min after the new one was published - allowed for ${GRACE_HOURS} h / 还是上一个公开版本（新版本公开 $((age / 60)) 分钟，${GRACE_HOURS} 小时内算过）: $BASE$1"
+              return
+            fi
+            echo "::error::Live page differs from the published version / 线上这一份跟公开版本不一致: $BASE$1"; bad=1
           }
-          check "https://0x000000000.com/" 0x000000000.html
-          check "https://0x000000000.com/0x000000000.html" 0x000000000.html
-          check "https://0x000000000.com/ppt" ppt.html
-          check "https://0x000000000.com/wp" wp.html
-          check "https://0x000000000.com/card.html" card.html
-          check "https://0x000000000.com/@0x000000000" card.html
-          check "https://0x000000000.com/contract" 0x000000000-contract.html
-          check "https://0x000000000.com/0x000000000-contract.html" 0x000000000-contract.html
-          check "https://0x000000000.com/token" 0x000000000-token.html
-          check "https://0x000000000.com/0x000000000-token.html" 0x000000000-token.html
-          check "https://0x000000000.com/free" 0x000000000-free.html
-          check "https://0x000000000.com/0x000000000-free.html" 0x000000000-free.html
-          check "https://0x000000000.com/zero" zero.html
-          check "https://0x000000000.com/zero.html" zero.html
-          if [ $bad -eq 0 ]; then echo "Match: the site serves exactly the files published here · 一致：网站上跑的就是这里公开的这几份"; fi
+          check "/" 0x000000000.html
+          check "/0x000000000.html" 0x000000000.html
+          check "/ppt" ppt.html
+          check "/wp" wp.html
+          check "/card.html" card.html
+          check "/@0x000000000" card.html
+          check "/contract" 0x000000000-contract.html
+          check "/0x000000000-contract.html" 0x000000000-contract.html
+          check "/token" 0x000000000-token.html
+          check "/0x000000000-token.html" 0x000000000-token.html
+          check "/free" 0x000000000-free.html
+          check "/0x000000000-free.html" 0x000000000-free.html
+          check "/zero" zero.html
+          check "/zero.html" zero.html
+          if [ $bad -eq 0 ]; then echo "Match: the site serves the files published here · 一致：网站上跑的就是这里公开的这几份"; fi
           exit $bad
