@@ -54,15 +54,16 @@ One file, one fingerprint: opened on the website it shows only "Download"; downl
 | When | What is sent | How it is checked |
 |---|---|---|
 | Opening the page | Reads the price list, checks the platform is online — **nothing of yours is sent** | Must carry no content |
-| Order | Which chain, the pattern, which payment chain | Exactly these four fields, equal to what you chose |
+| Order | Which chain, the pattern, which payment chain — plus the referral code, if you came through a referral link or typed one | Exactly these four fields (five with a referral code), equal to what you chose; the code must equal the one in the link or file name |
 | Upload | Public key A + one signature | A must equal "your half × G"; the signature must be an RFC6979 **deterministic signature** (no random field to hide anything in) |
 | Waiting for payment / minting | Asks for order progress and the payment address — **nothing of yours is sent** | Must carry no content |
 | Collect | One signature (proves it is you) | Same as above, deterministic |
 | Receipt | One signature made with the complete key you built | Deterministic; the platform does not hold your half and could not forge it |
+| Not paying (only if you tap a reason) | One word out of four: too expensive, hard to follow, not sure it is safe, just looking — no order number | Exactly one field, equal to the word you tapped |
 | Free check (only when you use it) | The TRON address you pasted into the check box; if you also filled in your own address, that address in a second request | Exactly one field, equal to the address you pasted. The check runs it while your half of the key is already in the page's memory |
 
 The page **connects nowhere else**. The check also really goes offline: "Make key" completes offline with 0 requests in the meantime; after collecting, "Build my key" and "Export wallet file" complete offline with 0 requests.
-A few more: opened as the website, the file shows only "Download" and no steps; downloaded and opened offline from the start, both TRON and EVM can be chosen and a key can be made — also when the network is down but the browser thinks it is online (requests just hang): the choice is there the moment the page opens, it does not wait for them; a first-time visitor sees English, and switching to Chinese after making a key keeps the key; the two links in the top bar go to `/ppt` and `/wp` (in the downloaded copy they open a new window, so the page you are working in stays open). The check code is `test/noleak.cjs` — anyone can run it.
+A few more: opened as the website, the file shows only "Download" and no steps; downloaded and opened offline from the start, both TRON and EVM can be chosen and a key can be made — also when the network is down but the browser thinks it is online (requests just hang): the choice is there the moment the page opens, it does not wait for them; a first-time visitor sees English, and switching to Chinese after making a key keeps the key; the two links in the top bar go to `/ppt` and `/wp` (in the downloaded copy they open a new window, so the page you are working in stays open); a referral link (`?ref=CODE`) only makes the downloaded file's name carry the code — the file's bytes stay the same, and no request carries the code until you order. The check code is `test/noleak.cjs` — anyone can run it.
 
 ## The wallet file (exported in step 5)
 
