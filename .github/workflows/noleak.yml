@@ -24,6 +24,12 @@ jobs:
           sha256sum -c SHA256SUMS
           cmp /tmp/rebuilt.html 0x000000000.html
           echo "Rebuilt from source: identical to the published file · 从源码重新构建出来的文件，跟公开的这份一模一样"
+      - name: Rebuild the vanity contract and token address pages from src/ - must equal the published files byte for byte · 用 src/ 重新拼合约靓号页、发币地址定制页，必须跟公开的两个文件逐字节相同
+        run: |
+          node src/build-c2.mjs src /tmp/c2
+          cmp /tmp/c2/0x000000000-contract.html 0x000000000-contract.html
+          cmp /tmp/c2/0x000000000-token.html 0x000000000-token.html
+          echo "Rebuilt from source: both pages identical to the published files · 从源码重新拼出来的两页，跟公开的一模一样"
       - name: Install a real browser · 装真浏览器
         working-directory: test
         run: |
