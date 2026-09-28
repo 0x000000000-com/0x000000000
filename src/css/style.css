@@ -24,6 +24,9 @@ html,body{margin:0;padding:0}
 body{background:var(--bg0);color:var(--text);font-family:var(--sans);font-size:14px;line-height:1.7;
      font-variant-ligatures:none;padding:24px 16px 64px}
 button,input,select,textarea{font-family:inherit}
+/* CONTRACT0X_20260928：链接的底色。原来没有这一条，每个新地方的链接都是浏览器默认的深蓝（深底上几乎看不见）——
+   VERIFY0X 修过一次（.step-desc a），合约页「在 GitHub 上核对」又踩一次。各处自己的颜色（.foot a、.topnav a…）照旧优先。 */
+a{color:var(--gold-b)}
 body::before,body::after{content:none}
 
 /* 终端皮肤的三件套：星空 / 开机字 / 光标行 —— 这次要的就是没有它们 */
@@ -148,7 +151,7 @@ button.copy{font-family:var(--sans);font-size:11.5px;color:var(--info);backgroun
 .st-created{color:var(--dim)}
 .st-share{color:var(--info);border-color:rgba(106,169,255,.4)}
 .st-paid{color:var(--gold-b);border-color:var(--gold-d)}
-.st-mining{color:var(--warn);border-color:rgba(232,161,60,.4)}
+.st-minting{color:var(--warn);border-color:rgba(232,161,60,.4)}
 .st-delivered{color:var(--up);border-color:rgba(47,191,143,.4)}
 .st-refunded{color:var(--faint)}
 .st-expired{color:var(--down);border-color:rgba(229,72,77,.4)}
@@ -212,7 +215,7 @@ tr.unpriced td{opacity:.72}
 .modal-x:hover{color:var(--text,#e9e5d9)}
 .modal-body{padding:14px 16px 18px;overflow:auto}
 
-/* TRUST0X_20260923：「为什么平台拿不到你的私钥」—— 每一条都是用户自己能核对的事实 */
+/* TRUST0X_20260923：「为什么平台拿不到你的钥匙」—— 每一条都是用户自己能核对的事实（CONTRACT0X_20260928：这份样式也内联进合约靓号页，那两页不出现个人靓号页上那个词，注释也照改） */
 .zone .proof { margin: 10px 0 6px; padding-left: 1.2em; font-size: 13px; line-height: 1.7; }
 .zone .proof li { margin: 2px 0; }
 .zone .proof-links { font-size: 13px; }
@@ -230,6 +233,7 @@ tr.unpriced td{opacity:.72}
   font-size: 14px; padding: 10px 18px; border-radius: 6px; text-decoration: none; }
 .dlgate a.dlbtn:hover { filter: brightness(1.1); }
 .dlgate .dlnote { margin-top: 10px; font-size: 12.5px; color: var(--faint); }
+.dlgate .proof-links { margin-top: 10px; font-size: 12.5px; }   /* CONTRACT0X_20260928：合约 / 发币两页的「在 GitHub 上核对」原来贴着按钮 */
 /* REF0X_20260928：推荐链接进来 → 「下载」那一块最上面一行；第 2 步的推荐码输入框（大写、等宽，6 位一眼看得清） */
 .dlgate .dlref { margin: 0 0 10px; padding: 8px 10px; border: 1px dashed var(--gold-d); border-radius: 8px; font-size: 13px; line-height: 1.6; }
 .dlgate .dlref .copy { margin-left: 6px; }
@@ -281,6 +285,9 @@ ol.step-desc.rules li { margin: 4px 0; }
 
 /* PPTNAV0X_20260924：顶栏导航 → /ppt（6 步说明书）。代码风：像一个可以点的命令 */
 .topnav{display:flex;align-items:center;flex-wrap:wrap;gap:8px}   /* WPNAV0X_20260928：两个入口 */
+/* CONTRACT0X_20260928：导航多到 4 格以上（首页、合约页、发币页：三种铸造 + 说明书 / 白皮书），整行放在标题下面 —— 不然标题会折成两行 */
+.titlebar:has(.topnav a:nth-child(4)){flex-wrap:wrap;row-gap:10px}
+.titlebar:has(.topnav a:nth-child(4)) .topnav{order:5;flex:1 1 100%}
 .topnav a{font-size:12px;color:var(--gold-b);text-decoration:none;border:1px solid var(--gold-d);border-radius:6px;
   padding:3px 10px;background:rgba(201,162,39,.08);white-space:nowrap}
 .topnav a::before{content:"▶ ";font-size:10px;color:var(--gold-d)}
@@ -406,3 +413,70 @@ ol.step-desc.rules li { margin: 4px 0; }
   .fc-title{font-size:17px}
   .fc-row b{width:2.6em}
 }
+
+/* ── CONTRACT0X_20260928：合约靓号 / 发币地址定制 —— 同一套下载铸造页面，主色、名字、页首都不一样，别走错 ──
+   三页主色照构思 v3 第一章的导航表：个人靓号 --vw（蓝）/ 合约靓号 --ct / 发币地址定制 --tk。首页 = 个人靓号页（body.p-vanity），
+   只有「你在这」那一格导航、页首「你现在在」、对照表里自己那一列和那张入口卡片用蓝；其余照旧是零九零的金色。 */
+:root{--vw:#6aa9ff;--ct:#b69cff;--tk:#ffa45c}
+body.p-vanity{--acc:var(--vw);--acc-d:#3f6db4;--acc-bg:rgba(106,169,255,.12)}
+body.p-contract{--acc:var(--ct);--acc-d:#6d4fc2;--acc-bg:rgba(167,139,250,.12)}
+body.p-token{--acc:var(--tk);--acc-d:#b4581c;--acc-bg:rgba(251,146,60,.12)}
+.ecards{margin:0 0 22px}
+.ec-wrap{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.ec{display:flex;flex-direction:column;gap:6px;min-width:0;border:1px solid var(--line);border-left:3px solid var(--gold-d);border-radius:10px;
+  padding:12px 14px;background:var(--panel);font:inherit;font-size:13px;color:var(--text);text-align:left;text-decoration:none}
+.ec b{font-size:14px}
+.ec span{color:var(--dim)}
+.ec i{font-style:normal;margin-top:auto;color:var(--gold-b)}
+a.ec:hover,button.ec:hover{background:rgba(201,162,39,.08)}
+.ec:focus-visible,.ec-links a:focus-visible{outline:2px solid var(--gold-b);outline-offset:2px}
+.ec-alert{border-left-color:var(--up)}.ec-alert b,.ec-alert i{color:var(--up)}
+.ec-vanity{border-left-color:var(--vw);cursor:pointer}.ec-vanity b,.ec-vanity i{color:var(--vw)}
+.ec-proj{border-left-color:var(--ct)}
+.ec-links{display:flex;flex-wrap:wrap;gap:6px 16px}
+.ec-links a{text-decoration:none;color:var(--ct)}.ec-links a+a{color:var(--tk)}
+.hero-evm{margin:12px 0 0;font-size:12.5px;color:var(--dim);max-width:78ch}
+@media (max-width:640px){.ec-wrap{grid-template-columns:1fr}}
+.here{border:1px solid var(--acc-d,var(--gold-d));background:var(--acc-bg,rgba(201,162,39,.08));border-radius:12px;padding:14px 18px;margin:0 0 14px}
+.here-big{font-size:20px;line-height:1.35;font-weight:700;color:var(--acc,var(--gold-b));text-wrap:balance}
+.here-sub{color:var(--dim);margin-top:6px;max-width:70ch}
+.trustbar{font-size:12.5px;color:var(--dim);border-left:3px solid var(--acc,var(--gold-d));padding:4px 10px;margin:0 0 16px}
+.topnav a.cur{color:var(--acc,var(--gold-b));border-color:var(--acc-d,var(--gold-d));background:var(--acc-bg,rgba(201,162,39,.16));font-weight:700}
+.topnav a.cur::before{color:var(--acc,var(--gold-d))}
+.cmp{font-size:12.5px}
+.cmp th,.cmp td{border:1px solid var(--line2);padding:7px 9px;text-align:left;vertical-align:top;text-transform:none;letter-spacing:0;font-size:12.5px}
+.cmp th{color:var(--dim);font-weight:600}
+.cmp .cur{background:var(--acc-bg,rgba(201,162,39,.10));color:var(--text);border-color:var(--acc-d,var(--gold-d))}
+/* 全站表格最后一行不画底线（tr:last-child td）—— 对照表要画，不然表格底边缺一截 */
+.cmp tr:last-child td{border-bottom:1px solid var(--line2)}.cmp tr:last-child td.cur{border-bottom-color:var(--acc-d,var(--gold-d))}
+.cmp-head{font-size:12.5px;color:var(--dim);margin:0 0 8px}
+.c2h{font-size:15px;color:var(--acc,var(--gold-b));margin:0 0 8px;font-weight:700}
+.c2p{color:var(--dim);margin:0 0 12px;max-width:72ch}
+.c2list{margin:0 0 12px;padding-left:20px;color:var(--dim)}
+.c2list li{margin:3px 0}
+.chip.on{border-color:var(--acc-d,var(--gold-d));color:var(--text);cursor:default}
+.chip.off{border-color:rgba(229,72,77,.45);color:#ff8a8d;cursor:default}
+.c2step.act{border-color:var(--acc-d,var(--gold-d))}
+.c2step.done .step-head::after{content:"  ✓";color:var(--up)}
+.c2form{margin-top:10px;display:flex;flex-direction:column;gap:8px;align-items:flex-start}
+.c2form .lbl{font-size:12.5px;color:var(--dim);margin-top:6px}
+.c2in{width:100%;max-width:560px;min-width:0}
+.c2in.short{width:12em;max-width:100%}
+textarea.c2in{background:#0a0d14;border:1px solid var(--line2);border-radius:6px;color:var(--text);font-family:var(--mono);font-size:12px;padding:8px 10px}
+.c2radio{display:flex;gap:8px;align-items:flex-start;font-size:13px;color:var(--text);cursor:pointer;max-width:70ch}
+.c2radio input{min-width:0;margin-top:4px}
+.c2pat{display:flex;flex-wrap:wrap;align-items:center;gap:8px;font-size:13px;color:var(--dim)}
+.c2prev{font-size:12.5px;color:var(--acc,var(--gold-b));word-break:break-all}
+.c2errs{font-size:12.5px;color:var(--down)}
+.c2errs:empty{display:none}
+.c2price{font-size:18px;font-weight:700;color:var(--acc,var(--gold-b))}
+.c2code{display:flex;flex-wrap:wrap;align-items:center;gap:8px;max-width:100%}
+.c2code code,.c2addr code{font-family:var(--mono);font-size:12.5px;color:var(--text);background:#0a0d14;border:1px solid var(--line);border-radius:6px;padding:6px 10px;word-break:break-all}
+.c2addr code{font-size:15px;color:var(--acc,var(--gold-b))}
+.c2checks,.c2deploy{margin:4px 0;padding-left:20px;font-size:12.5px;color:var(--dim)}
+.c2checks li,.c2deploy li{margin:4px 0;word-break:break-word}
+.c2checks code{word-break:break-all}
+.c2cmd{font-family:var(--mono);font-size:11.5px;color:var(--dim);background:#0a0d14;border:1px solid var(--line);border-radius:8px;padding:10px 12px;margin:4px 0;white-space:pre-wrap;word-break:break-all;max-width:100%}
+.c2help summary{cursor:pointer;font-size:12.5px;color:var(--dim)}
+.c2page .up{color:var(--up)} .c2page .down{color:var(--down)} .c2page .ok{color:var(--up)} .c2page .dim{color:var(--faint)}
+.c2page button.copy{border:1px solid var(--line2);border-radius:6px;padding:4px 10px}
