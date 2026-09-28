@@ -6,7 +6,9 @@
 //     512 个加法共用一次求逆（批量求逆），再算 keccak（以太坊类）/ 加校验码转 base58（波场）看图案对不对。
 //   · 算出来的钥匙 = k0 + 车道号 + 轮数 × 512。交出去之前在页面里用 keycore.js 的 addrOf（noble 那一套，跟个人靓号同一份）
 //     从这把钥匙重新算一遍地址，对得上图案才算数 —— 这里算错了只会「找不到」，不会给出一把对不上的钥匙。
-//   · 只钉一头（开头或结尾）：两头都钉就是仿别人地址的工具（投毒要的是头尾都像）。上限：以太坊类 7 位、波场 5 位（不算 T）。
+//   · 只钉开头、最多 5 位（FREEPRE0X_20260928，DSJ：「改成只免费钉开头，钉结尾拿掉，然后最多5位，不给7位」；波场不算 T）。
+//     两头都钉就是仿别人地址的工具（投毒要的是头尾都像）；钉结尾、更长的都交给个人靓号。
+//     算的那一段（WORKER）结尾也会找 —— 那是算法本身，不开放；开不开放只看下面的 problem()。
 //   经典脚本，没有 import / export；单文件打包原样内联。不碰 DOM。
 (function (root) {
   'use strict';
@@ -228,34 +230,36 @@
   // ── ② 页面这一边：出题、开 Worker、收结果、复核 ────────────────────────────────────────────────────────
   var NB = root.NOBLE, KC = root.KeyCore;
   var LANES = 512;
-  var CAP = { evm: 7, tron: 5 };                        // 以太坊类最多 7 位、波场最多 5 位（不算 T）；个人靓号从以太坊类 10 位、波场 6 位起卖
+  var CAP = { evm: 5, tron: 5 };                        // FREEPRE0X：两种都最多 5 位（波场不算 T）；个人靓号从以太坊类 10 位、波场 6 位起卖
   var B58 = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz';
   function b58v(s) { var v = 0n; for (var i = 0; i < s.length; i++) v = v * 58n + BigInt(B58.indexOf(s[i])); return v; }
 
-  // 图案规范化：以太坊类转小写；波场开头自动补上 T（只钉一头 —— where 只能是 prefix 或 suffix）
+  // 图案规范化：以太坊类转小写；波场开头自动补上 T（免费版只钉开头 —— where 只能是 prefix）
   function norm(chain, where, raw) {
     var s = String(raw || '').trim();
     if (chain === 'evm') return s.replace(/^0x/i, '').toLowerCase();
     if (where === 'prefix') return s.charAt(0) === 'T' ? s : 'T' + s;
     return s;
   }
-  // 不行的原因（{zh, en}）或 null。字表跟 keycore.js 的 TOOL_CHAINS 同一套（测试逐个对照 patProblem）
+  // 不行的原因（{zh, en, id}）或 null。字表跟 keycore.js 的 TOOL_CHAINS 同一套（测试逐个对照 patProblem）
+  //   IDLANG0X_20260928：每一句多一个印尼文 id（zh、en 一字不动）
   var TRON2 = '9ABCDEFGHJKLMNPQRSTUVWXYZ';               // 波场地址第 2 位只可能是这几个（开头那个字节是 0x41）
   function problem(chain, where, pat) {
-    if (chain !== 'evm' && chain !== 'tron') return { zh: '只支持以太坊类（0x…）和波场（T…）', en: 'Only EVM (0x...) and TRON (T...) addresses' };
-    if (where !== 'prefix' && where !== 'suffix') return { zh: '免费版只钉一头：开头或结尾', en: 'The free version pins one end only: the start or the end' };
+    if (chain !== 'evm' && chain !== 'tron') return { zh: '只支持以太坊类（0x…）和波场（T…）', en: 'Only EVM (0x...) and TRON (T...) addresses', id: 'Hanya alamat EVM (0x...) dan TRON (T...)' };
+    if (where !== 'prefix') return { zh: '免费版只钉开头 —— 钉结尾请用个人靓号', en: 'The free version pins the start only - for the end, use the Vanity Wallet', id: 'Versi gratis hanya menetapkan awalan - untuk akhiran, pakai Dompet Cantik' };
     var body = chain === 'tron' && where === 'prefix' ? pat.slice(1) : pat, i;
-    if (chain === 'tron' && where === 'prefix' && pat.charAt(0) !== 'T') return { zh: '波场地址都是 T 开头', en: 'TRON addresses always start with T' };
-    if (body.length < 1) return { zh: '图案至少要 1 位', en: 'The pattern needs at least 1 character' };
-    if (body.length > CAP[chain]) return { zh: '免费版最多 ' + CAP[chain] + ' 位 —— 更长的交给显卡算（个人靓号）', en: 'The free version goes up to ' + CAP[chain] + ' characters - longer ones are for the GPU (Vanity Wallet)' };
-    if (chain === 'evm') return /^[0-9a-f]+$/.test(body) ? null : { zh: '以太坊类地址只有 0-9、a-f 这 16 个字', en: 'EVM addresses only use the 16 characters 0-9 and a-f' };
+    if (chain === 'tron' && where === 'prefix' && pat.charAt(0) !== 'T') return { zh: '波场地址都是 T 开头', en: 'TRON addresses always start with T', id: 'Alamat TRON selalu diawali T' };
+    if (body.length < 1) return { zh: '图案至少要 1 位', en: 'The pattern needs at least 1 character', id: 'Pola perlu minimal 1 karakter' };
+    if (body.length > CAP[chain]) return { zh: '免费版最多 ' + CAP[chain] + ' 位 —— 更长的交给显卡算（个人靓号）', en: 'The free version goes up to ' + CAP[chain] + ' characters - longer ones are for the GPU (Vanity Wallet)', id: 'Versi gratis maksimal ' + CAP[chain] + ' karakter - yang lebih panjang adalah tugas GPU (Dompet Cantik)' };
+    if (chain === 'evm') return /^[0-9a-f]+$/.test(body) ? null : { zh: '以太坊类地址只有 0-9、a-f 这 16 个字', en: 'EVM addresses only use the 16 characters 0-9 and a-f', id: 'Alamat EVM hanya memakai 16 karakter 0-9 dan a-f' };
     for (i = 0; i < body.length; i++) if (B58.indexOf(body[i]) < 0)
-      return { zh: '波场地址里不可能有「' + body[i] + '」（没有 0、O、I、l 这四个字，区分大小写）', en: 'A TRON address can never contain "' + body[i] + '" (there is no 0, O, I or l, and case matters)' };
+      return { zh: '波场地址里不可能有「' + body[i] + '」（没有 0、O、I、l 这四个字，区分大小写）', en: 'A TRON address can never contain "' + body[i] + '" (there is no 0, O, I or l, and case matters)', id: 'Alamat TRON tidak mungkin berisi "' + body[i] + '" (tidak ada 0, O, I, atau l, dan huruf besar/kecil berpengaruh)' };
     if (where === 'prefix' && TRON2.indexOf(body[0]) < 0)
-      return { zh: '波场地址 T 后面那一位只可能是：' + TRON2, en: 'The character right after the T can only be one of: ' + TRON2 };
+      return { zh: '波场地址 T 后面那一位只可能是：' + TRON2, en: 'The character right after the T can only be one of: ' + TRON2, id: 'Karakter tepat setelah T hanya bisa salah satu dari: ' + TRON2 };
     if (where === 'prefix' && !isFinite(expected(chain, where, pat)))
       return { zh: '没有「' + pat + '」这样开头的波场地址 —— 波场地址从 T9yD… 排到 TZJo…，这一段外面的开头永远不会出现',   // TRONRANGE0X：跟 keycore / 平台同一句
-               en: 'No TRON address starts with "' + pat + '" - TRON addresses run from T9yD... to TZJo..., so a start outside that range never appears' };
+               en: 'No TRON address starts with "' + pat + '" - TRON addresses run from T9yD... to TZJo..., so a start outside that range never appears',
+               id: 'Tidak ada alamat TRON yang diawali "' + pat + '" - alamat TRON berkisar dari T9yD... sampai TZJo..., jadi awalan di luar rentang itu tidak pernah muncul' };
     return null;
   }
   // 平均要试多少个（精确到这一种图案）

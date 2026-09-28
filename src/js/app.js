@@ -8,7 +8,7 @@ const dict = {
     catalogOpen: '查看全部价格 ▸', catalogTitle: '价目表',
     catalogTeaser: (on, off) => '两条链 · ' + on + ' 档在售' + (off ? '（另有 ' + off + ' 档铸造机暂不支持）' : '') + '，点上面那个按钮看完整价目表。', 
     catalogDown: '价目表暂时取不到 —— 宁可不显示，也不给你看一张可能过期的表。',
-    kindPrefix: '前缀', digits: '位',
+    kindPrefix: '前缀', digits: '位', sellLens: '可售位数: ',
     onlyKinds: (k) => '目前只卖：' + k + '。后缀、前后缀组合、按图案定价都还没实现 —— 不在这张表里的一律不可售。',
     noteHot: '热门模式 (9999/8888/0000/dead/beef/c0ffee/666…) 溢价 30-100%；0x9999 与 0xabcd 难度相同——定价按位数不按字符。',
     safeTitle: '[SAFE] 定制区 · 无托管模式 NON-CUSTODIAL',
@@ -17,7 +17,18 @@ const dict = {
     // LIVEPAY0X：切了真收款之后上面那句就是假话了。liveSwap 会用下面这句顶替它。
     noteProtoLive: '这一页连的是真平台：下单、铸造、交货、收款都是真的。你的那一半钥匙只在你自己的电脑上生成和使用，平台看不到。',
     heroTag: '靓号地址铸造台 · SPLIT-KEY 无托管',
-    heroMission: '用 USDT 付款。你先在自己电脑上造一半钥匙，我们替你铸另一半——完整私钥只有你拼得出。',
+    // LESSTEXT0X_20260928（少字 B）：原来 hero 那一整句换成「你一半 + 我们一半」的图；这几格是图上的字
+    kdYou: '你的一半', kdYouSub: '只在你电脑上', kdOurs: '我们的一半', kdOursSub: '显卡算出来的', kdKey: '完整钥匙', kdKeySub: '只在你电脑上合成',
+    kdCap: '我们手里只有你的影子 A 和 b —— 合起来也造不出你的钥匙。',
+    evmSum: '一个 0x 地址，以太坊类各条链通用',
+    proofSum: '你自己怎么核对',
+    routeHead: '下载、双击打开、跟着 6 步走：',
+    route: [['造钥匙', '断网'], ['下单', '挑图案'], ['付款', 'BSC USDT'], ['铸造', '显卡在算'], ['取货合钥匙', '断网合'], ['交收条', '签个名']],
+    routeLine: ['在你电脑上造一半钥匙，只交出公开的影子。', '挑好图案下单，页面替你签个名，证明钥匙在你手上。', '往这一单专用的地址转 BSC 上的 USDT。',
+      '我们的显卡拿着影子，去找你要的那个地址。', '取回 b，断网，在你电脑上合成完整钥匙。', '用新钥匙签个收条，这一单结清。'],
+    routeMore: '展开细节',
+    dlMore: '为什么要下载？',
+    footMore: '官方网址只有一个：0x000000000.com（9 个 0）',
     heroCta: '开始铸造 →',
     // PPTNAV0X_20260924：顶栏导航 → 0x000000000.com/ppt（6 步说明书 / 白皮书）
     navPpt: '说明书 · 6 步看懂',
@@ -25,13 +36,12 @@ const dict = {
     // CONTRACT0X_20260928：三种铸造各一页、各一个名字（DSJ「名字和页面要不一样，不要让人给混了」）+ 首页三张入口卡片 + 以太坊类各链同址
     navVanity: '个人靓号', navContract: '合约靓号', navToken: '发币地址定制', navFree: '免费生成',
     ecHead: '三样东西，各有各的一页 —— 不会混',
-    ec1T: '防骗提醒', ec1D: '有人仿你的地址，第一时间告诉你：每周免费提醒一次；要实时的，是付费提醒。', ec1Go: '去看提醒 →',
-    ec2T: '个人靓号（就是这一页）', ec2D: '你自己的钱包地址，私钥只在你自己手里。0x 开头的那种，在以太坊、BSC、Base 等各条链上都是同一个地址。', ec2Go: '往下看价格 ↓',
-    ec3T: '给项目方', ec3D: '合约地址、代币地址也能挑 —— 我们只算「盐」，不碰任何钥匙；各条链同一个地址。', ec3a: '合约靓号 →', ec3b: '发币地址定制 →',
+    ec1T: '防骗提醒', ec1S: '有人仿你的地址，第一时间知道', ec1Go: '去看提醒 →',
+    ec2T: '个人靓号（就是这一页）', ec2S: '你自己的地址，钥匙只在你手里', ec2Go: '往下看价格 ↓',
+    ec3T: '给项目方', ec3S: '合约、代币地址 —— 不碰任何钥匙', ec3a: '合约靓号 →', ec3b: '发币地址定制 →',
     heroEvm: '0x 开头的靓号：同一把私钥，在以太坊、BSC、Polygon、Arbitrum、Optimism、Base、Avalanche C 链这些以太坊类的链上都是同一个地址 —— 买一个，这些链都能用。每条链上的钱是分开记的，转账时选对链。',
     // CONTRACT0X_20260928：防混第 1、2 条 —— 页首「你现在在」+ 三格对照表（表里的字跟 js/c2app.js 的 cmpRows 逐字相同，order-ui.test 第 8 段比对）
     hereBig: '你现在在：个人靓号（给个人、商家）',
-    hereSub: '你自己的钱包地址，私钥只在你手里 —— 一共六步，第 1 步断网也能做。',
     cmpHead: '三个铸造页，别走错：',
     cmpWhat: '是什么', cmpWhat1: '你自己的钱包地址', cmpWhat2: '你部署的合约的地址', cmpWhat3: '你发的币的合约地址',
     cmpFor: '给谁', cmpFor1: '个人、商家', cmpFor2: '项目方', cmpFor3: '发币的人、发币平台',
@@ -48,7 +58,7 @@ const dict = {
     footAlerts: '付费提醒',
     // TRUST0X_20260923：原来还写着「OFAC 制裁筛查 · 大额阈值 KYC」—— 代码里一行都没有（grep 0 处），
     //   「开源工具可审计」那时也还没公开。页面上每一句都得是真的，假话比没话更伤信任。
-    foot1: '页面代码公开在 GitHub，可逐字节核对 · 定制区无托管 · 收款支持 TRON / BSC 上的 USDT',
+    foot1: '页面代码公开在 GitHub，可逐字节核对 · 定制区无托管 · 只收 BSC 上的 USDT（BEP20）',
     // TRUST0X_20260923：DSJ「两半都在我们的平台合成，用户会不会怀疑我们拿得到私钥？」
     //   说「拿不到」没用，要让用户自己能核对。每一条都是能验的事实，不是口号。
     proof1: '你的那一半钥匙在你自己的电脑上生成，也只存在你自己的电脑上。平台收到的只有公钥（公开的，像银行卡号）和签名（证明你手里有那一半，但不暴露它）—— 铸造页最下面「这一页跟平台说过的每一句话」逐条列着，你自己看。',
@@ -110,7 +120,7 @@ const dict = {
       '靓号地址铸造台 · split-key 无托管铸造',
       '航次: 0x000000000 · 任务: 铸造靓号私钥 · 轨道: 近地',
       '',
-      '加载模块: [ok] keccak256   [ok] secp256k1   [ok] TRC20 watcher',
+      '加载模块: [ok] keccak256   [ok] secp256k1   [ok] BEP20 watcher',
       'GPU 铸造队列: 待命 (Vast.ai / RunPod · 订单驱动扩缩容)',
       '',
       '命令: Get-VanityCatalog | New-VanityOrder | Get-MyOrders',
@@ -122,6 +132,8 @@ const dict = {
     flow: {
       // ALLINONE0X_20260923：全部改成人话。DSJ 原话「每个步骤必须人话解释，容易让用户明白」。
       // 规矩：不出现 P=A+b·G、ECDLP、变体、挖矿这类词；说清楚【这一步在谁的机器上算】。
+      // LESSTEXT0X_20260928：每一步「为什么断网 / 联网」那一整句收进一个小标签里，点开才看
+      netTag: ['🔌 断网做', '🌐 要联网', '🌐 要联网', '🌐 保持联网', '🌐 取货 → 🔌 断网合', '🌐 要联网'], why: '为什么',
       chainLbl: '要哪条链的地址', posLbl: '漂亮的部分放哪',
       prePh: '开头', sufPh: '结尾',
       s1head: '造一把只有你有的钥匙',
@@ -156,12 +168,12 @@ const dict = {
       s3desc: '原型模式：点一下就当付过了，不用真转账。',
       s3descLive: '下面这个收款地址是这一单专用的。用你自己的钱包，按上面写的那条链，转【正好这个金额】的 USDT 过去就行。',
       net3: '🌐 这一步要联网。为什么：你要从交易所或钱包把 USDT 转到下面这个地址；这一页要连着网，才能看到钱到了没有。',
-      payChainLbl: '你想用哪条链付款',
+      payChainLbl: '付款方式',
       refLbl: '推荐码（可选）', refPh: '6 位，比如 AB23CD',
       refFrom: (c) => '推荐码 ' + c + ' 是从推荐链接带过来的；不对可以改，也可以清空。',
       refBad: '推荐码是 6 位：数字 2-9 和英文字母（没有 0、1、I、O）—— 看看有没有抄错；没有推荐码就空着。',
       payChainOffline: '现在还没联网，付款方式还没取到 —— 连上网以后点一下这里，所有能用的付款链都会出来。',
-      payPickNow: '付款方式刚取到（刚才没联网）：上面「你想用哪条链付款」现在可以选了。选好再点一次「下单」。',
+      payPickNow: '付款方式刚取到（刚才没联网）：上面「付款方式」现在可以选了。选好再点一次「下单」。',
       payInfo2: (a, amt, c, net) => '用 ' + net + ' 转 ' + amt + ' USDT 到  ' + a + '   · 到账后还要等 ' + c + ' 个确认',
       copyAddr: '复制地址',
       pay: '就当已付款（原型）', payLive: '我转好了，开始盯',
@@ -258,7 +270,7 @@ const dict = {
     catalogOpen: 'See all prices',  catalogTitle: 'Price list',
     catalogTeaser: (on, off) => 'Two chains, ' + on + ' tiers on sale' + (off ? ' (' + off + ' more not supported by the minter yet)' : '') + ' - open the full list with the button above.', 
     catalogDown: 'Price list unavailable right now — better to show nothing than a table that may be out of date.',
-    kindPrefix: 'Prefix', digits: 'digits',
+    kindPrefix: 'Prefix', digits: 'digits', sellLens: 'sellable lengths: ',
     onlyKinds: (k) => 'Currently on sale: ' + k + '. Suffix, both-ends and pattern-based pricing are not implemented — anything not in this table cannot be ordered.',
     noteHot: 'Hot patterns (9999/8888/0000/dead/beef/c0ffee/666…) +30-100%. 0x9999 is as hard as 0xabcd — price by length, not by characters.',
     safeTitle: '[SAFE] CUSTOM ZONE · NON-CUSTODIAL',
@@ -266,18 +278,27 @@ const dict = {
     noteProto: 'Prototype note: this page talks to the real platform; only payment is simulated. Your half of the key is created and used only on your own computer.',
     noteProtoLive: 'This page talks to the real platform: ordering, minting, delivery and payment are all real. Your half of the key is created and used only on your own computer - the platform never sees it.',
     heroTag: 'VANITY ADDRESS MINT · NON-CUSTODIAL SPLIT-KEY',
-    heroMission: 'Pay in USDT. You make half the key on your own machine, we mint the other half - the full key can only be assembled by you.',
+    kdYou: 'Your half', kdYouSub: 'only on your computer', kdOurs: 'Our half', kdOursSub: 'found by our GPUs', kdKey: 'Your full key', kdKeySub: 'put together only on your computer',
+    kdCap: 'We only ever hold your shadow A and b - even together they cannot make your key.',
+    evmSum: 'One 0x address works on every Ethereum-type chain',
+    proofSum: 'How you can check this yourself',
+    routeHead: 'Download it, open it, follow 6 steps:',
+    route: [['Make key', 'offline'], ['Order', 'pick a pattern'], ['Pay', 'BSC USDT'], ['Minting', 'our GPUs'], ['Collect & build', 'offline'], ['Receipt', 'one signature']],
+    routeLine: ['Make half a key on your computer; only its public shadow goes out.', 'Pick your pattern and order; the page signs to prove the key is yours.', 'Send USDT on BSC to this order\'s own address.',
+      'Our GPUs search with your shadow for the address you want.', 'Collect b, go offline, and join the halves into your full key.', 'Sign a receipt with your new key - the order is settled.'],
+    routeMore: 'Show details',
+    dlMore: 'Why download it?',
+    footMore: 'The only official website: 0x000000000.com (nine zeros)',
     heroCta: 'Start minting →',
     navPpt: 'How it works · 6 steps',
     navWp: 'White paper',
     navVanity: 'Vanity Wallet', navContract: 'Vanity Contract', navToken: 'Token Address', navFree: 'Free Generator',
     ecHead: 'Three things, three pages - so they never get mixed up',
-    ec1T: 'Scam alerts', ec1D: 'Know as soon as someone imitates your address: one free alert a week; real-time alerts are paid.', ec1Go: 'See alerts →',
-    ec2T: 'Vanity Wallet (this page)', ec2D: 'Your own wallet address - the private key stays only with you. A 0x one is the same address on Ethereum, BSC, Base and the other chains.', ec2Go: 'See prices ↓',
-    ec3T: 'For project teams', ec3D: 'Contract and token addresses can be chosen too - we only compute a salt and never touch any key; the same address on every chain.', ec3a: 'Vanity Contract →', ec3b: 'Token Address →',
+    ec1T: 'Scam alerts', ec1S: 'Know when someone imitates your address', ec1Go: 'See alerts →',
+    ec2T: 'Vanity Wallet (this page)', ec2S: 'Your own address - only you hold the key', ec2Go: 'See prices ↓',
+    ec3T: 'For project teams', ec3S: 'Contract and token addresses - no keys involved', ec3a: 'Vanity Contract →', ec3b: 'Token Address →',
     heroEvm: '0x vanity addresses: the same private key gives the same address on Ethereum, BSC, Polygon, Arbitrum, Optimism, Base, Avalanche C-Chain and other Ethereum-type chains - buy one, use it on all of them. Funds on each chain are kept separately, so pick the right chain when you send.',
     hereBig: 'You are on: Vanity Wallet (for individuals and merchants)',
-    hereSub: 'Your own wallet address, and only you hold the private key - six steps, and step 1 works offline.',
     cmpHead: 'Three minting pages - make sure you are on the right one:',
     cmpWhat: 'What', cmpWhat1: 'Your own wallet address', cmpWhat2: 'The address of a contract you deploy', cmpWhat3: 'The contract address of a token you issue',
     cmpFor: 'For', cmpFor1: 'Individuals, merchants', cmpFor2: 'Project teams', cmpFor3: 'Token issuers, launch platforms',
@@ -291,7 +312,7 @@ const dict = {
     footPartners: 'Partners',
     footVerify: 'Verification · payment cards',
     footAlerts: 'Paid alerts',
-    foot1: 'page code published on GitHub, verifiable byte for byte · custom zone non-custodial · USDT on TRON / BSC',
+    foot1: 'page code published on GitHub, verifiable byte for byte · custom zone non-custodial · USDT on BSC (BEP20) only',
     proof1: 'Your half of the key is created on your own computer and only ever stored there. The platform only receives a public key (public, like a bank account number) and signatures (proof that you hold your half, without revealing it). Everything the minting page says to the platform is listed at its bottom under "Every word this page said to the platform" - check it yourself.',
     proof2: '"Make key" needs no network: switch off Wi-Fi before clicking and it still works.',
     proof3: 'This page is a single file, byte-for-byte identical to the copy published on GitHub. GitHub\'s machines download the live page every hour and compare fingerprints, and run the whole flow in a real browser on every new version to check that no private key is sent - we cannot touch either check.',
@@ -348,7 +369,7 @@ const dict = {
       'split-key non-custodial vanity minting',
       'vessel: 0x000000000 · mission: mint vanity keys · orbit: LEO',
       '',
-      'loading: [ok] keccak256   [ok] secp256k1   [ok] TRC20 watcher',
+      'loading: [ok] keccak256   [ok] secp256k1   [ok] BEP20 watcher',
       'GPU pool: standby (Vast.ai / RunPod · order-driven scaling)',
       '',
       'commands: Get-VanityCatalog | New-VanityOrder | Get-MyOrders',
@@ -358,6 +379,7 @@ const dict = {
     ordersIdLbl: 'On another computer or browser? Enter the order number to continue:',
     statusTxt: (s) => 'order ' + (orderState.orderId || '-') + ' · status: ' + s,
     flow: {
+      netTag: ['🔌 best offline', '🌐 online', '🌐 online', '🌐 stay online', '🌐 collect → 🔌 build offline', '🌐 online'], why: 'why',
       chainLbl: 'Which chain', posLbl: 'Where the pattern goes',
       prePh: 'start', sufPh: 'end',
       s1head: 'Make a key only you hold',
@@ -392,7 +414,7 @@ const dict = {
       s3desc: 'Prototype mode: one click counts as paid, no real transfer.',
       s3descLive: 'The address below belongs to this order only. Send exactly that amount of USDT from your own wallet, on the chain named above.',
       net3: '🌐 Needs the internet. Why: you send USDT from your exchange or wallet to the address below, and this page has to be online to see the payment arrive.',
-      payChainLbl: 'Which chain do you want to pay on',
+      payChainLbl: 'Pay with',
       refLbl: 'Referral code (optional)', refPh: '6 characters, e.g. AB23CD',
       refFrom: (c) => 'Referral code ' + c + ' came with the referral link; change it or clear it if it is not right.',
       refBad: 'A referral code has 6 characters: digits 2-9 and letters (no 0, 1, I or O) - check for a typo, or leave it empty.',
@@ -479,17 +501,260 @@ const dict = {
       resumeHint: (pat, amt) => 'This order: ' + pat + ' - ' + amt + ' USDT',
     },
   },
+  // IDLANG0X_20260928：DSJ「增加印尼文」。键、函数参数跟 en 一一对应（i18n-id.test 逐个比：少一个键、多一个参数、夹一个汉字都红）。
+  //   用词：vanity address = alamat cantik（跟印尼人熟的「nomor cantik」一个意思）· 铸造 = cetak（mencetak）· 私钥 = kunci privat ·
+  //   影子 = bayangan · 投毒 = peracunan alamat。不用 menambang / tambang（挖）、rumus（公式）、varian。
+  id: {
+    posPrefix: 'Awalan', posSuffix: 'Akhiran', posBoth: 'Kedua ujung',
+    thType: 'Jenis', thPrice: 'Harga USDT', thEta: 'Waktu cetak',
+    catalogOpen: 'Lihat semua harga',  catalogTitle: 'Daftar harga',
+    catalogTeaser: (on, off) => 'Dua jaringan, ' + on + ' tingkat dijual' + (off ? ' (' + off + ' lagi belum didukung mesin cetak)' : '') + ' - buka daftar lengkapnya dengan tombol di atas.',
+    catalogDown: 'Daftar harga sedang tidak tersedia — lebih baik tidak menampilkan apa-apa daripada tabel yang mungkin sudah usang.',
+    kindPrefix: 'Awalan', digits: 'karakter', sellLens: 'panjang yang dijual: ',
+    onlyKinds: (k) => 'Saat ini yang dijual: ' + k + '. Akhiran, kedua ujung, dan harga berdasarkan pola belum tersedia — yang tidak ada di tabel ini tidak bisa dipesan.',
+    noteHot: 'Pola populer (9999/8888/0000/dead/beef/c0ffee/666…) +30-100%. 0x9999 sama sulitnya dengan 0xabcd — harga ditentukan oleh panjang, bukan oleh karakternya.',
+    safeTitle: '[AMAN] ZONA KUSTOM · NON-KUSTODIAL',
+    safeBody: 'Yang pernah kami pegang hanyalah bayangan A milik Anda dan separuh lainnya, b. Keduanya digabung pun tetap tidak bisa menghasilkan kunci privat Anda - kunci itu hanya pernah dirakit di komputer Anda sendiri.',
+    noteProto: 'Catatan prototipe: halaman ini terhubung ke platform sungguhan; hanya pembayarannya yang disimulasikan. Separuh kunci Anda dibuat dan dipakai hanya di komputer Anda sendiri.',
+    noteProtoLive: 'Halaman ini terhubung ke platform sungguhan: pemesanan, pencetakan, pengiriman, dan pembayaran semuanya nyata. Separuh kunci Anda dibuat dan dipakai hanya di komputer Anda sendiri - platform tidak pernah melihatnya.',
+    heroTag: 'CETAK ALAMAT CANTIK · KUNCI TERBELAH, NON-KUSTODIAL',
+    kdYou: 'Separuh Anda', kdYouSub: 'hanya di komputer Anda', kdOurs: 'Separuh kami', kdOursSub: 'ditemukan kartu grafis kami', kdKey: 'Kunci lengkap Anda', kdKeySub: 'dirakit hanya di komputer Anda',
+    kdCap: 'Yang kami pegang hanya bayangan A milik Anda dan b - digabung pun tetap tidak bisa menjadi kunci Anda.',
+    evmSum: 'Satu alamat 0x berlaku di semua jaringan tipe Ethereum',
+    proofSum: 'Cara Anda memeriksanya sendiri',
+    routeHead: 'Unduh, buka, ikuti 6 langkah:',
+    route: [['Buat kunci', 'offline'], ['Pesan', 'pilih pola'], ['Bayar', 'BSC USDT'], ['Pencetakan', 'kartu grafis kami'], ['Ambil & rakit', 'offline'], ['Tanda terima', 'satu tanda tangan']],
+    routeLine: ['Buat separuh kunci di komputer Anda; hanya bayangan publiknya yang keluar.', 'Pilih pola lalu pesan; halaman menandatangani untuk membuktikan kunci itu milik Anda.', 'Kirim USDT di BSC ke alamat khusus pesanan ini.',
+      'Kartu grafis kami mencari alamat yang Anda mau dengan bayangan Anda.', 'Ambil b, putuskan internet, lalu gabungkan kedua separuh menjadi kunci lengkap.', 'Tanda tangani tanda terima dengan kunci baru Anda - pesanan selesai.'],
+    routeMore: 'Lihat detail',
+    dlMore: 'Kenapa harus diunduh?',
+    footMore: 'Situs resmi hanya satu: 0x000000000.com (sembilan nol)',
+    heroCta: 'Mulai cetak →',
+    navPpt: 'Cara kerja · 6 langkah',
+    navWp: 'Whitepaper',
+    navVanity: 'Dompet Cantik', navContract: 'Kontrak Cantik', navToken: 'Alamat Token', navFree: 'Generator Gratis',
+    ecHead: 'Tiga hal, tiga halaman - supaya tidak pernah tertukar',
+    ec1T: 'Peringatan penipuan', ec1S: 'Tahu saat ada yang meniru alamat Anda', ec1Go: 'Lihat peringatan →',
+    ec2T: 'Dompet Cantik (halaman ini)', ec2S: 'Alamat Anda sendiri - hanya Anda yang memegang kuncinya', ec2Go: 'Lihat harga ↓',
+    ec3T: 'Untuk tim proyek', ec3S: 'Alamat kontrak dan token - tanpa kunci', ec3a: 'Kontrak Cantik →', ec3b: 'Alamat Token →',
+    heroEvm: 'Alamat cantik 0x: kunci privat yang sama menghasilkan alamat yang sama di Ethereum, BSC, Polygon, Arbitrum, Optimism, Base, Avalanche C-Chain, dan jaringan tipe Ethereum lainnya - beli satu, pakai di semuanya. Dana di tiap jaringan dicatat terpisah, jadi pilih jaringan yang benar saat mengirim.',
+    hereBig: 'Anda sedang di: Dompet Cantik (untuk perorangan dan pedagang)',
+    cmpHead: 'Tiga halaman cetak - pastikan Anda di halaman yang benar:',
+    cmpWhat: 'Apa', cmpWhat1: 'Alamat dompet Anda sendiri', cmpWhat2: 'Alamat kontrak yang Anda deploy', cmpWhat3: 'Alamat kontrak token yang Anda terbitkan',
+    cmpFor: 'Untuk', cmpFor1: 'Perorangan, pedagang', cmpFor2: 'Tim proyek', cmpFor3: 'Penerbit token, platform peluncuran',
+    cmpKey: 'Kunci', cmpKey1: 'Hanya Anda yang memegang kunci (Anda membuat separuh, kami menghitung separuh lainnya)', cmpKey2: 'Tanpa kunci sama sekali (kami hanya menghitung salt)', cmpKey3: 'Tanpa kunci sama sekali (kami hanya menghitung salt)',
+    cmpEvm: 'Di jaringan EVM', cmpEvm1: 'Alamat sama (kunci sama)', cmpEvm2: 'Alamat sama (CreateX)', cmpEvm3: 'Alamat sama (CreateX)',
+    cmpWhere: 'Di mana',
+    ticker: ['Kami tidak meminta kepercayaan Anda - kami memberi bukti.', 'Kunci privat Anda tidak pernah meninggalkan komputer Anda - setiap pesan yang dikirim ke kami ditampilkan untuk Anda.', 'Halaman ini = salinan publik di GitHub, byte demi byte - periksa sendiri.'],
+    tickerSr: 'Kami tidak meminta kepercayaan Anda - kami memberi bukti.',
+    gsEvm0: '0x0000000000 · awalan 10', gsEvm8: '0x8888888888 · awalan 10', gsTron: 'TXooooo… · awalan TRON 6',
+    footTrack: 'Lacak pesanan',
+    footPartners: 'Mitra',
+    footVerify: 'Verifikasi · kartu pembayaran',
+    footAlerts: 'Peringatan berbayar',
+    foot1: 'kode halaman dipublikasikan di GitHub, bisa dicek byte demi byte · zona kustom non-kustodial · pembayaran hanya USDT di BSC',
+    proof1: 'Separuh kunci Anda dibuat di komputer Anda sendiri dan hanya pernah disimpan di sana. Platform hanya menerima kunci publik (terbuka, seperti nomor rekening bank) dan tanda tangan (bukti bahwa Anda memegang separuh itu, tanpa membukanya). Semua yang dikatakan halaman cetak kepada platform tercantum di bagian bawahnya, di "Setiap kata yang dikirim halaman ini ke platform" - periksa sendiri.',
+    proof2: '"Buat kunci" tidak butuh internet: matikan Wi-Fi sebelum mengklik, dan tetap berhasil.',
+    proof3: 'Halaman ini adalah satu file, identik byte demi byte dengan salinan yang dipublikasikan di GitHub. Mesin GitHub mengunduh halaman live setiap jam dan membandingkan sidik jarinya, serta menjalankan seluruh alur di browser sungguhan pada setiap versi baru untuk memastikan tidak ada kunci privat yang dikirim - kami tidak bisa menyentuh kedua pemeriksaan itu.',
+    proofVer: 'versi halaman',
+    proofDl: 'Unduh halaman cetak ke komputer Anda',
+    proofGh: 'Periksa di GitHub',
+    dlHead: 'Cetak di komputer Anda sendiri',
+    dlWhy: 'Mencetak alamat cantik melibatkan kunci privat Anda. Agar kunci itu tetap di komputer Anda dari awal sampai akhir, pembuatan kunci, pemesanan, pengambilan, dan perakitan kunci semuanya dilakukan di halaman yang Anda unduh ke komputer - bukan di situs web ini.',
+    dlStep1: 'Klik tombol di bawah untuk mengunduh halaman cetak (satu file: 0x000000000.html).',
+    dlStep2: 'Klik dua kali di komputer Anda untuk membukanya (Chrome atau Edge).',
+    dlStep3: 'Ikuti 6 langkahnya. Setiap langkah memberi tahu dengan bahasa sederhana apakah harus offline atau tetap online, dan alasannya.',
+    dlGetBtn: 'Unduh halaman cetak',
+    dlNote: 'File yang diunduh tetap di tangan Anda - kami tidak pernah bisa mengubahnya setelah itu. File ini identik byte demi byte dengan salinan yang dipublikasikan di GitHub, jadi Anda bisa memeriksanya sendiri ("Periksa di GitHub" di atas).',
+    dlResume: (id) => 'Untuk melanjutkan pesanan ' + id + ': buka halaman cetak di komputer Anda dan masukkan nomor pesanan ini di bagian bawah.',
+    refBanner: (c) => 'Kode referal ' + c + ' tersimpan: halaman cetak yang Anda unduh dengan tombol di bawah akan mengisinya otomatis (langkah 2).',
+    refCopy: 'Salin kode', refCopied: 'Tersalin',
+    netGuide: 'Anda memakai halaman cetak yang diunduh ke komputer sendiri. Setiap langkah ditandai: 🔌 = sebaiknya offline, 🌐 = butuh internet. Setiap langkah menjelaskan alasannya.',
+    offlineErr: 'Anda sedang offline, jadi langkah ini tidak bisa dikirim. Sambungkan lagi lalu klik lagi - semua yang sudah Anda lakukan masih ada.',
+    sentHead: 'Setiap kata yang dikirim halaman ini ke platform',
+    sentNone: 'Belum ada yang dikirim ke platform.',
+    sentCheck: (n, sHit, kHit, hasS, hasK) => n + ' pesan. ' + (hasS ? (sHit ? '⚠ Separuh kunci Anda muncul ' + sHit + ' kali!' : 'Separuh kunci Anda: tidak sekali pun ✓') : 'Belum ada kunci yang dibuat') + '   ' + (hasK ? (kHit ? '⚠ Kunci privat lengkap muncul ' + kHit + ' kali!' : 'Kunci privat lengkap: tidak sekali pun ✓') : 'Kunci lengkap belum dirakit') + '   (halaman ini memeriksa semua di bawah, karakter demi karakter)',
+    sentTimes: (n) => ' (' + n + ' kali, setiap beberapa detik)',
+    sentFailed: ' (tidak terkirim: Anda sedang offline)',
+    sentTech: 'Untuk pembaca teknis: persis apa yang dikirim setiap kali',
+    sentGhHead: 'Tidak mau percaya begitu saja pada halaman ini? GitHub menjalankan dua pemeriksaan di mesinnya sendiri - kami tidak bisa menyentuhnya:',
+    sentGh1: '1. Pemeriksaan kebocoran kunci privat: setiap kali halaman ini berubah, mesin GitHub menjalankan keenam langkah di browser sungguhan dan memeriksa setiap hal yang dikirim halaman. Hijau ✓ = tidak ada kunci yang dikirim.',
+    sentGh2: '2. Patroli anti-ubah: setiap jam, mesin GitHub mengunduh halaman live dan membandingkannya byte demi byte dengan salinan yang dipublikasikan. Hijau ✓ = halaman live adalah yang dipublikasikan, tanpa perubahan.',
+    sentGhRuns: 'Lihat riwayat pemeriksaan di GitHub ↗',
+    sentGhRepo: 'Lihat kode halaman yang dipublikasikan ↗',
+    sent: {
+      catalog: 'membaca daftar harga - tidak membawa data Anda',
+      check: 'cek gratis sebuah alamat - membawa alamat yang Anda tempel (platform tidak menyimpan atau mencatat apa pun)',
+      health: 'memeriksa platform online - tidak membawa data Anda',
+      create: 'memesan - memberi tahu platform jaringan mana, pola apa, dan jaringan pembayaran mana (serta kode referal, jika Anda mengisinya)',
+      share: 'menyerahkan "bayangan" - angka publik (seperti nomor rekening) plus tanda tangan yang membuktikan Anda memegang separuh kunci; kuncinya sendiri tidak dikirim',
+      payment: 'meminta alamat pembayaran - tidak membawa data Anda',
+      status: 'menanyakan progres - tidak membawa data Anda',
+      paysim: 'pembayaran simulasi khusus pengujian - tidak membawa data Anda',
+      download: 'ambil - membawa tanda tangan yang membuktikan itu Anda',
+      receipt: 'tanda terima - membawa tanda tangan yang membuktikan Anda sudah menerimanya',
+      leave: 'alasan Anda tidak membayar - hanya membawa satu kata yang Anda ketuk (tanpa nomor pesanan)',
+      other: 'lainnya',
+    },
+    foot2: 'Platform tidak akan pernah meminta kunci privat atau file cadangan Anda - pesan apa pun yang meminta kunci adalah phishing.',
+    footNever: '0x000000000 tidak akan pernah meminta Anda menghubungkan dompet, menandatangani atau menyetujui apa pun untuk kami di aplikasi dompet, atau mengirim uang untuk "verifikasi". Siapa pun yang meminta itu adalah palsu.',
+    footSign: 'Halaman cetak menandatangani beberapa kali di dalam halaman (saat memesan, mengambil, mengirim tanda terima), dengan kunci yang dibuat dan dirakit untuk pesanan itu di komputer Anda sendiri. Yang ditandatangani hanyalah teks bukti pendek - tidak pernah transfer, tidak pernah persetujuan - hanya untuk membuktikan pesanan itu milik Anda.',
+    footOne: 'Satu-satunya situs resmi: 0x 000 000 000 .com (sembilan angka nol setelah 0x) · 0x000000000 tidak pernah menerbitkan token apa pun · simpan di bookmark dan selalu masuk dari bookmark.',
+    thOrder: 'Pesanan', thPattern: 'Pola', thStatus: 'Status', thPrice2: 'Harga USDT',
+    boot: [
+      'Windows PowerShell',
+      'Copyright (C) 0x000000000. All rights reserved.',
+      '',
+      '0x000000000 — VANITY ADDRESS MINT',
+      'cetak alamat cantik · split-key non-kustodial',
+      'kapal: 0x000000000 · misi: cetak kunci alamat cantik · orbit: LEO',
+      '',
+      'memuat: [ok] keccak256   [ok] secp256k1   [ok] BEP20 watcher',
+      'GPU: siaga (Vast.ai / RunPod · skala mengikuti pesanan)',
+      '',
+      'perintah: Get-VanityCatalog | New-VanityOrder | Get-MyOrders',
+    ],
+    ordersEmpty: 'Belum ada pesanan', ordersDown: 'Pesanan Anda tidak bisa dimuat - muat ulang untuk mencoba lagi',
+    ordersResume: 'Lanjutkan', thAction: 'Aksi', ordersIdPh: 'nomor pesanan (8 karakter)', ordersIdBtn: 'Lanjutkan pesanan ini',
+    ordersIdLbl: 'Di komputer atau browser lain? Masukkan nomor pesanan untuk melanjutkan:',
+    statusTxt: (s) => 'pesanan ' + (orderState.orderId || '-') + ' · status: ' + s,
+    flow: {
+      netTag: ['🔌 sebaiknya offline', '🌐 online', '🌐 online', '🌐 tetap online', '🌐 ambil → 🔌 rakit offline', '🌐 online'], why: 'kenapa',
+      chainLbl: 'Jaringan mana', posLbl: 'Letak polanya',
+      prePh: 'awal', sufPh: 'akhir',
+      s1head: 'Buat kunci yang hanya Anda pegang',
+      s1desc: 'Langkah ini berjalan sepenuhnya di komputer Anda sendiri; platform tidak menerima apa pun darinya. Satu kunci dibelah dua: separuh tetap pada Anda (di bawah: "separuh Anda"), dan "bayangan" dari separuh lainnya dikirim ke platform. Bayangan itu tidak bisa diubah kembali menjadi separuh Anda - jadi kunci privat lengkap hanya bisa muncul di komputer Anda.',
+      net1: '🔌 Sebaiknya offline: cabut kabel jaringan atau matikan Wi-Fi dulu, lalu klik "Buat kunci saya". Alasannya: langkah ini membuat separuh kunci Anda; saat offline, halaman ini tidak bisa mengirim apa pun keluar walaupun mencoba. Sambungkan lagi sesudahnya untuk langkah 2.',
+      genBtn: 'Buat kunci saya',
+      genOk: 'Kunci dibuat. File cadangan my-secret-s.json ada di folder unduhan Anda. Sekarang Anda boleh online lagi untuk langkah 2.',
+      genKeep: 'Simpan file itu. Kalau hilang, alamat ini hilang untuk selamanya - kami juga tidak bisa memulihkannya. Simpan salinan kedua di USB atau komputer lain.',
+      reloadLbl: 'Memuat ulang halaman? Pilih kembali my-secret-s.json Anda',
+      fileOk: (pat, ch) => 'Cadangan Anda dimuat: ' + pat + ' (' + ch + '). Sekarang Anda bisa memesan.',
+      keyKept: (pat, ch) => 'Kunci Anda masih di sini (' + pat + ' · ' + ch + ') - mengganti bahasa tidak menyentuhnya. Anda bisa memesan.',
+      fileBad: 'File itu tidak bisa dibaca. Coba file lain.',
+      noCore: 'Modul kunci tidak termuat. Muat ulang halaman dan coba lagi.',
+      noTier: 'Panjang itu belum punya harga - pilih panjang lain.',
+      offlineHint: 'Anda sedang offline, jadi harga tidak ditampilkan - Anda tetap bisa membuat kunci. Harga muncul sendiri setelah Anda tersambung lagi.',
+      suggest: 'disarankan', notPriced: 'harga belum ditetapkan',
+      soon: 'tingkat ini belum punya harga - belum menerima pesanan',
+      posSoon: 'belum didukung',
+      cantMint: 'Mesin cetak belum bisa membuat jenis ini, jadi belum dijual - menerima pembayaran tanpa bisa mengirim barangnya lebih buruk daripada tidak menjual.',
+      patOk2: (usdt, t) => 'Tersedia - ' + usdt + ' USDT - siap dalam sekitar ' + t,
+
+      s2head: 'Pesan',
+      s2desc: 'Satu klik. Halaman melakukan tiga hal untuk Anda: membuat pesanan dan menerima frasa acak dari platform; menandatangani frasa itu dengan separuh kunci Anda untuk membuktikan bahwa itu benar-benar milik Anda (supaya tidak ada yang memakai GPU platform secara gratis); menyerahkan bayangan dan tanda tangannya. Tanda tangan itu juga dihitung di komputer Anda.',
+      net2: '🌐 Butuh internet. Alasannya: platform harus menerima pola, jaringan, dan pilihan pembayaran Anda sebelum bisa membuka pesanan dan memberi alamat pembayaran. Hanya itu yang keluar, ditambah bayangan dan tanda tangan - kuncinya sendiri tidak pernah (periksa sendiri di "Setiap kata yang dikirim halaman ini ke platform" di bagian bawah).',
+      create: 'Pesan',
+      created: 'Pesanan dibuat, nomor',
+      signing: 'Menandatangani dengan separuh kunci Anda (di komputer ini)...',
+      shareOk: 'Tanda tangan diterima. Yang kami terima hanya bayangan A - separuh kunci Anda tidak pernah meninggalkan komputer ini.',
+      needGen: 'Selesaikan langkah di atas dulu dan buat kunci Anda.',
+
+      s3head: 'Bayar',
+      s3desc: 'Mode prototipe: satu klik dihitung sudah bayar, tanpa transfer sungguhan.',
+      s3descLive: 'Alamat di bawah hanya untuk pesanan ini. Kirim USDT dengan jumlah persis itu dari dompet Anda sendiri, di jaringan yang disebut di atas.',
+      net3: '🌐 Butuh internet. Alasannya: Anda mengirim USDT dari bursa atau dompet Anda ke alamat di bawah, dan halaman ini harus online untuk melihat pembayarannya masuk.',
+      payChainLbl: 'Bayar dengan',
+      refLbl: 'Kode referal (opsional)', refPh: '6 karakter, mis. AB23CD',
+      refFrom: (c) => 'Kode referal ' + c + ' datang bersama tautan referal; ganti atau kosongkan jika tidak benar.',
+      refBad: 'Kode referal terdiri dari 6 karakter: angka 2-9 dan huruf (tanpa 0, 1, I, atau O) - periksa salah ketik, atau kosongkan.',
+      payChainOffline: 'Belum online, jadi pilihan pembayaran belum termuat - setelah online lagi, klik di sini dan semua jaringan yang tersedia akan muncul.',
+      payPickNow: 'Pilihan pembayaran baru saja termuat (tadi Anda offline): pilih jaringan pembayaran di atas, lalu klik "Pesan" lagi.',
+      payInfo2: (a, amt, c, net) => 'Kirim ' + amt + ' USDT lewat ' + net + ' ke  ' + a + '   - lalu tunggu ' + c + ' konfirmasi',
+      copyAddr: 'Salin alamat',
+      pay: 'Anggap sudah bayar (prototipe)', payLive: 'Sudah kirim - mulai pantau',
+      payNote: 'Setiap pesanan punya alamatnya sendiri dan dengan itulah kami mencocokkan pembayaran, jadi jangan pernah memakai alamat pesanan lain. Halaman bergerak sendiri - tidak perlu dimuat ulang. Anda juga bisa menutupnya dan kembali lewat "Pesanan saya" di bawah.',
+      leaveAsk: 'Tidak jadi membayar? Ketuk satu alasan (opsional - hanya satu kata itu yang dikirim, tanpa nomor pesanan):',
+      leaveOpt: { price: 'Terlalu mahal', confusing: 'Sulit dipahami', trust: 'Ragu apakah aman', browsing: 'Hanya melihat-lihat' },
+      leaveThanks: 'Baik, terima kasih - kami akan memakainya untuk perbaikan.',
+      paying: 'Menyimulasikan pembayaran...', payingLive: 'Memantau alamat itu (setiap 2,5 detik)...',
+      watching: 'Memantau alamat itu di blockchain...',
+      mint4Wait: (d) => 'Menunggu pembayaran Anda masuk - sudah ' + d + '. Biasanya muncul dalam satu menit setelah dikirim; baris ini berubah sendiri saat itu terjadi.',
+      mint4WaitLong: (id) => 'Sudah lebih dari 10 menit dan belum ada pembayaran yang terlihat: periksa bahwa Anda mengirim di jaringan yang disebut di atas, ke alamat itu, dengan jumlah persis itu. Kalau semuanya benar, jangan kirim lagi - kirimkan nomor pesanan ' + id + ' kepada kami dan kami akan memeriksa blockchain.',
+      mint4Part: (got, want, left) => 'Sejauh ini diterima ' + got + ' USDT - kurang ' + left + ' USDT (total ' + want + '). Kirim sisanya ke alamat yang sama; pembayaran dijumlahkan, dan baris ini berubah sendiri begitu lengkap.',
+      mint4Paid: 'Pembayaran diterima - pencetakan dimulai sekarang...',
+      mint4Run: (d) => 'Sedang dicetak - sudah berjalan ' + d,
+      mint4RunNote: 'GPU mencoba kandidat satu per satu sampai ada alamat yang awal atau akhirnya persis seperti yang Anda minta. Halaman ini menanyakan progres setiap 2,5 detik dan baris ini berubah sendiri saat selesai.',
+      mint4Done: (d) => 'Selesai dicetak' + (d ? ' (pesanan ini butuh ' + d + ')' : '') + ' ✓',
+      mint4Next: 'Turun ke langkah 5 untuk mengambilnya.',
+      dur: (h, m, sec) => (h ? h + 'j ' + String(m).padStart(2, '0') + 'm' : (m ? m + 'm ' + String(sec).padStart(2, '0') + 'd' : sec + 'd')),
+      payConfirmN: (n) => 'Setelah masuk, perlu ' + n + ' konfirmasi.',
+
+      s4head: 'Kami mulai mencetak',
+      s4desc: 'Kami mengambil bayangan A Anda dan terus mencoba sampai muncul alamat yang awal atau akhirnya persis seperti yang Anda minta. Yang kami pegang selama itu hanyalah A, yang tidak bisa menghasilkan kunci privat Anda.',
+      net4: '🌐 Tetap online dan biarkan halaman ini terbuka. Alasannya: GPU platform sedang mengerjakan alamat Anda, dan halaman ini menanyakan progres setiap beberapa detik. Menutupnya tidak masalah - lanjutkan nanti dengan nomor pesanan di bagian bawah.',
+      mineHit: 'Ditemukan: ', readyToTake: 'Siap diambil.',
+
+      s5head: 'Ambil: gabungkan dua separuh',
+      s5desc: 'Platform memberi Anda separuh lainnya (disebut b). Klik "Ambil" untuk mengambilnya, lalu "Rakit kunci saya" - komputer Anda menggabungkan dua separuh itu menjadi kunci privat lengkap dan langsung memeriksa bahwa alamatnya adalah yang Anda beli; kalau bukan, ekspor diblokir.',
+      net5: 'Pertama 🌐 online dan klik "Ambil"; setelah muncul "Sudah diterima", Anda boleh 🔌 offline dan klik "Rakit kunci saya" serta "Ekspor file dompet". Alasannya: kunci privat lengkap muncul pertama kali pada saat itu - rakit saat offline dan kunci itu hanya bisa tetap di komputer Anda.',
+      dlBtn: 'Ambil (butuh internet)',
+      mergeBtn: 'Rakit kunci saya (boleh offline)',
+      gotB: 'Sudah diterima. Sekarang Anda boleh offline (cabut kabel atau matikan Wi-Fi), lalu klik "Rakit kunci saya".',
+      mergeOk: 'Tergabung, alamat terverifikasi. Kunci privat lengkap sekarang hanya ada di komputer ini.',
+      evmTwin: (a) => 'Kunci yang sama ditulis dengan cara Ethereum / BSC adalah ' + a + '. MetaMask hanya menampilkan bentuk 0x ini; untuk melihat alamat T, impor ke dompet TRON seperti TronLink.',
+      hitWord: 'cocok',
+      addrMatch: 'Cocok dengan alamat yang Anda beli.',
+      addrDiff: (a) => 'Tidak cocok. Kami mengirim ' + a + ' - jangan diekspor; kirimkan tangkapan layar ini kepada kami.',
+      mergeBad: (want, ch) => 'Tidak ada kandidat yang cocok dengan ' + want + ' (' + ch + ') Anda - b yang kami kirim salah. Jangan diekspor; kirimkan tangkapan layar ini kepada kami.',
+      pwLbl: 'Buat kata sandi untuk file dompet (minimal 8 karakter)', pwPh: 'kata sandi', pw2Ph: 'ketik sekali lagi',
+      ksBtn: 'Ekspor file dompet',
+      pwShort: 'Minimal 8 karakter. Kalau kata sandi ini hilang, file yang diekspor tidak akan pernah bisa dibuka.',
+      pwDiff: 'Kedua kata sandi tidak sama - ketik lagi.',
+      noSubtle: 'Browser ini tidak mengizinkan enkripsi yang dibutuhkan file dompet. Buka halaman ini di Chrome atau Edge dan coba lagi.',
+      ksWork: 'Mengenkripsi... (sengaja lambat, supaya menebak kata sandi juga lambat) ',
+      ksOk: (name, tron) => 'Diekspor: ' + name + ' (di folder unduhan Anda). ' + (tron
+        ? 'Impor ke TronLink: Add Wallet - TRON - Import Wallet - Import via Keystore File - pilih ' + name + ' - masukkan kata sandi. '
+        : 'Impor ke MetaMask: Add account or hardware wallet - Import account - Select type: JSON File - pilih ' + name + ' - masukkan kata sandi. ')
+        + 'Simpan file dan kata sandinya di tempat terpisah - dengan keduanya, Anda memegang kunci Anda. Panduan sederhana tentang file ini ada di bawah.',
+      ksFail: 'Enkripsi gagal: ',
+      ksGuideHead: 'Apa file dompet ini? Kenapa bisa dibuka tanpa kata sandi? Di mana kuncinya? Bagaimana cara mengimpornya? (ketuk untuk membaca)',
+      ksGuide: [
+        ['Singkatnya', 'File dompet = kunci privat Anda + gembok. Kunci gemboknya adalah kata sandi yang baru Anda buat.'],
+        ['Kenapa bisa dibuka tanpa kata sandi?', 'File itu sendiri berupa teks biasa - siapa pun bisa membuka dan melihatnya. Yang digembok adalah kunci privat di dalamnya: membuka file hanya menampilkan versi yang teracak dan terkunci, yang tidak berguna tanpa kata sandi. Dompet Anda meminta kata sandi saat Anda mengimpor file itu.'],
+        ['Apa semua baris itu?', 'address = alamat Anda (untuk TRON ditulis dalam hex yang diawali 41 - alamat yang sama dengan alamat T… Anda, dieja seperti yang dibaca TronLink) · ciphertext = kunci privat Anda, terkunci · iv, salt = angka acak yang dipakai gembok · mac = supaya dompet bisa memeriksa kata sandi · kdf, n, r, p = seberapa sulit gembok dibobol (sengaja lambat) · id, version = nomor file dan versi format · readme = penjelasan ini. Selain address, tidak satu pun dari deretan panjang itu adalah alamat atau kunci.'],
+        ['Baris mana yang kunci privat?', 'Tidak ada yang dalam bentuk terbuka - kunci itu terkunci di dalam ciphertext. Justru itulah yang membuat file ini aman: meski seseorang mendapatkan filenya, tanpa kata sandi dia tidak bisa mengambil dana Anda.'],
+        ['Bagaimana cara mengimpornya?', 'Alamat yang diawali 0x → MetaMask: Add account or hardware wallet - Import account - Select type: JSON File - pilih my-keystore.json - masukkan kata sandi. Alamat yang diawali T → TronLink: Add Wallet - TRON - Import Wallet - Import via Keystore File - pilih my-keystore.txt (TronLink hanya menerima .txt) - masukkan kata sandi.'],
+        ['Bagaimana menyimpannya dengan aman?', 'Simpan file dan kata sandi di tempat berbeda (misalnya file di USB, kata sandi di kertas). Dengan keduanya, Anda memegang kunci Anda. Kehilangan salah satunya? Dalam 30 hari setelah dicetak, Anda bisa mengambil lagi dengan my-secret-s.json dan nomor pesanan, merakit ulang kunci, dan mengekspor file baru.'],
+      ],
+
+      s6head: 'Kirim tanda terima',
+      s6desc: 'Tandatangani satu frasa dengan kunci yang baru Anda rakit. Platform tidak memegang separuh kunci Anda, jadi tidak bisa memalsukan tanda tangan ini - menerimanya berarti kedua pihak sepakat pesanan sudah diterima.',
+      net6: '🌐 Butuh internet. Alasannya: tanda tangan "sudah saya terima" harus sampai ke platform untuk menyelesaikan pesanan. Melewatinya tidak memengaruhi kunci yang sudah Anda pegang.',
+      receiptBtn: 'Tandatangani dan kirim tanda terima',
+      receiptSkip: 'Opsional. Melewatinya tidak memengaruhi kunci yang sudah Anda pegang. Mengirimnya menyelesaikan pesanan, dan setelah itu Anda tetap bisa mengunduh ulang b yang sama secara gratis; Anda juga mendapat satu bulan gratis peringatan real-time peracunan alamat.',
+      receiptOk: 'Tanda terima terkirim - pesanan selesai.',
+      perkOk: 'Satu bulan gratis peringatan real-time peracunan alamat (paket Personal, hingga 5 alamat TRON): buka tautan di bawah dan klaim di bot resmi (sekali per pesanan).',
+      perkLink: 'Klaim bulan gratis ↗',
+      receiptBad: 'Tidak bisa menandatangani - b yang ada tidak cocok dengan tanda terima ini.',
+      noReceipt: 'Belum ada tanda terima untuk ditandatangani - selesaikan langkah di atas.',
+      copied: 'Tersalin',
+      keepId: (id) => 'Simpan nomor pesanan Anda ' + id + ': Anda bisa menutup halaman ini dan melanjutkan dari "Pesanan saya" di bawah, atau memasukkan nomor ini di komputer lain.',
+      needSecForTake: 'Mengambil butuh tanda tangan dari separuh kunci Anda - pilih my-secret-s.json Anda di langkah 1 dulu.',
+      secBack: 'Separuh kunci Anda sudah termuat - sekarang Anda bisa mengambil.',
+      resuming: (id, pat, ch) => 'Melanjutkan pesanan ' + id + ' (' + pat + ' - ' + ch + '). Langkah 1 dan 2 sudah selesai.',
+      pickSecForResume: 'Separuh kunci Anda sudah tidak ada di halaman ini (menutup halaman menyebabkannya). Sebelum mengambil, pilih my-secret-s.json Anda di "Memuat ulang halaman?" di bawah.',
+      watchingAgain: 'Memantau pembayaran / progres cetak lagi...',
+      orderClosed: (st) => 'Pesanan ini berstatus "' + st + '" dan tidak bisa dilanjutkan.',
+      badId: 'Nomor pesanan terdiri dari 8 karakter (0-9 dan a-f).',
+      noSuchOrder: 'Tidak ada pesanan dengan nomor itu.',
+      resumeHint: (pat, amt) => 'Pesanan ini: ' + pat + ' - ' + amt + ' USDT',
+    },
+  }
 };
 
 // LANGEN0X_20260924：DSJ「把网页默认成英文」。原来按浏览器语言挑（中文浏览器看中文），开页时也不套词典 ——
 //   英文访客看到的其实是 index.html 里写死的中文。现在：默认英文；只有点了「中文 / EN」才记住；开页就把整页套成这个语言。
 //   换一个新的键（0xlang2）：以前点过「中文」的人也先看到英文 —— 包括店主自己，不然他看不出默认已经改了。
 const LANG_KEY = '0xlang2';
-let lang = (() => { try { const v = localStorage.getItem(LANG_KEY); return v === 'zh' || v === 'en' ? v : 'en'; } catch (e) { return 'en'; } })();
-const t = (k) => (dict[lang][k] !== undefined ? dict[lang][k] : k);
+// IDLANG0X_20260928：第三种语言印尼文（id）。同一个开关、同一个记忆；认不出的一律英文。词典里万一少一格，退回英文那一格，不印键名。
+let lang = (() => { try { const v = localStorage.getItem(LANG_KEY); return v === 'zh' || v === 'en' || v === 'id' ? v : 'en'; } catch (e) { return 'en'; } })();
+const t = (k) => (dict[lang][k] !== undefined ? dict[lang][k] : dict.en[k] !== undefined ? dict.en[k] : k);
 // SRVEN0X_20260924：平台下发的字（链名、报错、目录说明）也要跟着语言走。平台给了 xxxEn 就用它；
 //   老平台没给就退回原来那句 —— 宁可显示中文，也不许空着。
-const L = (o, k) => (o && lang === 'en' && typeof o[k + 'En'] === 'string' && o[k + 'En']) ? o[k + 'En'] : (o ? o[k] : undefined);
+//   IDLANG0X：印尼文先挑 xxxId，平台没给就退回英文那一句。
+const L = (o, k) => { if (!o) return undefined; const pick = (s) => (typeof o[k + s] === 'string' && o[k + s]) || '';
+  return (lang === 'id' && (pick('Id') || pick('En'))) || (lang === 'en' && pick('En')) || o[k]; };
 const $ = (s) => document.querySelector(s);
 const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
@@ -508,6 +773,33 @@ function liveSwap(o) {
   }
 }
 
+/* ---- LESSTEXT0X_20260928（少字 B，DSJ 选的）：下载那一块的六步路线 ----
+   六步画成一条带图标的路线；点一步，下面一句话 + 「展开细节」（铸造页上那一步的完整说明、为什么断网 / 联网）—— 一个字没删，点开就在。
+   图标跟方案页（零九零少字方案）那一套一样；第 5 步是「取货 + 合钥匙」、第 6 步是「交收条」（照铸造页真实的六步，不照示意图）。 */
+const ROUTE_IC = [
+  '<circle cx="8" cy="15" r="4"/><path d="M11 12l8-8M16 7l2 2"/>',
+  '<path d="M5 4h14v16H5z"/><path d="M9 9h6M9 13h6M9 17h3"/>',
+  '<circle cx="12" cy="12" r="8"/><path d="M9 9h6M12 9v7"/>',
+  '<rect x="6" y="6" width="12" height="12" rx="2"/><path d="M9 2v4M15 2v4M9 18v4M15 18v4M2 9h4M2 15h4M18 9h4M18 15h4"/>',
+  '<path d="M3 7l9-4 9 4v10l-9 4-9-4z"/><path d="M3 7l9 4 9-4M12 11v10"/>',
+  '<path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"/><path d="M9 10l2 2 4-4"/>',
+];
+let routeAt = 0;
+function renderRoute() {
+  const ol = document.getElementById('route'), box = document.getElementById('routeDetail'); if (!ol || !box) return;
+  const r = t('route'), line = t('routeLine'), f = t('flow') || {}, n = routeAt + 1;
+  ol.innerHTML = r.map((x, i) => '<li><button type="button" class="rt' + (i === routeAt ? ' on' : '') + '" data-rt="' + i + '" aria-pressed="' + (i === routeAt) + '">'
+    + '<span class="rt-ic"><svg viewBox="0 0 24 24" aria-hidden="true">' + ROUTE_IC[i] + '</svg></span>'
+    + '<span class="rt-no">' + (i + 1) + '</span><b>' + esc(x[0]) + '</b><small>' + esc(x[1]) + '</small></button></li>').join('');
+  box.innerHTML = '<p><b>' + esc(n + ' · ' + r[routeAt][0]) + '</b> ' + esc(line[routeAt]) + '</p>'
+    + '<details class="fold"><summary>' + esc(t('routeMore')) + '</summary><div class="netline">' + esc(f['net' + n] || '') + '</div>'
+    + '<div class="step-desc">' + esc(f['s' + n + 'descLive'] || f['s' + n + 'desc'] || '') + '</div></details>';
+}
+document.addEventListener('click', (e) => {
+  const b = e.target && e.target.closest ? e.target.closest('[data-rt]') : null; if (!b) return;
+  routeAt = Math.max(0, Math.min(5, Number(b.dataset.rt) || 0)); renderRoute();
+});
+
 /* ---- 语言切换 ---- */
 // 只换「写死在页面上的字」：开页时跑一次（默认英文靠它），切语言时也跑
 function applyStaticLang() {
@@ -516,6 +808,8 @@ function applyStaticLang() {
   document.querySelectorAll('[data-i18n-ph]').forEach((el) => { el.placeholder = t(el.dataset.i18nPh); });
   $('#btnZh').classList.toggle('active', lang === 'zh');
   $('#btnEn').classList.toggle('active', lang === 'en');
+  $('#btnId').classList.toggle('active', lang === 'id');
+  renderRoute();
   if (window.KeyCore && window.KeyCore.setLang) window.KeyCore.setLang(lang);   // keycore 的提示（图案不合法之类）跟着换
   const dr = $('#dlResumeMsg'); if (dr && dr.dataset.order) dr.textContent = t('dlResume')(dr.dataset.order);
   if (typeof renderRef === 'function') renderRef();              // REF0X：推荐码那一句跟着换语言
@@ -538,6 +832,7 @@ function applyLang(save) {
 }
 $('#btnZh').addEventListener('click', () => { lang = 'zh'; applyLang(true); });
 $('#btnEn').addEventListener('click', () => { lang = 'en'; applyLang(true); });
+$('#btnId').addEventListener('click', () => { lang = 'id'; applyLang(true); });
 
 /* ---- TICKER0X_20260924：顶栏那一行「打代码」的字 ----
    DSJ「在网页横梁上做一个像打代码出现的一段字，这段字要一直重复的像打代码那样一直闪出来类似跑马灯一直在跑，
@@ -655,12 +950,12 @@ function renderCatalog() {
       //   这里原来还硬写 t('kindPrefix')，后缀档也会被标成「前缀」—— 一起修掉。
       return '<tr' + (priced && r.mintable !== false ? '' : ' class="unpriced"') + '><td class="tier">'
         + esc((r.pattern || '') + '  ')
-        + esc((((lang === 'en' && r.kindLabelEn) || r.kindLabel) || t('kindPrefix')) + ' ' + (r.pinned != null ? r.pinned : r.length) + ' ' + t('digits')) + '</td>'
+        + esc((L(r, 'kindLabel') || t('kindPrefix')) + ' ' + (r.pinned != null ? r.pinned : r.length) + ' ' + t('digits')) + '</td>'
         + '<td class="price">' + price + '</td>'
         // MINTABLE0X_20260923：定了价但铸造机做不了的,价格照写（DSJ 定的价不动）,耗时那格写明为什么不卖
         + '<td class="eta">' + (r.mintable === false
             ? '<span class="soon">' + esc(f.posSoon) + '</span>'
-            : esc((lang === 'en' && r.mintTimeTextEn) || r.mintTimeText)) + '</td></tr>';
+            : esc(L(r, 'mintTimeText'))) + '</td></tr>';
     }).join('');
   }).join('') + '<tr><td colspan="3">' + esc(L(CATALOG, 'note') || t('onlyKinds')(CATALOG.sellableKinds.join(' / '))) + '</td></tr>';
 }
@@ -681,6 +976,8 @@ const STATUS_LABEL = {
         found: '已铸出', delivered: '已交货', settled: '已交回执', expired: '已过期', refunded: '已退款' },
   en: { created: 'created', share_uploaded: 'shadow uploaded', paid: 'paid', mining: 'minting',
         found: 'minted', delivered: 'delivered', settled: 'receipt filed', expired: 'expired', refunded: 'refunded' },
+  id: { created: 'dibuat', share_uploaded: 'bayangan terkirim', paid: 'dibayar', mining: 'sedang dicetak',
+        found: 'sudah dicetak', delivered: 'dikirim', settled: 'tanda terima masuk', expired: 'kedaluwarsa', refunded: 'dikembalikan' },
 };
 const statusLabel = (st) => (STATUS_LABEL[lang] || STATUS_LABEL.zh)[st] || String(st || '');
 const stepsEl = $('#steps');
@@ -789,7 +1086,7 @@ function showApiError(container, res) {
   outLine(container, (res.code ? 'HTTP ' + res.code + ' ' : '') + (L(b, 'error') || ''), 'err');
   if (b.reason) outLine(container, L(b, 'reason'), 'err');
   if (Array.isArray(b.sellableLengths) && b.sellableLengths.length) {
-    outLine(container, (lang === 'en' ? 'sellable lengths: ' : '可售位数: ') + b.sellableLengths.join(' / '), 'err');
+    outLine(container, t('sellLens') + b.sellableLengths.join(' / '), 'err');
   }
 }
 
@@ -810,10 +1107,11 @@ const KC = () => window.KeyCore;
 
 // NETGUIDE0X_20260924：DSJ「哪一步需要断网，哪一步要联网也要人话辅助引导+解释为什么」
 function stepBox(no, head, desc, net) {
-  const li = document.createElement('li');
+  const li = document.createElement('li'), f = t('flow') || {};
   li.innerHTML =
     '<div class="step-head"><span class="no">[' + no + '/6]</span>' + esc(head) + '</div>' +
-    (net ? '<div class="netline">' + esc(net) + '</div>' : '') +
+    // LESSTEXT0X_20260928：「为什么断网 / 联网」那一整句收进小标签（点开才看）；这一步要做什么（step-desc）照旧摆着
+    (net ? '<details class="netline"><summary>' + esc((f.netTag || [])[no - 1] || '') + ' · ' + esc(f.why || '') + '</summary>' + esc(net) + '</details>' : '') +
     '<div class="step-desc">' + esc(desc) + '</div>';
   return li;
 }
@@ -985,7 +1283,7 @@ function wireOrderFlow(f) {
       : row && row.mintable === false ? f.cantMint
       : row && row.priceUsdt == null ? f.soon + (row.suggestedUsdt != null ? '（' + f.suggest + ' ' + row.suggestedUsdt + ' USDT）' : '')
       // PLAINHINT0X_20260923：原来写「大约要试 1,099,511,627,776 次」—— 13 位数字对客户没有任何意义。
-      : row ? f.patOk2(row.priceUsdt, (lang === 'en' && row.mintTimeTextEn) || row.mintTimeText || '')
+      : row ? f.patOk2(row.priceUsdt, L(row, 'mintTimeText') || '')
       : f.noTier;
   }
   function renderChainPick() {
@@ -1011,12 +1309,12 @@ function wireOrderFlow(f) {
     seedInputs(); refreshHint();
   });
   // NETSYNC0X_20260924：付款链表如果是【连上网以后才补到的】，他还没看过新表 —— 点下单时先让他选一次，
-  //   不许默默按缺省的 TRON 建单（补表可能就在他按下按钮的那一瞬间到，所以按「看过没有」判，不按时间先后判）。
+  //   不许默默按缺省的那条建单（补表可能就在他按下按钮的那一瞬间到，所以按「看过没有」判，不按时间先后判）。
   let payNeedsLook = false;
   function renderPayChains() {
     const sel = $('#payChain'); if (!sel) return;
     const wasFallback = sel.dataset.real === '0';   // 刚才给他看的是断网时的缺省表
-    const list = (CATALOG && CATALOG.payChains) || [{ id: 'tron', label: 'TRON', short: 'TRC20', confirmations: 19, note: '' }];
+    const list = (CATALOG && CATALOG.payChains) || [{ id: 'bsc', label: 'BSC', short: 'BEP20', confirmations: 15, note: '' }];   // PAYBSC0X_20260928：断网时的缺省也只列 BSC（全网只收 BSC）
     const cur = sel.value;
     sel.innerHTML = list.map((c) =>
       '<option value="' + esc(c.id) + '">' + esc(c.label + ' · USDT-' + c.short) + '</option>').join('');
@@ -1028,7 +1326,7 @@ function wireOrderFlow(f) {
       if (!CATALOG) { $('#payChainNote').textContent = f.payChainOffline; return; }
       const c = list.find((x) => x.id === sel.value) || list[0];
       // PAYNOTEEN0X_20260924：说明按语言取（平台两种都下发），「要等几个确认」进词典 —— 原来英文界面也是整句中文
-      $('#payChainNote').textContent = c ? (((lang === 'en' && c.noteEn) ? c.noteEn : c.note) + ' ' + f.payConfirmN(c.confirmations)) : '';
+      $('#payChainNote').textContent = c ? ((L(c, 'note') || '') + ' ' + f.payConfirmN(c.confirmations)) : '';
     };
     sel.onchange = () => { payNeedsLook = false; note(); }; note();
   }

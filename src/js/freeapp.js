@@ -8,7 +8,7 @@
   var $ = function (s) { return document.querySelector(s); };
   var esc = function (x) { return String(x == null ? '' : x).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); };
   var LANG_KEY = '0xlang2';                                  // 跟别的页同一个：在哪一页选的语言，换一页照样
-  var lang = (function () { try { var v = localStorage.getItem(LANG_KEY); return v === 'zh' || v === 'en' ? v : 'en'; } catch (e) { return 'en'; } })();
+  var lang = (function () { try { var v = localStorage.getItem(LANG_KEY); return v === 'zh' || v === 'en' || v === 'id' ? v : 'en'; } catch (e) { return 'en'; } })();   // IDLANG0X_20260928：多一种印尼文 id
   var FG = window.FreeGen, KC = window.KeyCore;
   var fmt = function (n) { return Math.round(n).toLocaleString('en-US'); };
 
@@ -22,17 +22,16 @@
       trust: '私钥只在你手里 · 这一页一个请求都不发（GitHub 上的检查每次都用真浏览器数一遍）· 页面代码公开在 GitHub',
       genH: '在你自己的电脑上算',
       genSteps: ['先断网：拔网线或者关掉 Wi-Fi。这一页已经整个在你电脑上了，断网照样能算。',
-        '选哪条链、钉开头还是钉结尾，填图案（以太坊类最多 7 位，波场最多 5 位）。',
+        '选哪条链，填开头的图案（最多 5 位；波场不算 T）。',
         '点「开始算」。用的是这台电脑的 CPU，随时可以停。',
         '算出来之后设一个密码，存成钱包文件（MetaMask / TronLink 都能导入）。',
         '存好了，先关掉这一页，再联网。'],
       netOn: '🌐 现在还连着网 —— 最稳的做法是先断网再点「开始算」（不断也能算：这一页本来就不发任何请求）。',
       netOff: '🔌 已经断网 ✓ —— 放心算。',
       chainL: '哪条链', chEvm: '以太坊类（0x…，以太坊、BSC、Base 等同一个地址）', chTron: '波场（T…）',
-      whereL: '钉哪一头', wPre: '钉开头', wSuf: '钉结尾',
       patL: '图案',
-      hintEvm: '只能用 0-9、a-f（不分大小写），最多 7 位。比如 0000000、888888、c0ffee。',
-      hintTron: '区分大小写；没有 0、O、I、l 这四个字；最多 5 位（不算 T）。钉开头时 T 后面那一位只能是 9、A-Z。',
+      hintEvm: '只能用 0-9、a-f（不分大小写），最多 5 位。比如 00000、88888、beef。',
+      hintTron: '区分大小写；没有 0、O、I、l 这四个字；最多 5 位（不算 T）；T 后面那一位只能是 9、A-Z。',
       prev: '地址会长这样：',
       odds: function (n) { return '平均要试 ' + n + ' 个地址才碰上一个。'; },
       noBrowser: '这个浏览器太旧，算不了（要新版的 Chrome、Edge、Firefox 或 Safari）。',
@@ -63,15 +62,16 @@
       certNote: '图上只有地址和它有多难得，没有钥匙。',
       certTitle: '零九零 · 免费版', certSub: '在自己的电脑上算的 —— 整把钥匙从没离开过那台电脑',
       certOdds: function (n) { return '大约 ' + n + ' 个地址里才有一个'; },
-      certPin: function (n, w) { return (w === 'prefix' ? '钉开头 ' : '钉结尾 ') + n + ' 位'; },
+      certPin: function (n) { return '钉开头 ' + n + ' 位'; },
       unsaved: '你算出来的钥匙还没存成钱包文件，关掉就没了。',
       cmpH: '免费生成 vs 个人靓号',
       cmpRows: [['', '免费生成', '个人靓号'],
         ['谁来算', '你这台电脑的 CPU', '我们的显卡'],
-        ['多长', '以太坊类最多 7 位、波场最多 5 位', '以太坊类 10~12 位、波场 6~8 位'],
-        ['钉哪头', '只钉一头（开头或结尾）', '开头、结尾、两头都行'],
+        ['多长', '最多 5 位', '以太坊类 10~12 位、波场 6~8 位'],
+        ['钉哪头', '只钉开头', '开头、结尾、两头都行'],
         ['钥匙', '整把都在你电脑上生成', '你造一半、我们算另一半，合起来只在你电脑上'],
         ['价格', '免费', '100 USDT 起']],
+      moreH: '为什么要用、不用的风险、照实说',
       whyH: '为什么要用这个',
       why: ['想要一个好看点的地址，但不想花钱、也不敢信陌生网站', '「私钥不经过我们」不是嘴上说：断网也能算，你亲眼看得到', '页面代码公开在 GitHub，线上这一份每小时自动核对'],
       riskH: '不用会有什么风险（真实例子）',
@@ -80,7 +80,7 @@
         '2026-07-30 Coldcard Mk3 旧固件跳过了硬件随机数，约 1,816 个 BTC 被批量清空 —— 私钥是怎么生成的，决定它安不安全'],
       honestH: '照实说',
       honest: ['浏览器里算，比显卡慢几十万倍：再长就交给显卡（个人靓号）。',
-        '免费版只钉一头：两头都钉，正是仿别人地址（投毒）要的样子。两头都钉的走个人靓号 —— 那边下单前会查是不是在仿链上的活跃地址。',
+        '免费版只钉开头、最多 5 位。钉结尾、两头都钉、更长的走个人靓号 —— 两头都钉正是仿别人地址（投毒）要的样子，那边下单前会查是不是在仿链上的活跃地址。',
         '随机数用的是浏览器自带的 crypto.getRandomValues（跟个人靓号第 1 步同一个）。',
         '我们没查到「恶意在线生成器偷私钥」被证实的案子 —— 所以不说「别人都在偷」，只说：你用不着信任任何人。'],
       dlHead: '想更放心：下载这一页，断网双击打开也能算',
@@ -100,17 +100,16 @@
       trust: 'Only you hold the private key · this page sends no requests at all (the check on GitHub counts them in a real browser every time) · the page code is public on GitHub',
       genH: 'Compute it on your own computer',
       genSteps: ['Go offline first: unplug the cable or turn off Wi-Fi. This whole page is already on your computer and works offline.',
-        'Pick the chain, pin the start or the end, and type the pattern (up to 7 characters for EVM, 5 for TRON).',
+        'Pick the chain and type the start you want (up to 5 characters; for TRON, not counting the T).',
         'Click "Start". It uses this computer\'s CPU, and you can stop at any time.',
         'When it is found, set a password and save a wallet file (MetaMask and TronLink can import it).',
         'Once it is saved, close this page first, then go back online.'],
       netOn: '🌐 You are still online - the safest way is to go offline before clicking "Start" (it also works online: this page never sends any request).',
       netOff: '🔌 Offline ✓ - go ahead.',
       chainL: 'Chain', chEvm: 'EVM (0x..., the same address on Ethereum, BSC, Base and more)', chTron: 'TRON (T...)',
-      whereL: 'Which end', wPre: 'Pin the start', wSuf: 'Pin the end',
       patL: 'Pattern',
-      hintEvm: 'Only 0-9 and a-f (case does not matter), up to 7 characters. For example 0000000, 888888, c0ffee.',
-      hintTron: 'Case matters; there is no 0, O, I or l; up to 5 characters (not counting the T). When pinning the start, the character after T can only be 9 or A-Z.',
+      hintEvm: 'Only 0-9 and a-f (case does not matter), up to 5 characters. For example 00000, 88888, beef.',
+      hintTron: 'Case matters; there is no 0, O, I or l; up to 5 characters (not counting the T); the character after T can only be 9 or A-Z.',
       prev: 'The address will look like: ',
       odds: function (n) { return 'On average ' + n + ' addresses are tried before one matches.'; },
       noBrowser: 'This browser is too old for this (use a recent Chrome, Edge, Firefox or Safari).',
@@ -141,15 +140,16 @@
       certNote: 'The picture only shows the address and how rare it is - no key.',
       certTitle: '0x000000000 · Free edition', certSub: 'Computed on its owner\'s own computer - the key never left it',
       certOdds: function (n) { return 'about one in ' + n + ' addresses'; },
-      certPin: function (n, w) { return (w === 'prefix' ? 'start pinned: ' : 'end pinned: ') + n + (n === 1 ? ' character' : ' characters'); },
+      certPin: function (n) { return 'start pinned: ' + n + (n === 1 ? ' character' : ' characters'); },
       unsaved: 'The key you found is not saved as a wallet file yet - it is gone if you close this page.',
       cmpH: 'Free Generator vs Vanity Wallet',
       cmpRows: [['', 'Free Generator', 'Vanity Wallet'],
         ['Who computes', 'the CPU of your own computer', 'our GPUs'],
-        ['How long', 'EVM up to 7 characters, TRON up to 5', 'EVM 10-12 characters, TRON 6-8'],
-        ['Which end', 'one end only (the start or the end)', 'the start, the end, or both'],
+        ['How long', 'up to 5 characters', 'EVM 10-12 characters, TRON 6-8'],
+        ['Which end', 'the start only', 'the start, the end, or both'],
         ['The key', 'made entirely on your computer', 'you make one half, we compute the other; they are combined only on your computer'],
         ['Price', 'free', 'from 100 USDT']],
+      moreH: 'Why use it, the risks without it, honestly',
       whyH: 'Why use it',
       why: ['You want a nicer-looking address, but do not want to pay or trust a strange website', '"The private key never passes through us" is not just words: it works offline, and you can watch it', 'The page code is public on GitHub, and the live copy is checked against it every hour'],
       riskH: 'What can go wrong without it (real cases)',
@@ -158,7 +158,7 @@
         '2026-07-30: old Coldcard Mk3 firmware skipped the hardware random numbers, and about 1,816 BTC were swept - how a private key is made decides whether it is safe'],
       honestH: 'Honestly',
       honest: ['Computing in a browser is hundreds of thousands of times slower than a GPU: longer patterns are for the GPU (Vanity Wallet).',
-        'The free version pins one end only: pinning both ends is exactly what copying someone else\'s address (poisoning) needs. Both ends go through Vanity Wallet - it checks before every order whether the pattern imitates an active address on the chain.',
+        'The free version pins the start only, up to 5 characters. The end, both ends or longer patterns go through Vanity Wallet - pinning both ends is exactly what copying someone else\'s address (poisoning) needs, so it checks before every order whether the pattern imitates an active address on the chain.',
         'The randomness is the browser\'s own crypto.getRandomValues (the same as step 1 of the Vanity Wallet).',
         'We found no confirmed case of a malicious online generator stealing keys - so we do not say "everyone else steals"; we say: you do not need to trust anyone.'],
       dlHead: 'Want to be even surer: download this page and open it offline',
@@ -169,6 +169,85 @@
       footLinks: 'FAQ · Partners · Verification · Paid alerts · Zero board',
       newsTag: 'NEWS', newsX: 'hide for 24 hours',
       sec: 's', min: 'min', hr: 'h', day: 'days'
+    },
+    // IDLANG0X_20260928：印尼文（DSJ「增加印尼文」）。键、数组长度、函数参数跟 en 一一对应。
+    id: {
+      title: '0x000000000 — Generator Gratis',
+      here: 'Anda sedang di: Generator Gratis (alamat cantik pendek, dihitung di komputer Anda sendiri)',
+      hereSub: 'Gratis, dan langsung jadi. Seluruh kunci dibuat di komputer ini - Anda bisa memutuskan internet lebih dulu.',
+      navVanity: 'Dompet Cantik', navContract: 'Kontrak Cantik', navToken: 'Alamat Token', navFree: 'Generator Gratis', navWp: 'Whitepaper',
+      trust: 'Hanya Anda yang memegang kunci privat · halaman ini sama sekali tidak mengirim permintaan (pemeriksaan di GitHub menghitungnya di browser sungguhan setiap kali) · kode halaman ini publik di GitHub',
+      genH: 'Hitung di komputer Anda sendiri',
+      genSteps: ['Putuskan internet dulu: cabut kabel atau matikan Wi-Fi. Seluruh halaman ini sudah ada di komputer Anda dan tetap berfungsi offline.',
+        'Pilih jaringan dan ketik awalan yang Anda mau (maksimal 5 karakter; untuk TRON, T tidak dihitung).',
+        'Klik "Mulai". Ini memakai CPU komputer ini, dan Anda bisa berhenti kapan saja.',
+        'Setelah ditemukan, buat kata sandi dan simpan file dompet (MetaMask dan TronLink bisa mengimpornya).',
+        'Setelah tersimpan, tutup halaman ini dulu, baru online kembali.'],
+      netOn: '🌐 Anda masih online - cara paling aman adalah memutuskan internet sebelum mengklik "Mulai" (tetap berfungsi saat online: halaman ini tidak pernah mengirim permintaan apa pun).',
+      netOff: '🔌 Offline ✓ - silakan mulai.',
+      chainL: 'Jaringan', chEvm: 'EVM (0x..., alamat sama di Ethereum, BSC, Base, dan lainnya)', chTron: 'TRON (T...)',
+      patL: 'Pola',
+      hintEvm: 'Hanya 0-9 dan a-f (huruf besar/kecil tidak berpengaruh), maksimal 5 karakter. Contohnya 00000, 88888, beef.',
+      hintTron: 'Huruf besar/kecil berpengaruh; tidak ada 0, O, I, atau l; maksimal 5 karakter (T tidak dihitung); karakter setelah T hanya bisa 9 atau A-Z.',
+      prev: 'Alamatnya akan terlihat seperti: ',
+      odds: function (n) { return 'Rata-rata ' + n + ' alamat dicoba sebelum ada satu yang cocok.'; },
+      noBrowser: 'Browser ini terlalu lama untuk ini (pakai Chrome, Edge, Firefox, atau Safari versi terbaru).',
+      go: 'Mulai', stop: 'Berhenti', stopped: 'Dihentikan.',
+      cores: function (n) { return 'Menghitung dengan ' + n + ' core'; },
+      warm: 'Bersiap...',
+      live: function (r, t, e) { return r + ' per detik · ' + t + ' sudah dicoba · dengan kecepatan ini rata-rata sekitar ' + e; },
+      liveNote: 'Setiap percobaan adalah undian baru: yang sudah dicoba tidak membuat sisanya lebih pendek. Kalau beruntung lebih cepat; kalau tidak, bisa dua atau tiga kali lebih lama - itu jawaban jujurnya.',
+      found: function (t, s) { return 'Ditemukan: ' + t + ' dicoba, ' + s + '.'; },
+      addrL: 'Alamat baru Anda (karakter yang ditetapkan ditandai):',
+      recheck: 'Halaman ini membangun ulang alamat dari kunci ini dengan kode terpisah (keycore.js, yang juga dipakai Dompet Cantik): cocok ✓',
+      tronTwin: function (a) { return 'Kunci yang sama muncul di MetaMask sebagai alamat 0x ini: ' + a; },
+      failRecheck: 'Satu hasil gagal diperiksa ulang dan tidak diserahkan kepada Anda; pencarian dilanjutkan dari titik awal baru (ini seharusnya tidak terjadi - tolong beri tahu kami jika Anda sering melihatnya).',
+      failWorker: 'Perhitungan di latar belakang gagal dan berhenti. Muat ulang halaman dan coba lagi.',
+      ksH: 'Simpan sebagai file dompet', pwLbl: 'Buat kata sandi untuk file dompet (minimal 8 karakter)', pwPh: 'kata sandi', pw2Ph: 'ketik sekali lagi', ksBtn: 'Simpan file dompet',
+      pwShort: 'Kata sandi minimal 8 karakter.', pwDiff: 'Kedua kata sandi berbeda.', noSubtle: 'Browser ini tidak bisa mengenkripsi di sini (buka halaman ini lewat https, atau buka file yang diunduh di Chrome atau Edge).',
+      ksWork: 'Mengunci... ', ksOk: function (n, tron) { return 'Tersimpan: ' + n + (tron ? ' (TronLink hanya menerima .txt)' : '') + '.'; }, ksFail: 'Tidak tersimpan: ',
+      ksGuideH: 'Bagaimana cara mengimpornya?',
+      ksGuide: [['Alamat yang diawali 0x', 'MetaMask: Add account or hardware wallet - Import account - Select type: JSON File - pilih my-keystore.json - masukkan kata sandi.'],
+        ['Alamat yang diawali T', 'TronLink: Add Wallet - TRON - Import Wallet - Import via Keystore File - pilih my-keystore.txt (TronLink hanya menerima .txt) - masukkan kata sandi.'],
+        ['Bagaimana jika saya lupa kata sandi', 'Maka file itu tidak bisa dibuka - tidak ada yang bisa membantu, kami pun tidak: kami tidak pernah memiliki kunci ini.'],
+        ['Apakah ada salinan lain', 'Tidak. Saat halaman ditutup, salinan di memori hilang. Simpan file dan ingat kata sandinya sebelum menutup halaman.']],
+      afterH: 'Setelah Anda menyimpannya',
+      after: ['Tutup halaman ini dulu, baru online kembali.', 'Mau yang lebih panjang dan lebih langka? Serahkan ke GPU - Dompet Cantik (EVM mulai 10 karakter, TRON mulai 6; kunci privatnya tetap hanya milik Anda).'],
+      toZero: function (n) { return n + ' angka nol di awal - alamat ini bisa masuk Papan Nol (kirim sejumlah kecil acak dari alamat ini di BSC untuk membuktikan bahwa alamat ini milik Anda).'; },
+      toZeroLink: 'Ke Papan Nol', toVanityLink: 'Ke Dompet Cantik',
+      cert: 'Unduh gambar sertifikat', again: 'Buat satu lagi', againSure: 'File dompet belum disimpan - kunci ini akan hilang. Klik lagi jika Anda yakin.',
+      certNote: 'Gambar ini hanya menampilkan alamat dan seberapa langka alamat itu - tanpa kunci.',
+      certTitle: '0x000000000 · Edisi gratis', certSub: 'Dihitung di komputer milik pemiliknya sendiri - kuncinya tidak pernah keluar dari sana',
+      certOdds: function (n) { return 'sekitar satu dari ' + n + ' alamat'; },
+      certPin: function (n) { return 'awalan ditetapkan: ' + n + ' karakter'; },
+      unsaved: 'Kunci yang Anda temukan belum disimpan sebagai file dompet - kunci itu hilang jika Anda menutup halaman ini.',
+      cmpH: 'Generator Gratis vs Dompet Cantik',
+      cmpRows: [['', 'Generator Gratis', 'Dompet Cantik'],
+        ['Siapa yang menghitung', 'CPU komputer Anda sendiri', 'GPU kami'],
+        ['Seberapa panjang', 'maksimal 5 karakter', 'EVM 10-12 karakter, TRON 6-8'],
+        ['Ujung mana', 'hanya awalan', 'awalan, akhiran, atau keduanya'],
+        ['Kuncinya', 'dibuat sepenuhnya di komputer Anda', 'Anda membuat separuh, kami menghitung separuh lainnya; keduanya digabung hanya di komputer Anda'],
+        ['Harga', 'gratis', 'mulai 100 USDT']],
+      moreH: 'Mengapa memakai ini, risikonya tanpa ini, jujur saja',
+      whyH: 'Mengapa memakai ini',
+      why: ['Anda ingin alamat yang lebih enak dilihat, tetapi tidak mau membayar atau memercayai situs asing', '"Kunci privat tidak pernah melewati kami" bukan sekadar kata-kata: ini berfungsi offline, dan Anda bisa menyaksikannya', 'Kode halaman ini publik di GitHub, dan salinan live dicocokkan dengannya setiap jam'],
+      riskH: 'Apa yang bisa salah tanpa ini (kasus nyata)',
+      risk: ['2022-09: market maker Wintermute kehilangan 160 juta dolar. Alamat cantiknya dibuat dengan Profanity, yang memakai terlalu sedikit keacakan, sehingga kunci privatnya bisa dihitung balik',
+        '2024-07, laporan keamanan imToken no. 28: seseorang menjual alamat cantik gaya "66666" tetapi menyimpan kunci privatnya; uang pembeli diambil beberapa hari kemudian',
+        '2026-07-30: firmware lama Coldcard Mk3 melewatkan angka acak dari perangkat keras, dan sekitar 1,816 BTC dikuras - cara kunci privat dibuat menentukan apakah kunci itu aman'],
+      honestH: 'Jujur saja',
+      honest: ['Menghitung di browser ratusan ribu kali lebih lambat daripada GPU: pola yang lebih panjang adalah tugas GPU (Dompet Cantik).',
+        'Versi gratis hanya menetapkan awalan, maksimal 5 karakter. Akhiran, kedua ujung, atau pola yang lebih panjang lewat Dompet Cantik - menetapkan kedua ujung persis yang dibutuhkan untuk meniru alamat orang lain (peracunan alamat), jadi di sana setiap pesanan diperiksa dulu apakah polanya meniru alamat aktif di jaringan.',
+        'Keacakannya memakai crypto.getRandomValues bawaan browser (sama dengan langkah 1 Dompet Cantik).',
+        'Kami tidak menemukan kasus terkonfirmasi tentang generator online jahat yang mencuri kunci - jadi kami tidak bilang "semua yang lain mencuri"; kami bilang: Anda tidak perlu memercayai siapa pun.'],
+      dlHead: 'Ingin lebih yakin: unduh halaman ini dan buka secara offline',
+      dlWhy: 'Setelah diunduh, file ini tidak bisa kami ubah; file ini sama byte demi byte dengan salinan yang dipublikasikan di GitHub, dan Anda bisa membandingkannya sendiri.',
+      dlBtn: 'Unduh halaman ini', dlGh: 'Periksa di GitHub',
+      footNever: '0x000000000 tidak akan pernah meminta Anda menghubungkan dompet, menandatangani atau menyetujui apa pun untuk kami di aplikasi dompet, atau mengirim uang untuk "verifikasi". Siapa pun yang meminta itu adalah palsu.',
+      footOne: 'Satu-satunya situs resmi: 0x 000 000 000 .com (sembilan angka nol setelah 0x) · 0x000000000 tidak pernah menerbitkan token apa pun · simpan di bookmark dan selalu masuk dari bookmark.',
+      footLinks: 'FAQ · Mitra · Verifikasi · Peringatan berbayar · Papan Nol',
+      newsTag: 'BERITA', newsX: 'sembunyikan 24 jam',
+      sec: 'detik', min: 'menit', hr: 'jam', day: 'hari'
     }
   };
   var T = function () { return D[lang]; };
@@ -181,7 +260,7 @@
   }
 
   // ── 状态 ────────────────────────────────────────────────────────────────────────────────────────
-  var CH = 'evm', WH = 'prefix', R = null, SAVED = false, RUNNING = null, AGAIN = 0;
+  var CH = 'evm', WH = 'prefix' /* FREEPRE0X_20260928：免费版只钉开头（钉结尾拿掉了） */, R = null, SAVED = false, RUNNING = null, AGAIN = 0;
   var OK = typeof BigInt === 'function' && typeof Worker === 'function' && !!(window.crypto && crypto.getRandomValues) && !!FG && !!KC;
   function pat() { return FG ? FG.norm(CH, WH, $('#patIn').value) : ''; }
   function zeros(addr) { var m = /^0x(0*)/.exec(addr || ''); return m ? m[1].length : 0; }
@@ -193,13 +272,15 @@
     var hid = 0; try { hid = Number(localStorage.getItem(NK) || 0); } catch (e) {}
     if (Date.now() - hid < 24 * 3600e3) { strip.hidden = true; return; }
     strip.hidden = false;
-    var i = Math.floor(Math.random() * NEWS.length), paused = false, L = lang === 'en' ? 1 : 0;
-    var show = function () { var n = NEWS[i % NEWS.length]; $('#nsTag').textContent = T().newsTag; $('#nsText').textContent = n.d[L] + ' · ' + n.ch[L] + ' · ' + n.a[L] + ' — ' + n.w[L]; $('#nsText').title = n.l[L]; };
+    // 每条快讯的字是 [中文, 英文, 印尼文]：印尼文取第 3 个，哪一格还没有第 3 个就退回英文
+    var nL = function () { return lang === 'id' ? 2 : lang === 'en' ? 1 : 0; };
+    var i = Math.floor(Math.random() * NEWS.length), paused = false, L = nL(), pk = function (a) { return a.length > L ? a[L] : a[1]; };
+    var show = function () { var n = NEWS[i % NEWS.length]; $('#nsTag').textContent = T().newsTag; $('#nsText').textContent = pk(n.d) + ' · ' + pk(n.ch) + ' · ' + pk(n.a) + ' — ' + pk(n.w); $('#nsText').title = pk(n.l); };
     show();
     strip.onmouseenter = function () { paused = true; }; strip.onmouseleave = function () { paused = false; };
     $('#nsX').title = T().newsX;
     $('#nsX').onclick = function () { try { localStorage.setItem(NK, String(Date.now())); } catch (e) {} strip.hidden = true; };
-    clearInterval(news.t); news.t = setInterval(function () { if (!paused) { i++; L = lang === 'en' ? 1 : 0; show(); } }, 6000);
+    clearInterval(news.t); news.t = setInterval(function () { if (!paused) { i++; L = nL(); show(); } }, 6000);
   }
 
   // ── 画页面 ──────────────────────────────────────────────────────────────────────────────────────
@@ -211,7 +292,7 @@
     document.title = t.title; txt('ttl', t.title); txt('hereBig', t.here); txt('hereSub', t.hereSub);
     txt('navVanity', t.navVanity); txt('navContract', t.navContract); txt('navToken', t.navToken); txt('navFree', t.navFree); txt('navWp', t.navWp);
     txt('trustBar', t.trust); txt('genH', t.genH); list('genSteps', t.genSteps);
-    txt('chainL', t.chainL); txt('chEvm', t.chEvm); txt('chTron', t.chTron); txt('whereL', t.whereL); txt('wPre', t.wPre); txt('wSuf', t.wSuf); txt('patL', t.patL);
+    txt('chainL', t.chainL); txt('chEvm', t.chEvm); txt('chTron', t.chTron); txt('patL', t.patL);
     txt('btnGo', t.go); txt('btnStop', t.stop);
     txt('ksH', t.ksH); txt('pwLbl', t.pwLbl); $('#ksPw').placeholder = t.pwPh; $('#ksPw2').placeholder = t.pw2Ph; txt('btnKs', t.ksBtn);
     txt('ksGuideH', t.ksGuideH);
@@ -221,12 +302,13 @@
     $('#fcTable').innerHTML = t.cmpRows.map(function (r, ri) {
       return '<tr>' + r.map(function (c, ci) { var tag = ri === 0 || ci === 0 ? 'th' : 'td'; return '<' + tag + (ci === 1 ? ' class="cur"' : '') + '>' + esc(c) + '</' + tag + '>'; }).join('') + '</tr>';
     }).join('');
-    txt('whyH', t.whyH); list('whyL', t.why); txt('riskH', t.riskH); list('riskL', t.risk); txt('honestH', t.honestH); list('honestL', t.honest);
+    txt('moreH', t.moreH); txt('whyH', t.whyH); list('whyL', t.why); txt('riskH', t.riskH); list('riskL', t.risk); txt('honestH', t.honestH); list('honestL', t.honest);
     txt('dlHead', t.dlHead); txt('dlWhy', t.dlWhy); txt('dlBtn', t.dlBtn); txt('dlGh', t.dlGh);
     txt('footNever', t.footNever); txt('footOne', t.footOne);
     var fl = t.footLinks.split(' · ');
     document.querySelectorAll('#footLinks a').forEach(function (a, i) { if (fl[i]) a.textContent = fl[i]; });
     $('#btnZh').classList.toggle('active', lang === 'zh'); $('#btnEn').classList.toggle('active', lang === 'en');
+    var bId = $('#btnId'); if (bId) bId.classList.toggle('active', lang === 'id');
     KC && KC.setLang(lang);
     renderNet(); renderForm(); renderResult(); news();
   }
@@ -234,14 +316,13 @@
   function renderForm() {
     var t = T();
     document.querySelectorAll('#chainPick [data-chain]').forEach(function (b) { b.classList.toggle('active', b.getAttribute('data-chain') === CH); });
-    document.querySelectorAll('#wherePick [data-where]').forEach(function (b) { b.classList.toggle('active', b.getAttribute('data-where') === WH); });
     txt('patFix', CH === 'evm' ? (WH === 'prefix' ? '0x' : '0x…') : (WH === 'prefix' ? 'T' : 'T…'));
     txt('patHint', CH === 'evm' ? t.hintEvm : t.hintTron);
-    $('#patIn').maxLength = FG ? FG.CAP[CH] : 7;
+    $('#patIn').maxLength = FG ? FG.CAP[CH] : 5;
     if (!OK) { txt('patErr', t.noBrowser); $('#btnGo').disabled = true; return; }
     var p = pat(), raw = $('#patIn').value.trim();
     var why = raw ? FG.problem(CH, WH, p) : null;
-    txt('patErr', why ? why[lang] : '');
+    txt('patErr', why ? why[lang] || why.en : '');
     if (!raw || why) { txt('patPrev', ''); txt('patOdds', ''); $('#btnGo').disabled = true; return; }
     var body = CH === 'tron' && WH === 'prefix' ? p.slice(1) : p;
     var dots = '…';
@@ -283,7 +364,7 @@
     if (!OK || RUNNING) return;
     if (R && !SAVED) { if (AGAIN < 1) { AGAIN++; var o = $('#genOut'); o.hidden = false; o.insertAdjacentHTML('beforeend', '<div class="warn">' + esc(T().againSure) + '</div>'); return; } }
     var p = pat(), why = FG.problem(CH, WH, p);
-    if (why) { txt('patErr', why[lang]); return; }
+    if (why) { txt('patErr', why[lang] || why.en); return; }
     R = null; SAVED = false; AGAIN = 0; renderResult();
     $('#ksPw').value = ''; $('#ksPw2').value = ''; txt('ksMsg', '');
     var exp = FG.expected(CH, WH, p), started;
@@ -340,8 +421,8 @@
       var i = r.chain === 'evm' ? (pre ? 2 : a.length - p.length) : (pre ? 0 : a.length - p.length), j = i + p.length, x = 64, y = 300;
       [[a.slice(0, i), '#e9e5d9'], [a.slice(i, j), '#ebc65c'], [a.slice(j), '#e9e5d9']].forEach(function (s) { g.fillStyle = s[1]; g.fillText(s[0], x, y); x += g.measureText(s[0]).width; });
       g.fillStyle = '#e9e5d9'; g.font = '400 26px ' + F;
-      g.fillText(t.certPin(r.chain === 'tron' && pre ? p.length - 1 : p.length, r.where) + ' · ' + t.certOdds(fmt(FG.expected(r.chain, r.where, p))), 64, 380);
-      if (r.chain === 'evm' && zeros(a) >= 5) { g.fillStyle = '#ebc65c'; g.fillText((lang === 'zh' ? '开头 ' + zeros(a) + ' 个 0' : zeros(a) + ' zeros at the start'), 64, 430); }
+      g.fillText(t.certPin(r.chain === 'tron' && pre ? p.length - 1 : p.length) + ' · ' + t.certOdds(fmt(FG.expected(r.chain, r.where, p))), 64, 380);
+      if (r.chain === 'evm' && zeros(a) >= 5) { g.fillStyle = '#ebc65c'; g.fillText((lang === 'zh' ? '开头 ' + zeros(a) + ' 个 0' : lang === 'id' ? zeros(a) + ' angka nol di awal' : zeros(a) + ' zeros at the start'), 64, 430); }
       g.fillStyle = '#5d6470'; g.font = '400 22px ' + F; g.fillText('0x000000000.com/free', 64, H - 64);
       cv.toBlob(function (b) {
         if (!b) return;
@@ -356,8 +437,8 @@
   // ── 开页 ─────────────────────────────────────────────────────────────────────────────────────────
   $('#btnZh').addEventListener('click', function () { lang = 'zh'; try { localStorage.setItem(LANG_KEY, lang); } catch (e) {} renderStatic(); });
   $('#btnEn').addEventListener('click', function () { lang = 'en'; try { localStorage.setItem(LANG_KEY, lang); } catch (e) {} renderStatic(); });
+  if ($('#btnId')) $('#btnId').addEventListener('click', function () { lang = 'id'; try { localStorage.setItem(LANG_KEY, lang); } catch (e) {} renderStatic(); });
   document.querySelectorAll('#chainPick [data-chain]').forEach(function (b) { b.addEventListener('click', function () { if (RUNNING) return; CH = b.getAttribute('data-chain'); $('#patIn').value = ''; renderForm(); }); });
-  document.querySelectorAll('#wherePick [data-where]').forEach(function (b) { b.addEventListener('click', function () { if (RUNNING) return; WH = b.getAttribute('data-where'); renderForm(); }); });
   $('#patIn').addEventListener('input', renderForm);
   $('#patIn').addEventListener('keydown', function (e) { if (e.key === 'Enter') go(); });
   $('#btnGo').addEventListener('click', go);

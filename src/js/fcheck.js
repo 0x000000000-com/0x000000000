@@ -9,6 +9,9 @@
 (function () {
   if (typeof ZJ === 'undefined' || typeof NEWS === 'undefined') return;
   const TX = 'https://tronscan.org/#/transaction/';
+  // EVMCHECK0X_20260928：以太坊类的交易号带链号（「56:0x…」）—— 按链挑浏览器；波场的照旧
+  const EXP = { 1: 'https://etherscan.io/tx/', 56: 'https://bscscan.com/tx/', 137: 'https://polygonscan.com/tx/', 42161: 'https://arbiscan.io/tx/', 10: 'https://optimistic.etherscan.io/tx/', 43114: 'https://snowtrace.io/tx/' };
+  const txUrl = (id) => { const m = /^(\d+):(0x[0-9a-fA-F]{64})$/.exec(String(id)); return m ? (EXP[m[1]] ? EXP[m[1]] + m[2] : '') : TX + id; };
   const BOT = 'OxOOOOOOOOObot';
   const S = {
     zh: {
@@ -106,9 +109,59 @@
       cardsH: 'Security news · things that really happened', allBtn: 'See all 66 cases →',
       modalT: 'Security news · 66 real cases, each with its source', catAll: 'All',
     },
+    // IDLANG0X_20260928：印尼文。键、参数、数组长度跟 en 一一对应（从英文译；数字、地址、USDT、TRON 这类照抄）。
+    id: {
+      title: 'Cek gratis: apakah alamat ini sudah diracun?',
+      ph: ['Tempel alamat TRON T…', 'Tempel alamat yang akan Anda bayar', 'Tempel alamat Anda sendiri - lihat siapa yang meniru Anda'],
+      go: 'Cek', sub: 'Beginilah cara 0x000000000 melindungi uangnya sendiri.',
+      subWhy: 'Alat penarikan kami sendiri menjalankan aturan yang persis sama (judge.js, dipublikasikan di GitHub) sebelum mengirim uang keluar: alat itu berhenti untuk setiap alamat yang pernah menyelipkan debu, transfer bernilai nol, atau USDT palsu ke alamat pembayaran kami, dan untuk setiap alamat yang awal dan akhirnya cocok 3 karakter atau lebih dengan alamat terakhir yang kami pakai.',
+      mineSum: 'Mau membayar seseorang? Tambahkan alamat Anda sendiri untuk dibandingkan dengan orang-orang yang benar-benar pernah Anda bayar',
+      minePh: 'Alamat TRON Anda sendiri (hanya ada di halaman ini)',
+      mineNote: 'Alamat Anda sendiri dicek secara terpisah, dan perbandingannya terjadi di sini, di browser Anda - kami tidak pernah tahu bahwa keduanya berkaitan, dan tidak ada satu pun yang kami simpan.',
+      checking: 'Membaca riwayat on-chain… (beberapa detik)',
+      evm: 'Untuk alamat EVM (0x…), kali ini yang dicek hanya apakah alamat ini terverifikasi; cek peracunan untuk alamat EVM belum dibuka - TRON lebih dulu.',
+      bad: 'Ini bukan alamat TRON yang valid (diawali T, 34 karakter, checksum harus cocok) - kemungkinan ada satu karakter yang salah tersalin. Salin lagi dari tempat asal orang tersebut memberikannya kepada Anda.',
+      mineBad: 'Alamat Anda sendiri bukan alamat TRON yang valid, jadi hanya alamat di atas yang dicek.',
+      same: 'Kedua alamat itu sama.',
+      net: 'Pengecekan ini tidak berhasil: ',
+      h: { poisoner: '⛔ Ini alamat peracun', targeted: '⚠ Ada yang meniru kontak alamat ini', lookalike: '⚠ Riwayat ini berisi alamat-alamat yang sangat mirip', caution: '⚠ Hati-hati: hampir tidak ada aktivitas nyata', clean: '✅ Tidak ditemukan peracunan', empty: '✅ Belum ada riwayat on-chain (alamat baru)' },
+      poisoner: (p) => 'Baru-baru ini alamat ini mengirim debu di bawah 0.01 USDT ke ' + p.microTo + ' alamat berbeda (' + p.micro + ' transfer). Begitulah cara penipu menyelipkan alamat palsu ke riwayat transfer orang lain. Jangan kirim uang ke alamat ini.',
+      targeted: (n, k) => n + ' alamat palsu meniru ' + k + ' kontak alamat ini. Awal dan akhirnya cocok dengan kontak asli, sementara bagian tengahnya berbeda - menunggu disalin dari riwayat transfer.',
+      lookalike: 'Salah satunya mungkin palsu - bandingkan seluruh alamat sebelum mengirim.',
+      caution: (p) => 'Alamat ini hampir tidak punya aktivitas USDT nyata, tetapi punya catatan transfer bernilai nol atau USDT palsu dengan ' + p.zfPeers + ' alamat. Sebelum membayar, pastikan dengan orang tersebut lewat saluran lain.',
+      clean: 'Dalam riwayat terbarunya, tidak ada yang menyelipkan debu, transfer bernilai nol, atau USDT palsu untuk meniru kontaknya, dan alamat ini sendiri tidak sedang menyebar debu.',
+      empty: 'Alamat ini belum punya riwayat on-chain. Pastikan alamat ini benar-benar berasal dari orang yang Anda bayar.',
+      window: (w) => 'Sudah melihat ' + w.n + ' transfer terakhir' + (w.complete ? '' : ' (yang lebih lama tidak dicek)') + '.',
+      spam: (s) => 'Selain itu: ' + s.senders + ' alamat mengirim debu ke sini tetapi tidak mirip satu pun kontaknya - spam massal, aman diabaikan.',
+      fakeL: 'palsu', realL: 'asli', paidL: 'dibayar', thisL: 'ini', pairWhy: 'ia pernah membayar keduanya', recvWhy: 'yang satu hanya mengirim uang masuk, tetapi mirip dengan yang pernah dibayarnya',
+      sameTxt: (h, t) => h + ' karakter pertama dan ' + t + ' karakter terakhir cocok (hijau), sisanya berbeda (merah)',
+      types: { dust: 'debu', zero: 'transfer bernilai nol', 'zero-out': 'catatan "dikirim oleh Anda" bernilai nol yang dipalsukan', fake: 'USDT palsu', 'fake-out': 'catatan "dikirim oleh Anda" berisi USDT palsu yang dipalsukan', trxdust: 'debu TRX', trc10: 'token spam TRC10' },
+      more: (n) => '…dan ' + n + ' lagi, tidak semuanya dicantumkan di sini',
+      tx: 'catatan on-chain ↗',
+      mineH: { poison: '⛔ Berhenti: alamat ini menyelipkan debu / catatan palsu ke alamat Anda dan mirip salah satu kontak Anda', acted: '⛔ Berhenti: alamat ini menyelipkan debu / catatan palsu ke alamat Anda (penerima pembayaran yang normal tidak pernah melakukan itu)', red: '⛔ Berhenti: alamat ini sangat mirip salah satu kontak Anda', yellow: '⚠ Alamat ini agak mirip salah satu kontak Anda - bandingkan seluruh alamat sebelum mengirim', known: '✓ Anda pernah bertransaksi dengan alamat ini', none: '✓ Alamat ini tidak mirip satu pun kontak Anda' },
+      mineCmp: (n) => ' (dibandingkan dengan ' + n + ' kontak terakhir Anda)',
+      tip: 'Sebelum mengirim: jangan pernah menyalin alamat dari riwayat transfer atau obrolan - salin dari tempat asal orang tersebut memberikannya, atau tempel di sini dulu.',
+      watch: 'Ingin tahu secara otomatis? Cari @' + BOT + ' di Telegram dan kirim "/watch alamat Anda" di obrolan pribadi - peringatan mingguan gratis; bot itu memberi tahu persis apa yang disimpannya sebelum mulai.',
+      copyWatch: 'Salin ini', copied: 'Tersalin',
+      caseH: 'Kasus nyata yang paling mirip', src: 'Sumber',
+      vfLive: (v) => '✅ Terverifikasi: alamat ini ada di kartu pembayaran @' + v.name + ' (' + (v.tier === 'yellow' ? 'centang kuning · bisnis / proyek' : 'centang biru · pribadi') + ')',
+      vfNotice: (v) => '⏳ Alamat ini terdaftar atas nama @' + v.name + ', sedang dalam masa pengumuman publik (belum aktif)',
+      vfLiveC: (v) => '✅ Ini kontrak resmi yang didaftarkan oleh @' + v.name + ' (' + (v.tier === 'yellow' ? 'centang kuning · bisnis / proyek' : 'centang biru · pribadi') + ')',
+      vfNoticeC: (v) => '⏳ Kontrak ini terdaftar atas nama @' + v.name + ' dan sedang dalam masa pengumuman publik (belum aktif)',
+      vfWhatC: 'Kami sudah memeriksa: kontrak ini hanya mungkin di-deploy oleh alamat deployer terverifikasi milik akun ini. Token dengan nama yang sama di alamat berbeda bukanlah yang didaftarkannya.',
+      vfWhat: 'Verifikasi membuktikan bahwa alamat-alamat ini, situs web ini, dan saluran ini dipegang oleh pihak yang sama - bukan bahwa seseorang adalah orang baik.',
+      vfLike: (l) => '⛔ Berhenti: alamat ini mirip alamat terverifikasi milik @' + l.name + ', tetapi BUKAN alamat yang sama',
+      vfLikeWhy: (l) => 'Untuk membayar @' + l.name + ', salin alamat hanya dari kartu pembayarannya.',
+      vfCard: (n) => 'Buka kartu pembayaran @' + n + ' ↗', vfL: 'terverifikasi',
+      nsTag: 'BERITA', nsAll: 'Semua berita', nsHide: 'sembunyikan selama 24 jam',
+      cardsH: 'Berita keamanan · yang benar-benar terjadi', allBtn: 'Lihat semua 66 kasus →',
+      modalT: 'Berita keamanan · 66 kasus nyata, masing-masing dengan sumbernya', catAll: 'Semua',
+    },
   };
-  const T = (k) => S[lang === 'zh' ? 'zh' : 'en'][k];
-  const LI = () => (lang === 'zh' ? 0 : 1);
+  // 语言：zh / en / id（印尼文）—— 印尼文缺哪个键就退回英文那一句
+  const T = (k) => (lang === 'id' && S.id[k] !== undefined ? S.id[k] : S[lang === 'zh' ? 'zh' : 'en'][k]);
+  const LI = () => (lang === 'zh' ? 0 : lang === 'id' ? 2 : 1);   // 快讯数组的下标：[中文, 英文, 印尼文]
+  const NF = (a, i) => (a[i] != null ? a[i] : a[1]);               // 印尼文那一格没有（老的 news.js）就退回英文
   const $$ = (s) => document.getElementById(s);
   const B58 = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz';
 
@@ -125,7 +178,7 @@
     for (let i = 0; i < 4; i++) if (h[i] !== b[21 + i]) return false;
     return true;
   }
-  const errOf = (r) => (r && r.body && (lang === 'en' ? r.body.errorEn || r.body.error : r.body.error)) || ('HTTP ' + (r && r.code));
+  const errOf = (r) => (r && r.body && (lang === 'id' ? r.body.errorId || r.body.errorEn || r.body.error : lang === 'en' ? r.body.errorEn || r.body.error : r.body.error)) || ('HTTP ' + (r && r.code));
   const utc = (ts) => (ts ? new Date(ts).toISOString().slice(0, 16).replace('T', ' ') + ' UTC' : '—');
 
   // 两条地址上下对齐：一样的位绿色、不一样的红色（波场开头的 T、以太坊类的 0x 是灰的 —— 每个地址都有）
@@ -146,12 +199,14 @@
     if (r.verdict === 'caution') return caseFind('posing as the FBI');
     return caseFind('A 50 USDT test went first');
   }
+  // LESSTEXT0X_20260928（少字 B，DSJ 选的）：卡片上只留大数字（金额）+ 类别 / 日期 / 链；发生了什么、教训、出处都在里面，点开就在（一个字没删）。
+  //   查询结果下面那一张（in-result）是跟他这次查的有关的案子 —— 直接展开。
   function newsCard(x, cls) {
     const i = LI();
-    return '<article class="nc ' + (cls || '') + '"><div class="nc-meta"><span class="nc-cat c-' + x.c + '">' + esc(NEWS_CAT[x.c][i]) + '</span> '
-      + esc(x.d[i] + ' · ' + x.ch[i]) + '</div><div class="nc-amt">' + esc(x.a[i]) + '</div><p class="nc-w">' + esc(x.w[i]) + '</p>'
-      + '<p class="nc-l">→ ' + esc(x.l[i]) + '</p><div class="nc-src">' + esc(T('src')) + ': '
-      + x.s.map((s) => '<a href="' + esc(s[1]) + '" target="_blank" rel="noopener noreferrer">' + esc(s[0]) + ' ↗</a>').join(' · ') + '</div></article>';
+    return '<details class="nc ' + (cls || '') + '"' + (cls === 'in-result' ? ' open' : '') + '><summary><div class="nc-meta"><span class="nc-cat c-' + x.c + '">' + esc(NF(NEWS_CAT[x.c], i)) + '</span> '
+      + esc(NF(x.d, i) + ' · ' + NF(x.ch, i)) + '<span class="nc-more" aria-hidden="true">▾</span></div><div class="nc-amt">' + esc(NF(x.a, i)) + '</div></summary><p class="nc-w">' + esc(NF(x.w, i)) + '</p>'
+      + '<p class="nc-l">→ ' + esc(NF(x.l, i)) + '</p><div class="nc-src">' + esc(T('src')) + ': '
+      + x.s.map((s) => '<a href="' + esc(s[1]) + '" target="_blank" rel="noopener noreferrer">' + esc(s[0]) + ' ↗</a>').join(' · ') + '</div></details>';
   }
 
   // ── 认证：✅ 这个地址在谁的名片上 / ⛔ 长得像谁的认证地址（服务器回的 vf；名字、地址都先过一遍样子再用）──
@@ -177,22 +232,23 @@
   function render(r, own, mineN, note, vf) {
     const L = [], i = LI(), lvl = { poisoner: 'red', targeted: 'amber', lookalike: 'amber', caution: 'amber', clean: 'green', empty: 'green' };
     const v = r.verdict === 'clean' && !r.window.n ? 'empty' : r.verdict;
-    L.push(vfBlock(vf, r.address, 'tron'));
+    const ch = r.chain === 'evm' ? 'evm' : 'tron';
+    L.push(vfBlock(vf, r.address, ch));
     if (own) {
       const ml = { poison: 'red', acted: 'red', red: 'red', yellow: 'amber', known: 'green', none: 'green' }[own.level] || 'green';
       L.push('<div class="fc-card lv-' + ml + '"><div class="fc-h">' + esc(T('mineH')[own.level] || '') + '<span class="fc-dim">' + esc(T('mineCmp')(mineN)) + '</span></div>'
-        + (own.with && ['poison', 'red', 'yellow'].includes(own.level) ? pair(r.address, T('thisL'), own.with, T('paidL'), own.head, own.tail) : '') + '</div>');
+        + (own.with && ['poison', 'red', 'yellow'].includes(own.level) ? pair(r.address, T('thisL'), own.with, T('paidL'), own.head, own.tail, '', ch) : '') + '</div>');
     }
     L.push('<div class="fc-card lv-' + lvl[v] + '"><div class="fc-h">' + esc(T('h')[v]) + '</div><div class="fc-addr"><code>' + esc(r.address) + '</code></div>');
     if (v === 'poisoner') L.push('<p>' + esc(T('poisoner')(r.profile)) + '</p>');
     else if (v === 'targeted') {
       L.push('<p>' + esc(T('targeted')(r.poisonCount, new Set(r.poison.map((p) => p.imitates)).size)) + '</p>');
       for (const p of r.poison.slice(0, 5)) L.push(pair(p.address, T('fakeL'), p.imitates, T('realL'), p.head, p.tail,
-        esc(p.types.map((x) => T('types')[x] || x).join(' / ') + ' · ' + utc(p.last)) + (p.tx && p.tx[0] ? ' · <a href="' + TX + esc(p.tx[0]) + '" target="_blank" rel="noopener noreferrer">' + esc(T('tx')) + '</a>' : '')));
+        esc(p.types.map((x) => T('types')[x] || x).join(' / ') + ' · ' + utc(p.last)) + (p.tx && p.tx[0] && txUrl(p.tx[0]) ? ' · <a href="' + esc(txUrl(p.tx[0])) + '" target="_blank" rel="noopener noreferrer">' + esc(T('tx')) + '</a>' : ''), ch));
       if (r.poisonCount > 5) L.push('<p class="fc-dim">' + esc(T('more')(r.poisonCount - 5)) + '</p>');
     } else if (v === 'lookalike') {
       L.push('<p>' + esc(T('lookalike')) + '</p>');
-      for (const p of r.lookalikes.slice(0, 5)) L.push(pair(p.address, '?', p.imitates, T('paidL'), p.head, p.tail, esc(p.kind === 'pair' ? T('pairWhy') : T('recvWhy'))));
+      for (const p of r.lookalikes.slice(0, 5)) L.push(pair(p.address, '?', p.imitates, T('paidL'), p.head, p.tail, esc(p.kind === 'pair' ? T('pairWhy') : T('recvWhy')), ch));
     } else if (v === 'caution') L.push('<p>' + esc(T('caution')(r.profile)) + '</p>');
     else L.push('<p>' + esc(T(v === 'empty' ? 'empty' : 'clean')) + '</p>');
     L.push('<p class="fc-dim">' + esc((r.window.n ? T('window')(r.window) : '') + (r.spam && r.spam.senders && v !== 'poisoner' ? ' ' + T('spam')(r.spam) : '')) + '</p>');
@@ -200,7 +256,7 @@
     L.push('</div>');
     L.push('<p class="fc-tip">' + esc(T('tip')) + '</p>');
     const w = '/watch ' + r.address;
-    L.push('<div class="fc-watch"><span>' + esc(T('watch')) + '</span> <code>' + esc(w) + '</code> <button type="button" class="peek" id="fcCopyW">' + esc(T('copyWatch')) + '</button></div>');
+    if (ch === 'tron') L.push('<div class="fc-watch"><span>' + esc(T('watch')) + '</span> <code>' + esc(w) + '</code> <button type="button" class="peek" id="fcCopyW">' + esc(T('copyWatch')) + '</button></div>');
     const c = caseFor(r, own);
     if (c) L.push('<div class="fc-case"><div class="fc-case-h">' + esc(T('caseH')) + '</div>' + newsCard(c, 'in-result') + '</div>');
     const box = $$('fcResult');
@@ -226,21 +282,20 @@
     try {
       const r = await api('/api/check', 'POST', { address: a });
       if (r.code === 400) { msg(errOf(r), 'red'); return; }   // 服务器说地址不对（比如以太坊类地址大小写校验码对不上）
-      if (evm) {
-        if (r.code !== 200 || !r.body || !r.body.evm) { msg(T('net') + errOf(r), 'amber'); return; }
+      if (evm && r.code === 200 && r.body && r.body.evm && !r.body.result) {   // 以太坊类的数据源还没接：只查了认证
         last = { evm: true, a, vf: r.body.vf || null };
         renderEvm(a, last.vf); return;
       }
       if (r.code !== 200 || !r.body || !r.body.result) { msg(T('net') + errOf(r), 'amber'); return; }
       let own = null, mineN = 0, note = '';
       if (me && me === a) note = T('same');
-      else if (me && !tronOk(me)) note = T('mineBad');
+      else if (me && (evm ? !/^0x[0-9a-fA-F]{40}$/.test(me) : !tronOk(me))) note = T('mineBad');
       else if (me) {
         const m = await api('/api/check', 'POST', { address: me });   // 你自己的地址：单独一次；两个比对就在下面这一行，在你的浏览器里
         if (m.code === 200 && m.body && m.body.result) {
           const ev = {}; for (const e of m.body.result.evidence || []) ev[e.address] = e;
           const known = (m.body.result.known || []).map((k) => k.address);
-          own = ZJ.judge(a, known, ev, 'tron'); mineN = known.length;
+          own = ZJ.judge(evm ? a.toLowerCase() : a, known, ev, evm ? 'evm' : 'tron'); mineN = known.length;
         } else note = T('net') + errOf(m);
       }
       last = { r: r.body.result, own, mineN, note, vf: r.body.vf || null };
@@ -277,7 +332,7 @@
   function nsShow() {
     const el = $$('nsText'); if (!el || !NS.order.length) return;
     const x = NEWS[NS.order[NS.i % NS.order.length]], i = LI();
-    el.textContent = x.d[i] + ' · ' + x.ch[i] + ' · ' + x.a[i] + ' — ' + x.w[i];
+    el.textContent = NF(x.d, i) + ' · ' + NF(x.ch, i) + ' · ' + NF(x.a, i) + ' — ' + NF(x.w, i);
     el.dataset.cat = x.c;
   }
   function nsTick() { clearTimeout(NS.timer); NS.timer = setTimeout(() => { if (!NS.hover && !document.hidden) { NS.i += 1; nsShow(); } nsTick(); }, 6000); }
@@ -306,7 +361,7 @@
   function drawNews() {
     const i = LI(), f = $$('newsFilter'), list = $$('newsList'); if (!f || !list) return;
     f.innerHTML = ['all', ...Object.keys(NEWS_CAT)].map((c) => '<button type="button" class="chip' + (c === CAT ? ' active' : '') + '" data-cat="' + c + '">'
-      + esc(c === 'all' ? T('catAll') + ' ' + NEWS.length : NEWS_CAT[c][i] + ' ' + NEWS.filter((x) => x.c === c).length) + '</button>').join('');
+      + esc(c === 'all' ? T('catAll') + ' ' + NEWS.length : NF(NEWS_CAT[c], i) + ' ' + NEWS.filter((x) => x.c === c).length) + '</button>').join('');
     list.innerHTML = NEWS.filter((x) => CAT === 'all' || x.c === CAT).map((x) => newsCard(x)).join('');
   }
   function openNews(cat) {

@@ -22,9 +22,10 @@
   // I18N0X_20260924：这个文件里的每一句提示都会被页面原样印出来 —— 原来全是中文，
   //   页面默认英文之后（DSJ「把网页默认成英文…每改一字都必须同时翻译双语」），英文界面就会冒中文。
   //   页面切语言时调 setLang；没调过就是英文。
+  // IDLANG0X_20260928：第三种语言印尼文（id）。M(中文, 英文, 印尼文) —— 印尼文那一格没给就退回英文。
   var LANG = 'en';
-  function M(zh, en) { return LANG === 'zh' ? zh : en; }
-  function setLang(l) { LANG = l === 'zh' ? 'zh' : 'en'; }
+  function M(zh, en, id) { return LANG === 'zh' ? zh : LANG === 'id' && id ? id : en; }
+  function setLang(l) { LANG = l === 'zh' || l === 'id' ? l : 'en'; }
 
   function hex(u) { var s = '', i; for (i = 0; i < u.length; i++) s += (u[i] < 16 ? '0' : '') + u[i].toString(16); return s; }
 
@@ -84,17 +85,17 @@
   // b 的格式跟 CLI 一模一样：纯数字=十进制，0x 开头或带 a-f 字母=十六进制
   function parseB(t) {
     t = String(t || '').trim();
-    if (!t) throw new Error(M('b 是空的', 'b is empty'));
+    if (!t) throw new Error(M('b 是空的', 'b is empty', 'b kosong'));
     var isHex = /^0x/i.test(t) || /[a-f]/i.test(t);
-    if (!isHex && !/^[0-9]+$/.test(t)) throw new Error(M('b 里有不认识的字符', 'b contains characters that do not belong in it'));
-    if (isHex && !/^(0x)?[0-9a-f]+$/i.test(t)) throw new Error(M('b 里有不认识的字符', 'b contains characters that do not belong in it'));
+    if (!isHex && !/^[0-9]+$/.test(t)) throw new Error(M('b 里有不认识的字符', 'b contains characters that do not belong in it', 'b berisi karakter yang tidak semestinya ada di dalamnya'));
+    if (isHex && !/^(0x)?[0-9a-f]+$/i.test(t)) throw new Error(M('b 里有不认识的字符', 'b contains characters that do not belong in it', 'b berisi karakter yang tidak semestinya ada di dalamnya'));
     return BigInt(isHex ? (/^0x/i.test(t) ? t : '0x' + t) : t);
   }
 
   var TOOL_CHAINS = {
-    evm:  { label: 'EVM 地址', labelEn: 'EVM address', alphabet: '0123456789abcdef', pos: [],
+    evm:  { label: 'EVM 地址', labelEn: 'EVM address', labelId: 'alamat EVM', alphabet: '0123456789abcdef', pos: [],
             addrLen: 40, lower: true },
-    tron: { label: 'TRON 地址', labelEn: 'TRON address', alphabet: '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz',
+    tron: { label: 'TRON 地址', labelEn: 'TRON address', labelId: 'alamat TRON', alphabet: '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz',
             pos: ['T', '9ABCDEFGHJKLMNPQRSTUVWXYZ'], addrLen: 34, lower: false }
   };
 
@@ -119,7 +120,7 @@
     return null;
   }
   function candList(cands) {
-    return cands.map(function (c) { return M('  候选 ', '  candidate ') + c.v + ': ' + c.addr; }).join('\n');
+    return cands.map(function (c) { return M('  候选 ', '  candidate ', '  kandidat ') + c.v + ': ' + c.addr; }).join('\n');
   }
 
   // ── 链元数据：跟后端 chains.mjs 同一套 ──────────────────────────────
@@ -127,24 +128,29 @@
 
   function patProblem(chain, pre, suf) {
     var c = CHAINS[chain] || CHAINS.evm, i;
-    if (!pre && !suf) return M('前缀和后缀都是空的 —— 至少要钉一头。', 'Both the start and the end are empty - pin at least one of them.');
+    if (!pre && !suf) return M('前缀和后缀都是空的 —— 至少要钉一头。', 'Both the start and the end are empty - pin at least one of them.',
+                               'Awalan dan akhiran sama-sama kosong - isi setidaknya salah satunya.');
     if (pre.length + suf.length > c.addrLen)
       return M(c.label + '一共 ' + c.addrLen + ' 位，前 ' + pre.length + ' + 后 ' + suf.length + ' 放不下。',
-               'A ' + c.labelEn + ' has ' + c.addrLen + ' characters - ' + pre.length + ' at the start plus ' + suf.length + ' at the end do not fit.');
+               'A ' + c.labelEn + ' has ' + c.addrLen + ' characters - ' + pre.length + ' at the start plus ' + suf.length + ' at the end do not fit.',
+               'Sebuah ' + c.labelId + ' punya ' + c.addrLen + ' karakter - ' + pre.length + ' di awal ditambah ' + suf.length + ' di akhir tidak muat.');
     for (i = 0; i < pre.length; i++) {
       var allowed = c.pos[i] || c.alphabet;
       if (allowed.indexOf(pre[i]) < 0)
         return M(c.label + '的第 ' + (i + 1) + ' 位不可能是「' + pre[i] + '」—— 这一位只可能是：' + allowed,
-                 'Character ' + (i + 1) + ' of a ' + c.labelEn + ' can never be "' + pre[i] + '" - it can only be one of: ' + allowed);
+                 'Character ' + (i + 1) + ' of a ' + c.labelEn + ' can never be "' + pre[i] + '" - it can only be one of: ' + allowed,
+                 'Karakter ke-' + (i + 1) + ' dari ' + c.labelId + ' tidak mungkin "' + pre[i] + '" - hanya bisa salah satu dari: ' + allowed);
     }
     for (i = 0; i < suf.length; i++)
       if (c.alphabet.indexOf(suf[i]) < 0)
         return M(c.label + '的后缀里不可能有「' + suf[i] + '」—— 只能用：' + c.alphabet,
-                 'The end of a ' + c.labelEn + ' can never contain "' + suf[i] + '" - only: ' + c.alphabet);
+                 'The end of a ' + c.labelEn + ' can never contain "' + suf[i] + '" - only: ' + c.alphabet,
+                 'Akhiran ' + c.labelId + ' tidak mungkin berisi "' + suf[i] + '" - hanya boleh: ' + c.alphabet);
     // TRONRANGE0X_20260928：波场地址从 T9yD… 排到 TZJo…（25 字节被 0x41 钉住）。TZZ…、T91… 按位置判不出来，要按真实区间判（跟后端 chains.patternProblemExact 同一条）
     if (chain === 'tron' && pre.length > 1 && !tronPrefixExists(pre))
       return M('没有「' + pre + '」这样开头的波场地址 —— 波场地址从 T9yD… 排到 TZJo…，这一段外面的开头永远不会出现',
-               'No TRON address starts with "' + pre + '" - TRON addresses run from T9yD... to TZJo..., so a start outside that range never appears');
+               'No TRON address starts with "' + pre + '" - TRON addresses run from T9yD... to TZJo..., so a start outside that range never appears',
+               'Tidak ada alamat TRON yang diawali "' + pre + '" - alamat TRON berkisar dari T9yD... sampai TZJo..., jadi awalan di luar rentang itu tidak pernah muncul');
     return null;
   }
   // 钉住前几位 = 34 位 base58 落在 [开头+111…, 开头+zzz…] 这一段；跟 [0x41·2^192, 0x42·2^192) 有交集，这种开头才存在
@@ -174,6 +180,7 @@
       secret: JSON.stringify({
         warning: 'Your secret half of the key. Lose it and this address is gone forever - nobody can recover it. Never share it; keep an offline backup.',
         warning_zh: '这是你的秘密份额(第一半)。丢了=靓号永久死亡, 平台无法找回。绝不外传, 离线备份。',
+        warning_id: 'Separuh rahasia kunci Anda. Jika hilang, alamat ini hilang untuk selamanya - tidak ada yang bisa memulihkannya. Jangan pernah membagikannya; simpan cadangan offline.',
         chain: chain, prefix: pre, suffix: suf,
         pattern: pre,
         s: pad64(s)
@@ -186,9 +193,9 @@
   // 所以只在【没写 chain】的时候才沿用小写那套 —— TRON 的 base58 区分大小写。
   function readSecretJson(text) {
     var j = JSON.parse(text);
-    if (!j.s || !/^[0-9a-f]{64}$/i.test(j.s)) throw new Error(M('这个文件里没有合法的 s —— 选错文件了？', 'This file has no valid s in it - wrong file?'));
+    if (!j.s || !/^[0-9a-f]{64}$/i.test(j.s)) throw new Error(M('这个文件里没有合法的 s —— 选错文件了？', 'This file has no valid s in it - wrong file?', 'File ini tidak berisi s yang valid - salah pilih file?'));
     var s = BigInt('0x' + j.s);
-    if (s <= 0n || s >= n) throw new Error(M('文件里的 s 不在合法范围内', 'The s in this file is out of range'));
+    if (s <= 0n || s >= n) throw new Error(M('文件里的 s 不在合法范围内', 'The s in this file is out of range', 'Nilai s di file ini di luar rentang'));
     var ch = j.chain === 'tron' ? 'tron' : 'evm';
     var keep = function (v) { var x = String(v || ''); return ch === 'tron' ? x : x.toLowerCase(); };
     return {
@@ -202,7 +209,7 @@
   // ② 签挑战：用 s 给挑战串签名，证明 s 在你手上（防白嫖算力）
   function signChallenge(s, challenge) {
     var msg = String(challenge || '').trim();
-    if (!msg) throw new Error(M('挑战串是空的。', 'The challenge phrase is empty.'));
+    if (!msg) throw new Error(M('挑战串是空的。', 'The challenge phrase is empty.', 'Frasa tantangan kosong.'));
     return {
       sig: hex(N.sign(N.keccak_256(enc.encode(msg)), u8(pad64(s))).toCompactRawBytes()),
       A: hex(G.multiply(s).toRawBytes(false))
@@ -224,7 +231,7 @@
   // ④ 签回执：用合出来的完整 k 给回执原文签名。平台没有 s，造不出这个签名。
   function signReceipt(sec, b, message) {
     var msg = String(message || '').replace(/\r\n/g, '\n').replace(/\s+$/, '');
-    if (!msg) throw new Error(M('回执原文是空的。', 'The receipt text is empty.'));
+    if (!msg) throw new Error(M('回执原文是空的。', 'The receipt text is empty.', 'Teks tanda terima kosong.'));
     var cands = mergeCandidates(sec.s, b, secShape(sec).chain);
     var hit = pickByOracle(cands, function (a) { return msg.indexOf(a) >= 0; });
     if (!hit) return { ok: false, cands: cands };
@@ -259,7 +266,16 @@
           ? 'address 是你的 TRON 地址 ' + addr + '，写成了十六进制（41 + 40 位）—— 同一个地址，换成 TronLink 读得懂的写法。'
             + '怎么用：TronLink → 添加钱包 → TRON-导入钱包 → 通过 Keystore 文件导入（TronLink 只收 .txt 文件）→ 输入你的密码。'
           : 'address 是你的地址 ' + addr + '（去掉了开头的 0x）。'
-            + '怎么用：MetaMask → 添加账户或硬件钱包 → 导入账户 → 选择类型「JSON 文件」→ 选这个文件 → 输入你的密码。')
+            + '怎么用：MetaMask → 添加账户或硬件钱包 → 导入账户 → 选择类型「JSON 文件」→ 选这个文件 → 输入你的密码。'),
+      // IDLANG0X_20260928：印尼文那一份（钱包里的菜单名照英文写 —— 跟首页印尼文的导入说明一样）
+      id: 'Ini file dompet Anda (format keystore Web3 standar, versi 3). Kunci privat Anda ada di dalamnya, digembok dengan kata sandi yang Anda buat - yaitu baris "ciphertext". '
+        + 'File ini bisa dibuka tanpa kata sandi karena file itu sendiri berupa teks biasa; hanya kunci di dalamnya yang digembok, dan tanpa kata sandi kunci itu tidak berguna. '
+        + '"iv", "salt", "mac", dan "id" adalah angka acak yang dipakai gembok - bukan alamat dan bukan kunci. '
+        + (tron
+          ? '"address" adalah alamat TRON Anda ' + addr + ', ditulis dalam hex (41 + 40 digit hex) - alamat yang sama, dieja seperti yang dibaca TronLink. '
+            + 'Cara memakainya: TronLink - Add Wallet - TRON - Import Wallet - Import via Keystore File (TronLink hanya menerima file .txt) - masukkan kata sandi Anda.'
+          : '"address" adalah alamat Anda ' + addr + ' tanpa 0x. '
+            + 'Cara memakainya: MetaMask - Add account or hardware wallet - Import account - Select type: JSON File - pilih file ini - masukkan kata sandi Anda.')
     };
   }
   function keystore(k, addr, chain, pw, onp) {
@@ -267,7 +283,8 @@
     var want = chain === 'tron' ? tronFromHash20(h20) : '0x' + body;
     if (String(addr || '') !== want)
       return Promise.reject(new Error(M('钱包文件里的地址跟合出来的钥匙对不上，没有写文件。',
-                                        'The address for the wallet file does not match the key that was built - no file was written.')));
+                                        'The address for the wallet file does not match the key that was built - no file was written.',
+                                        'Alamat untuk file dompet tidak cocok dengan kunci yang dirakit - tidak ada file yang ditulis.')));
     var salt = rnd(32), iv = rnd(16);
     return N.scryptAsync(enc.encode(pw), salt, { N: 131072, r: 8, p: 1, dkLen: 32, maxmem: 300 * 1024 * 1024, onProgress: onp })
       .then(function (dk) {
