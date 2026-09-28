@@ -141,7 +141,22 @@
       if (c.alphabet.indexOf(suf[i]) < 0)
         return M(c.label + '的后缀里不可能有「' + suf[i] + '」—— 只能用：' + c.alphabet,
                  'The end of a ' + c.labelEn + ' can never contain "' + suf[i] + '" - only: ' + c.alphabet);
+    // TRONRANGE0X_20260928：波场地址从 T9yD… 排到 TZJo…（25 字节被 0x41 钉住）。TZZ…、T91… 按位置判不出来，要按真实区间判（跟后端 chains.patternProblemExact 同一条）
+    if (chain === 'tron' && pre.length > 1 && !tronPrefixExists(pre))
+      return M('没有「' + pre + '」这样开头的波场地址 —— 波场地址从 T9yD… 排到 TZJo…，这一段外面的开头永远不会出现',
+               'No TRON address starts with "' + pre + '" - TRON addresses run from T9yD... to TZJo..., so a start outside that range never appears');
     return null;
+  }
+  // 钉住前几位 = 34 位 base58 落在 [开头+111…, 开头+zzz…] 这一段；跟 [0x41·2^192, 0x42·2^192) 有交集，这种开头才存在
+  var TRON_LO = 0x41n << 192n, TRON_HI = (0x42n << 192n) - 1n;
+  function tronPrefixExists(pre) {
+    var lo = 0n, hi = 0n, i, d;
+    for (i = 0; i < 34; i++) {
+      d = i < pre.length ? BigInt(B58.indexOf(pre[i])) : -1n;
+      lo = lo * 58n + (d < 0n ? 0n : d);
+      hi = hi * 58n + (d < 0n ? 57n : d);
+    }
+    return hi >= TRON_LO && lo <= TRON_HI;
   }
 
   // ── 上面是判据，下面是四件事：造钥匙 / 签挑战 / 合钥匙 / 签回执 ──────

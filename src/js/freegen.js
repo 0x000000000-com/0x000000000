@@ -254,7 +254,8 @@
     if (where === 'prefix' && TRON2.indexOf(body[0]) < 0)
       return { zh: '波场地址 T 后面那一位只可能是：' + TRON2, en: 'The character right after the T can only be one of: ' + TRON2 };
     if (where === 'prefix' && !isFinite(expected(chain, where, pat)))
-      return { zh: '没有这样开头的波场地址（波场地址从 T9yD… 排到 TZJo…）', en: 'No TRON address starts like that (they run from T9yD... to TZJo...)' };
+      return { zh: '没有「' + pat + '」这样开头的波场地址 —— 波场地址从 T9yD… 排到 TZJo…，这一段外面的开头永远不会出现',   // TRONRANGE0X：跟 keycore / 平台同一句
+               en: 'No TRON address starts with "' + pat + '" - TRON addresses run from T9yD... to TZJo..., so a start outside that range never appears' };
     return null;
   }
   // 平均要试多少个（精确到这一种图案）
