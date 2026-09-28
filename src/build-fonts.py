@@ -48,7 +48,7 @@ from fontTools.varLib import instancer
 HERE = os.path.dirname(os.path.abspath(__file__))
 OUT = os.path.join(HERE, "css", "fonts.css")
 CHARS = os.path.join(HERE, "css", "fonts-chars.txt")
-EXTRA_PAGES = ("wp.html",)      # FONTSX0X_20260927：内容页 —— 它们的字进 fonts-extra.css，不进核心字表
+EXTRA_PAGES = ("wp.html", "partners.html")   # FONTSX0X_20260927：内容页 —— 它们的字进 fonts-extra.css，不进核心字表（REF0X_20260928 加招商页）
 OUT_X = os.path.join(HERE, "css", "fonts-extra.css")
 CHARS_X = os.path.join(HERE, "css", "fonts-extra-chars.txt")
 SRC_SHA256 = {   # 完整值（20260924 从上面两个钉住的网址下载实测）；改了源字体这里要一起改

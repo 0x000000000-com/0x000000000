@@ -161,6 +161,8 @@
         <!-- DLONLY0X_20260924：DSJ「直接改成全下载到电脑模式，网站上的6个步骤也直接撤掉，6个步骤只显示在下载到电脑页面」。
              同一个文件、同一个指纹：在 0x000000000.com 上打开只显示下面这块「下载」；下载到电脑上双击打开才显示 6 步。 -->
         <div class="dlgate" id="dlGate" hidden>
+          <!-- REF0X_20260928：从推荐链接进来的人，这里说一句「推荐码已经记下，下载的铸造页会自动带上」（内容由 app.js 画，没有推荐码就不显示） -->
+          <div class="dlref" id="dlRef" hidden></div>
           <div class="zt" data-i18n="dlHead">Mint on your own computer</div>
           <div data-i18n="dlWhy">Minting a vanity address involves your private key. To keep that key on your own computer from start to finish, making the key, ordering, collecting and building the key all happen in a page you download to your computer - not on this website.</div>
           <ol>
@@ -226,7 +228,7 @@
     <div class="prompt cursor-line">PS C:\0x000000000&gt;<span class="caret" aria-hidden="true">█</span></div>
 
     <footer class="foot">
-      <div><a href="faq.html" data-site="faq.html">FAQ</a> · <a href="track.html" data-site="track.html" data-i18n="footTrack">Track an order</a> · <a href="admin.html">Admin</a> · <span data-i18n="foot1">page code published on GitHub, verifiable byte for byte · custom zone non-custodial · USDT on TRON / BSC</span></div>
+      <div><a href="faq.html" data-site="faq.html">FAQ</a> · <a href="partners.html" data-site="partners.html" data-i18n="footPartners">Partners</a> · <a href="track.html" data-site="track.html" data-i18n="footTrack">Track an order</a> · <a href="admin.html">Admin</a> · <span data-i18n="foot1">page code published on GitHub, verifiable byte for byte · custom zone non-custodial · USDT on TRON / BSC</span></div>
       <!-- FREECHECK0X_20260928：构思 v3 第三章第 1 条（DSJ：「这句话是精髓」）—— 每一页最底下固定放这几句 -->
       <div class="warnline" data-i18n="footNever">0x000000000 will never ask you to connect your wallet, to sign or approve anything for us in a wallet app, or to send us money to "verify". Anyone who asks is fake.</div>
       <div class="dimline" data-i18n="footSign">The minting page signs a few times inside the page (placing the order, collecting, filing the receipt), with the key made and built for that order on your own computer. It signs a short proof text - never a transfer, never an approval - only to prove the order is yours.</div>
