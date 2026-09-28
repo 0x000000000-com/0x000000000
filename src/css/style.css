@@ -480,3 +480,13 @@ textarea.c2in{background:#0a0d14;border:1px solid var(--line2);border-radius:6px
 .c2help summary{cursor:pointer;font-size:12.5px;color:var(--dim)}
 .c2page .up{color:var(--up)} .c2page .down{color:var(--down)} .c2page .ok{color:var(--up)} .c2page .dim{color:var(--faint)}
 .c2page button.copy{border:1px solid var(--line2);border-radius:6px;padding:4px 10px}
+/* FREEGEN0X_20260928: free generator page /free (accent: gray, per the nav table in the plan) */
+:root{--fr:#b7c0cf}
+body.p-free{--acc:var(--fr);--acc-d:#5d6674;--acc-bg:rgba(183,192,207,.10)}
+.fg-fix{font-family:var(--mono);color:var(--faint)}
+.fg-addr{margin:6px 0 8px}
+.fg-addr code{font-family:var(--mono);font-size:15px;color:var(--text);word-break:break-all;overflow-wrap:anywhere}
+.fg-pin{color:var(--gold-b);font-weight:700}
+.netguide.ok{border-color:rgba(47,191,143,.45);color:var(--up)}
+/* CMPNARROW0X_20260928: the first column of the comparison tables was 1-2 characters wide on phones (row labels broke into 7 lines) */
+.cmp tr > :first-child{min-width:6.5em}
