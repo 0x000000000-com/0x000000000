@@ -82,7 +82,7 @@ td.price{color:var(--gold-b);font-weight:600}
 td .pos{color:var(--dim)}
 td .tier{color:var(--faint);font-size:12px}
 td .eta{font-family:var(--mono);color:var(--dim)}
-.note{margin-top:14px;font-size:12.5px;color:var(--faint);line-height:1.6}
+.note{margin-top:14px;font-size:12.5px;color:var(--faint);line-height:1.6;overflow-wrap:anywhere}   /* DLNARROW0X_20260929：合约页 CreateX 工厂地址（40 位不断行）在 320 宽上把页面撑到 363 —— 放不下的长串才折行，普通字不受影响 */
 
 /* ── 输入区 ── */
 .inputline{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin-bottom:14px}
@@ -171,6 +171,8 @@ button.copy{font-family:var(--sans);font-size:11.5px;color:var(--info);backgroun
 .foot{margin-top:28px;padding-top:18px;border-top:1px solid var(--line);font-size:12.5px;color:var(--faint);line-height:1.8}
 .foot a{color:var(--dim);text-decoration:none;border-bottom:1px solid var(--line2)}
 .foot a:hover{color:var(--gold-b);border-color:var(--gold-d)}
+/* LESSMORE0X_20260929：页脚第一行的链接收成一行之后，窄屏上「订单查 / 询」会从一个链接中间断开 —— 链接里面不断，只在「·」那里换行 */
+.foot>div:first-child a{white-space:nowrap}
 .step-desc a{color:var(--gold-b)}   /* VERIFY0X_20260928：招商页、认证页、付费提醒页正文里的链接（原来是浏览器默认的蓝色） */
 .foot .warnline{margin-top:8px;color:var(--warn)}
 .caret{display:none}
@@ -311,6 +313,10 @@ ol.step-desc.rules li { margin: 4px 0; }
   .ticker{font-size:12px;margin-top:-8px;min-height:calc(1.55em * 2 + 18px)}
 }
 @media (max-width:360px){.ticker{min-height:calc(1.55em * 3 + 18px)}}
+/* DLNARROW0X_20260929：320 宽的手机上「我的订单」表头（英文 352、印尼文 328 像素）比放它的框（274）宽，要横着划才看得到「操作」那一列。
+   窄屏上格子左右各收 5 像素（10 → 5）、表头字距收一点（.08em → .04em），英文表头 264 像素，放得下；
+   对照表（.cmp）有自己的格子样式，不受影响 —— 它本来就宽，框上标了 data-wide。公开检查 test/narrow.cjs 每次都量。 */
+@media (max-width:360px){th,td{padding-left:5px;padding-right:5px}th{letter-spacing:.04em}}
 
 /* ── LOGO0X_20260924：零九零 logo（九零阵 + 正中那个 x 比金色的零大一点 —— DSJ 20260924 定案 v2，源文件 logo.svg）──
    内嵌成 data: 网址：首页是单文件，下载到电脑上断网打开也要有 logo，而且不许多取一个文件。 */
@@ -423,22 +429,17 @@ ol.step-desc.rules li { margin: 4px 0; }
 body.p-vanity{--acc:var(--vw);--acc-d:#3f6db4;--acc-bg:rgba(106,169,255,.12)}
 body.p-contract{--acc:var(--ct);--acc-d:#6d4fc2;--acc-bg:rgba(167,139,250,.12)}
 body.p-token{--acc:var(--tk);--acc-d:#b4581c;--acc-bg:rgba(251,146,60,.12)}
-.ecards{margin:0 0 22px}
-.ec-wrap{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
-.ec{display:flex;flex-direction:column;gap:6px;min-width:0;border:1px solid var(--line);border-left:3px solid var(--gold-d);border-radius:10px;
-  padding:12px 14px;background:var(--panel);font:inherit;font-size:13px;color:var(--text);text-align:left;text-decoration:none}
-.ec b{font-size:14px}
-.ec span{color:var(--dim)}
-.ec i{font-style:normal;margin-top:auto;color:var(--gold-b)}
-a.ec:hover,button.ec:hover{background:rgba(201,162,39,.08)}
-.ec:focus-visible,.ec-links a:focus-visible{outline:2px solid var(--gold-b);outline-offset:2px}
-.ec-alert{border-left-color:var(--up)}.ec-alert b,.ec-alert i{color:var(--up)}
-.ec-vanity{border-left-color:var(--vw);cursor:pointer}.ec-vanity b,.ec-vanity i{color:var(--vw)}
-.ec-proj{border-left-color:var(--ct)}
-.ec-links{display:flex;flex-wrap:wrap;gap:6px 16px}
-.ec-links a{text-decoration:none;color:var(--ct)}.ec-links a+a{color:var(--tk)}
+/* LESSMORE0X_20260929（DSJ 09-29「可以，做吧」）：入口从三张卡片改成一排按钮；颜色照旧（防骗提醒绿、个人靓号蓝、合约紫、发币橙） */
+.ec-row{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 22px}
+.ecb{display:inline-flex;align-items:center;min-height:36px;padding:6px 14px;border:1px solid var(--line);border-left:3px solid var(--gold-d);
+  border-radius:999px;background:var(--panel);font:inherit;font-size:13px;color:var(--text);text-decoration:none;cursor:pointer}
+.ecb:hover{background:rgba(201,162,39,.08)}
+.ecb:focus-visible{outline:2px solid var(--gold-b);outline-offset:2px}
+.ec-alert{border-left-color:var(--up);color:var(--up)}
+.ec-vanity{border-left-color:var(--vw);color:var(--vw)}
+.ec-ct{border-left-color:var(--ct);color:var(--ct)}
+.ec-tk{border-left-color:var(--tk);color:var(--tk)}
 .hero-evm{margin:12px 0 0;font-size:12.5px;color:var(--dim);max-width:78ch}
-@media (max-width:640px){.ec-wrap{grid-template-columns:1fr}}
 .here{border:1px solid var(--acc-d,var(--gold-d));background:var(--acc-bg,rgba(201,162,39,.08));border-radius:12px;padding:14px 18px;margin:0 0 14px}
 .here-big{font-size:20px;line-height:1.35;font-weight:700;color:var(--acc,var(--gold-b));text-wrap:balance}
 .here-sub{color:var(--dim);margin-top:6px;max-width:70ch}
