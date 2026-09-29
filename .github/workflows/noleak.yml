@@ -12,7 +12,8 @@ permissions:
   contents: read
 jobs:
   noleak:
-    runs-on: ubuntu-latest
+    # Pinned to Ubuntu 24.04: from 2026-10-19 GitHub moves ubuntu-latest to Ubuntu 26.04, and a new system must not turn this check red by itself. · 钉在 Ubuntu 24.04：GitHub 从 2026-10-19 起把 ubuntu-latest 换成 Ubuntu 26.04，换系统不能自己把这个检查弄红。
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -43,6 +44,9 @@ jobs:
       - name: Walk all 6 steps in a real browser and check every request the page sends · 用真浏览器走完 6 步，逐个核对页面发出去的每一个请求
         working-directory: test
         run: node noleak.cjs ../0x000000000.html ./mock-platform.mjs ./node_modules
+      - name: Narrow phones (320 px) - on the site and as the downloaded file, in all three languages, nothing sticks out sideways · 320 宽的手机：网站上、下载下来，三种语言，没有东西横着多出来
+        working-directory: test
+        run: node narrow.cjs ../0x000000000.html ./mock-platform.mjs
       - name: Free Generator - generate real addresses in a real browser, open each wallet file, and count every request the page sends (must be none) · 免费生成页：真浏览器真的生成几个地址，打开每个钱包文件核对，数页面发出去的每一个请求（必须是 0 个）
         working-directory: test
         run: node noleak-free.cjs ../0x000000000-free.html ./node_modules

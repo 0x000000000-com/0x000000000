@@ -19,7 +19,8 @@ permissions:
   contents: read
 jobs:
   fonts:
-    runs-on: ubuntu-latest
+    # Pinned to Ubuntu 24.04: from 2026-10-19 GitHub moves ubuntu-latest to Ubuntu 26.04, and a new system must not turn this check red by itself. · 钉在 Ubuntu 24.04：GitHub 从 2026-10-19 起把 ubuntu-latest 换成 Ubuntu 26.04，换系统不能自己把这个检查弄红。
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
