@@ -6,7 +6,7 @@ const dict = {
     posPrefix: '前缀 Prefix', posSuffix: '后缀 Suffix', posBoth: '前+后 Both ends',
     thType: '类型 Type', thPrice: '价格 USDT', thEta: '铸造耗时',
     catalogOpen: '查看全部价格 ▸', catalogTitle: '价目表',
-    catalogTeaser: (on, off) => '两条链 · ' + on + ' 档在售' + (off ? '（另有 ' + off + ' 档铸造机暂不支持）' : '') + '，点上面那个按钮看完整价目表。', 
+    catalogTeaser: (on, off) => '两条链 · ' + on + ' 档在售' + (off ? '（另有 ' + off + ' 档铸造机暂不支持）' : ''), 
     catalogDown: '价目表暂时取不到 —— 宁可不显示，也不给你看一张可能过期的表。',
     kindPrefix: '前缀', digits: '位', sellLens: '可售位数: ',
     onlyKinds: (k) => '目前只卖：' + k + '。后缀、前后缀组合、按图案定价都还没实现 —— 不在这张表里的一律不可售。',
@@ -28,17 +28,14 @@ const dict = {
       '我们的显卡拿着影子，去找你要的那个地址。', '取回 b，断网，在你电脑上合成完整钥匙。', '用新钥匙签个收条，这一单结清。'],
     routeMore: '展开细节',
     dlMore: '为什么要下载？',
-    footMore: '官方网址只有一个：0x000000000.com（9 个 0）',
+    footMore: '更多',
     heroCta: '开始铸造 →',
     // PPTNAV0X_20260924：顶栏导航 → 0x000000000.com/ppt（6 步说明书 / 白皮书）
     navPpt: '说明书 · 6 步看懂',
     navWp: '白皮书',   // WPNAV0X_20260928
     // CONTRACT0X_20260928：三种铸造各一页、各一个名字（DSJ「名字和页面要不一样，不要让人给混了」）+ 首页三张入口卡片 + 以太坊类各链同址
     navVanity: '个人靓号', navContract: '合约靓号', navToken: '发币地址定制', navFree: '免费生成',
-    ecHead: '三样东西，各有各的一页 —— 不会混',
-    ec1T: '防骗提醒', ec1S: '有人仿你的地址，第一时间知道', ec1Go: '去看提醒 →',
-    ec2T: '个人靓号（就是这一页）', ec2S: '你自己的地址，钥匙只在你手里', ec2Go: '往下看价格 ↓',
-    ec3T: '给项目方', ec3S: '合约、代币地址 —— 不碰任何钥匙', ec3a: '合约靓号 →', ec3b: '发币地址定制 →',
+    ecb1: '防骗提醒 →', ecb2: '个人靓号 ↓', ec3a: '合约靓号 →', ec3b: '发币地址定制 →',
     heroEvm: '0x 开头的靓号：同一把私钥，在以太坊、BSC、Polygon、Arbitrum、Optimism、Base、Avalanche C 链这些以太坊类的链上都是同一个地址 —— 买一个，这些链都能用。每条链上的钱是分开记的，转账时选对链。',
     // CONTRACT0X_20260928：防混第 1、2 条 —— 页首「你现在在」+ 三格对照表（表里的字跟 js/c2app.js 的 cmpRows 逐字相同，order-ui.test 第 8 段比对）
     hereBig: '你现在在：个人靓号（给个人、商家）',
@@ -65,7 +62,6 @@ const dict = {
     proof2: '「造钥匙」这一步不需要联网：你可以先关掉 Wi-Fi 再点，照样做完。',
     proof3: '这个页面就是一个文件，跟 GitHub 上公开的那份逐字节相同。GitHub 的机器每小时自动下载一次网站上的页面核对指纹，还会在每个新版本上用真浏览器走完全程、查私钥有没有被发出去 —— 这两项检查我们插不上手。',
     proofVer: '页面版本',
-    proofDl: '下载铸造页面到自己电脑上',
     proofGh: '到 GitHub 核对',
     // DLONLY0X_20260924：DSJ「直接改成全下载到电脑模式，网站上的6个步骤也直接撤掉，6个步骤只显示在下载到电脑页面」
     dlHead: '在你自己的电脑上铸造',
@@ -111,6 +107,8 @@ const dict = {
     footNever: '零九零永远不会让你连接钱包、不会让你在钱包 App 里给我们签名或授权、不会让你转钱给我们来「验证」。凡是这样要求你的，一定是假的。',
     footSign: '铸造页会在页面里自动签几次名（下单、取货、交收条），用的是这一单在你电脑上生成、合成的钥匙，签的只是一段证明文字，不是转账、不是授权 —— 只用来证明这一单是你的。',
     footOne: '官方网址只有一个：0x 000 000 000 .com（0x 后面 9 个 0）· 零九零没有发行任何代币 · 收藏官网，以后只从收藏夹进。',
+    footShort: '零九零永远不会要你的私钥、不会让你连钱包、签名或转钱「验证」—— 这样要的都是假的。官方只有：',
+    footBot: '官方机器人只有一个：Telegram 上的 @OxOOOOOOOOObot（里面的 O 全是字母 O，不是数字 0）。发一个网址或 @用户名给它，它告诉你是不是我们的；发一个波场地址，它帮你查有没有被投毒。',
     thOrder: '订单 Order', thPattern: '模式 Pattern', thStatus: '状态 Status', thPrice2: '价格 USDT',
     boot: [
       'Windows PowerShell',
@@ -268,7 +266,7 @@ const dict = {
     posPrefix: 'Prefix', posSuffix: 'Suffix', posBoth: 'Both ends',
     thType: 'Type', thPrice: 'Price USDT', thEta: 'Mint time',
     catalogOpen: 'See all prices',  catalogTitle: 'Price list',
-    catalogTeaser: (on, off) => 'Two chains, ' + on + ' tiers on sale' + (off ? ' (' + off + ' more not supported by the minter yet)' : '') + ' - open the full list with the button above.', 
+    catalogTeaser: (on, off) => 'Two chains · ' + on + ' tiers on sale' + (off ? ' (' + off + ' more not supported by the minter yet)' : ''), 
     catalogDown: 'Price list unavailable right now — better to show nothing than a table that may be out of date.',
     kindPrefix: 'Prefix', digits: 'digits', sellLens: 'sellable lengths: ',
     onlyKinds: (k) => 'Currently on sale: ' + k + '. Suffix, both-ends and pattern-based pricing are not implemented — anything not in this table cannot be ordered.',
@@ -288,15 +286,12 @@ const dict = {
       'Our GPUs search with your shadow for the address you want.', 'Collect b, go offline, and join the halves into your full key.', 'Sign a receipt with your new key - the order is settled.'],
     routeMore: 'Show details',
     dlMore: 'Why download it?',
-    footMore: 'The only official website: 0x000000000.com (nine zeros)',
+    footMore: 'More',
     heroCta: 'Start minting →',
     navPpt: 'How it works · 6 steps',
     navWp: 'White paper',
     navVanity: 'Vanity Wallet', navContract: 'Vanity Contract', navToken: 'Token Address', navFree: 'Free Generator',
-    ecHead: 'Three things, three pages - so they never get mixed up',
-    ec1T: 'Scam alerts', ec1S: 'Know when someone imitates your address', ec1Go: 'See alerts →',
-    ec2T: 'Vanity Wallet (this page)', ec2S: 'Your own address - only you hold the key', ec2Go: 'See prices ↓',
-    ec3T: 'For project teams', ec3S: 'Contract and token addresses - no keys involved', ec3a: 'Vanity Contract →', ec3b: 'Token Address →',
+    ecb1: 'Scam alerts →', ecb2: 'Vanity Wallet ↓', ec3a: 'Vanity Contract →', ec3b: 'Token Address →',
     heroEvm: '0x vanity addresses: the same private key gives the same address on Ethereum, BSC, Polygon, Arbitrum, Optimism, Base, Avalanche C-Chain and other Ethereum-type chains - buy one, use it on all of them. Funds on each chain are kept separately, so pick the right chain when you send.',
     hereBig: 'You are on: Vanity Wallet (for individuals and merchants)',
     cmpHead: 'Three minting pages - make sure you are on the right one:',
@@ -317,7 +312,6 @@ const dict = {
     proof2: '"Make key" needs no network: switch off Wi-Fi before clicking and it still works.',
     proof3: 'This page is a single file, byte-for-byte identical to the copy published on GitHub. GitHub\'s machines download the live page every hour and compare fingerprints, and run the whole flow in a real browser on every new version to check that no private key is sent - we cannot touch either check.',
     proofVer: 'page version',
-    proofDl: 'Download the minting page to your computer',
     proofGh: 'Verify on GitHub',
     dlHead: 'Mint on your own computer',
     dlWhy: 'Minting a vanity address involves your private key. To keep that key on your own computer from start to finish, making the key, ordering, collecting and building the key all happen in a page you download to your computer - not on this website.',
@@ -360,6 +354,8 @@ const dict = {
     footNever: '0x000000000 will never ask you to connect your wallet, to sign or approve anything for us in a wallet app, or to send us money to "verify". Anyone who asks is fake.',
     footSign: 'The minting page signs a few times inside the page (placing the order, collecting, filing the receipt), with the key made and built for that order on your own computer. It signs a short proof text - never a transfer, never an approval - only to prove the order is yours.',
     footOne: 'The only official website: 0x 000 000 000 .com (nine zeros after 0x) · 0x000000000 has not issued any token · bookmark it and always come in from the bookmark.',
+    footShort: '0x000000000 never asks for your private key, a wallet connection, a signature or a payment to "verify" - anyone who does is fake. Official:',
+    footBot: 'The only official bot: @OxOOOOOOOOObot on Telegram (every O is the letter O, not a zero). Send it a website or a @username and it tells you whether it is ours; send it a TRON address and it checks it for poisoning.',
     thOrder: 'Order', thPattern: 'Pattern', thStatus: 'Status', thPrice2: 'Price USDT',
     boot: [
       'Windows PowerShell',
@@ -508,7 +504,7 @@ const dict = {
     posPrefix: 'Awalan', posSuffix: 'Akhiran', posBoth: 'Kedua ujung',
     thType: 'Jenis', thPrice: 'Harga USDT', thEta: 'Waktu cetak',
     catalogOpen: 'Lihat semua harga',  catalogTitle: 'Daftar harga',
-    catalogTeaser: (on, off) => 'Dua jaringan, ' + on + ' tingkat dijual' + (off ? ' (' + off + ' lagi belum didukung mesin cetak)' : '') + ' - buka daftar lengkapnya dengan tombol di atas.',
+    catalogTeaser: (on, off) => 'Dua jaringan · ' + on + ' tingkat dijual' + (off ? ' (' + off + ' lagi belum didukung mesin cetak)' : ''),
     catalogDown: 'Daftar harga sedang tidak tersedia — lebih baik tidak menampilkan apa-apa daripada tabel yang mungkin sudah usang.',
     kindPrefix: 'Awalan', digits: 'karakter', sellLens: 'panjang yang dijual: ',
     onlyKinds: (k) => 'Saat ini yang dijual: ' + k + '. Akhiran, kedua ujung, dan harga berdasarkan pola belum tersedia — yang tidak ada di tabel ini tidak bisa dipesan.',
@@ -528,15 +524,12 @@ const dict = {
       'Kartu grafis kami mencari alamat yang Anda mau dengan bayangan Anda.', 'Ambil b, putuskan internet, lalu gabungkan kedua separuh menjadi kunci lengkap.', 'Tanda tangani tanda terima dengan kunci baru Anda - pesanan selesai.'],
     routeMore: 'Lihat detail',
     dlMore: 'Kenapa harus diunduh?',
-    footMore: 'Situs resmi hanya satu: 0x000000000.com (sembilan nol)',
+    footMore: 'Selengkapnya',
     heroCta: 'Mulai cetak →',
     navPpt: 'Cara kerja · 6 langkah',
     navWp: 'Whitepaper',
     navVanity: 'Dompet Cantik', navContract: 'Kontrak Cantik', navToken: 'Alamat Token', navFree: 'Generator Gratis',
-    ecHead: 'Tiga hal, tiga halaman - supaya tidak pernah tertukar',
-    ec1T: 'Peringatan penipuan', ec1S: 'Tahu saat ada yang meniru alamat Anda', ec1Go: 'Lihat peringatan →',
-    ec2T: 'Dompet Cantik (halaman ini)', ec2S: 'Alamat Anda sendiri - hanya Anda yang memegang kuncinya', ec2Go: 'Lihat harga ↓',
-    ec3T: 'Untuk tim proyek', ec3S: 'Alamat kontrak dan token - tanpa kunci', ec3a: 'Kontrak Cantik →', ec3b: 'Alamat Token →',
+    ecb1: 'Peringatan penipuan →', ecb2: 'Dompet Cantik ↓', ec3a: 'Kontrak Cantik →', ec3b: 'Alamat Token →',
     heroEvm: 'Alamat cantik 0x: kunci privat yang sama menghasilkan alamat yang sama di Ethereum, BSC, Polygon, Arbitrum, Optimism, Base, Avalanche C-Chain, dan jaringan tipe Ethereum lainnya - beli satu, pakai di semuanya. Dana di tiap jaringan dicatat terpisah, jadi pilih jaringan yang benar saat mengirim.',
     hereBig: 'Anda sedang di: Dompet Cantik (untuk perorangan dan pedagang)',
     cmpHead: 'Tiga halaman cetak - pastikan Anda di halaman yang benar:',
@@ -557,7 +550,6 @@ const dict = {
     proof2: '"Buat kunci" tidak butuh internet: matikan Wi-Fi sebelum mengklik, dan tetap berhasil.',
     proof3: 'Halaman ini adalah satu file, identik byte demi byte dengan salinan yang dipublikasikan di GitHub. Mesin GitHub mengunduh halaman live setiap jam dan membandingkan sidik jarinya, serta menjalankan seluruh alur di browser sungguhan pada setiap versi baru untuk memastikan tidak ada kunci privat yang dikirim - kami tidak bisa menyentuh kedua pemeriksaan itu.',
     proofVer: 'versi halaman',
-    proofDl: 'Unduh halaman cetak ke komputer Anda',
     proofGh: 'Periksa di GitHub',
     dlHead: 'Cetak di komputer Anda sendiri',
     dlWhy: 'Mencetak alamat cantik melibatkan kunci privat Anda. Agar kunci itu tetap di komputer Anda dari awal sampai akhir, pembuatan kunci, pemesanan, pengambilan, dan perakitan kunci semuanya dilakukan di halaman yang Anda unduh ke komputer - bukan di situs web ini.',
@@ -600,6 +592,8 @@ const dict = {
     footNever: '0x000000000 tidak akan pernah meminta Anda menghubungkan dompet, menandatangani atau menyetujui apa pun untuk kami di aplikasi dompet, atau mengirim uang untuk "verifikasi". Siapa pun yang meminta itu adalah palsu.',
     footSign: 'Halaman cetak menandatangani beberapa kali di dalam halaman (saat memesan, mengambil, mengirim tanda terima), dengan kunci yang dibuat dan dirakit untuk pesanan itu di komputer Anda sendiri. Yang ditandatangani hanyalah teks bukti pendek - tidak pernah transfer, tidak pernah persetujuan - hanya untuk membuktikan pesanan itu milik Anda.',
     footOne: 'Satu-satunya situs resmi: 0x 000 000 000 .com (sembilan angka nol setelah 0x) · 0x000000000 tidak pernah menerbitkan token apa pun · simpan di bookmark dan selalu masuk dari bookmark.',
+    footShort: '0x000000000 tidak pernah meminta kunci privat Anda, koneksi dompet, tanda tangan, atau pembayaran untuk "verifikasi" - siapa pun yang memintanya palsu. Resmi:',
+    footBot: 'Satu-satunya bot resmi: @OxOOOOOOOOObot di Telegram (setiap O adalah huruf O, bukan angka nol). Kirimkan situs web atau @username dan bot akan memberi tahu apakah itu milik kami; kirimkan alamat TRON dan bot akan memeriksa apakah alamat itu diracun.',
     thOrder: 'Pesanan', thPattern: 'Pola', thStatus: 'Status', thPrice2: 'Harga USDT',
     boot: [
       'Windows PowerShell',
@@ -1055,8 +1049,6 @@ function renderSent() {
   $('#sentVerdict').textContent = SENT.length ? t('sentCheck')(SENT.length, hits(sHex), hits(kHex), !!sHex, !!kHex) : t('sentNone');
 }
 let MERGED_K = null;   // 第 5 步合出来的完整私钥，只用来在上面那张清单里搜它有没有被发出去
-// 从自己电脑上打开的这份（file://）不需要「下载这个页面」那个链接 —— 它自己就是那个文件
-try { if (location.protocol === 'file:') { const a = document.getElementById('dlPage'); if (a) a.hidden = true; } } catch (e) {}
 async function api(path, method = 'GET', body) {
   const rec = { method, url: path, kind: sentKind(method, path), body: body ? JSON.stringify(body) : '' };
   SENT.push(rec);
@@ -1871,7 +1863,7 @@ function renderRef() {
   box.innerHTML = '<span>' + esc(t('refBanner')(c)) + '</span> <button type="button" class="copy" id="refCopyBtn" data-code="' + esc(c) + '">' + esc(t('refCopy')) + '</button>';
 }
 if (ON_SITE && REF_FROM.code) {
-  ['#dlPage', '#dlPage2'].forEach((sel) => { const a = $(sel); if (a) a.setAttribute('download', '0x000000000_ref-' + REF_FROM.code + '.html'); });
+  { const a = $('#dlPage2'); if (a) a.setAttribute('download', '0x000000000_ref-' + REF_FROM.code + '.html'); }
   document.addEventListener('click', (e) => {
     const b = e.target.closest && e.target.closest('#refCopyBtn'); if (!b) return;
     const done = () => { b.textContent = t('refCopied'); setTimeout(() => { b.textContent = t('refCopy'); }, 1200); };

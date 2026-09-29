@@ -19,11 +19,11 @@
       ph: ['贴一个波场地址 T…', '贴你要转钱过去的地址', '贴你自己的地址 —— 看谁在仿你'],
       go: '查一下', sub: '零九零自己的钱，就是这样防的。',
       subWhy: '我们自己的取款工具，每次往外转钱之前跑的就是同一份判法（judge.js，代码公开在 GitHub）：往我们收款地址塞过零头 / 0 元 / 假 USDT 的地址、跟上次用的地址头尾像 3 位以上的地址，一律拦下。',
-      mineSum: '要付钱给别人？再填你自己的地址，拿你真的转过账的对象来比',
+      mineSum: '要付钱给别人？加上你自己的地址',
       minePh: '你自己的波场地址（只留在这一页里）',
-      mineNote: '你自己的地址会单独查一次；两个地址的比对在你的浏览器里做 —— 我们不知道这两个是一起查的，也不存。',
+      mineNote: '拿你真的转过账的对象来比。你自己的地址会单独查一次；两个地址的比对在你的浏览器里做 —— 我们不知道这两个是一起查的，也不存。',
       checking: '正在看链上记录……（十几秒）',
-      evm: '以太坊类地址（0x…）这一次只查了它是不是认证过的地址；有没有被投毒还没开查，先开的是波场。',
+      evm: '以太坊类地址（0x…）这一次只查了它是不是认证过的地址、是不是跟登记的官方合约同名；有没有被投毒还没开查，先开的是波场。',
       bad: '这不是有效的波场地址（T 开头、34 位、校验码要对）—— 很可能抄错了一位。回到对方给你地址的原始地方，重新复制一次。',
       mineBad: '「你自己的地址」不是有效的波场地址，这一次只查了上面那一个。',
       same: '两个地址是同一个。',
@@ -57,6 +57,11 @@
       vfWhat: '认证证明的是「这些地址、这个官网、这个频道在同一个人手里」，不证明谁是好人。',
       vfLike: (l) => '⛔ 先别转：它长得像 @' + l.name + ' 认证过的地址，但不是同一个',
       vfLikeWhy: (l) => '要付钱给 @' + l.name + '，只从它的收款名片上复制地址。',
+      // C2NAMECHECK0X_20260929：名字一样、地址不一样的代币合约（构思 v3 第二章第 5 条的原话）—— 只说事实：它叫什么、登记的是哪一个
+      vfMs: (on) => '这是一个多签钱包：只在这几条链上核对过它的持有人 —— ' + on + '。别的链上，同一个地址可能是别人管着。',   // VFMULTISIG0X_20260929
+      vfSame: (x) => '⚠ 名字一样，但不是 @' + x.name + ' 登记的官方合约',
+      vfSameWhy: (x) => '这个合约在 ' + x.chainLabel + ' 上叫「' + x.label + '」，跟 @' + x.name + ' 登记的官方合约同名，地址却不一样。登记的是：',
+      vfSameTip: '名字谁都能起，地址仿不了 —— 只认名片上登记的那个地址。',
       vfCard: (n) => '打开 @' + n + ' 的收款名片 ↗', vfL: '认证',
       nsTag: '快讯', nsAll: '全部快讯', nsHide: '关掉 24 小时',
       cardsH: '安全快讯 · 真实发生过的', allBtn: '看全部 66 宗 →',
@@ -67,11 +72,11 @@
       ph: ['Paste a TRON address T…', 'Paste the address you are about to pay', 'Paste your own address - see who is imitating you'],
       go: 'Check', sub: 'This is exactly how 0x000000000 protects its own money.',
       subWhy: 'Our own withdrawal tool runs the very same rules (judge.js, published on GitHub) before it sends any money out: it stops for any address that planted dust, zero-value or fake USDT on our payment addresses, and for any address whose start and end match the last one we used in 3 or more characters.',
-      mineSum: 'Paying someone? Add your own address to compare against the people you have actually paid',
+      mineSum: 'Paying someone? Add your own address',
       minePh: 'Your own TRON address (stays on this page only)',
-      mineNote: 'Your own address is checked separately, and the comparison happens here in your browser - we never learn that the two go together, and we store neither.',
+      mineNote: 'We compare it with the people you have actually paid. Your own address is checked separately, and the comparison happens here in your browser - we never learn that the two go together, and we store neither.',
       checking: 'Reading the chain history… (a few seconds)',
-      evm: 'For EVM addresses (0x…) this only checked whether it is a verified address; poisoning checks for them are not open yet - TRON comes first.',
+      evm: 'For EVM addresses (0x…) this only checked whether it is a verified address and whether it shares a name with a registered official contract; poisoning checks for them are not open yet - TRON comes first.',
       bad: 'This is not a valid TRON address (starts with T, 34 characters, the checksum must match) - one character was probably copied wrong. Copy it again from where the other person originally gave it to you.',
       mineBad: 'Your own address is not a valid TRON address, so only the address above was checked.',
       same: 'Both addresses are the same.',
@@ -104,6 +109,10 @@
       vfWhat: 'A verification proves that these addresses, this website and this channel are in the same hands - not that anyone is a good person.',
       vfLike: (l) => '⛔ Stop: it looks like an address verified by @' + l.name + ', but it is NOT the same one',
       vfLikeWhy: (l) => 'To pay @' + l.name + ', copy the address only from its payment card.',
+      vfMs: (on) => 'This is a multisig wallet: its owners were checked only on these chains - ' + on + '. On other chains the same address may be controlled by someone else.',
+      vfSame: (x) => '⚠ Same name, but not the official contract registered by @' + x.name,
+      vfSameWhy: (x) => 'On ' + x.chainLabel + ' this contract is called "' + x.label + '" - the same name as the official contract @' + x.name + ' registered, but a different address. The registered one:',
+      vfSameTip: 'Anyone can copy a name; nobody can copy an address - go only by the address registered on the payment card.',
       vfCard: (n) => 'Open @' + n + '\'s payment card ↗', vfL: 'verified',
       nsTag: 'NEWS', nsAll: 'All news', nsHide: 'hide for 24 hours',
       cardsH: 'Security news · things that really happened', allBtn: 'See all 66 cases →',
@@ -115,11 +124,11 @@
       ph: ['Tempel alamat TRON T…', 'Tempel alamat yang akan Anda bayar', 'Tempel alamat Anda sendiri - lihat siapa yang meniru Anda'],
       go: 'Cek', sub: 'Beginilah cara 0x000000000 melindungi uangnya sendiri.',
       subWhy: 'Alat penarikan kami sendiri menjalankan aturan yang persis sama (judge.js, dipublikasikan di GitHub) sebelum mengirim uang keluar: alat itu berhenti untuk setiap alamat yang pernah menyelipkan debu, transfer bernilai nol, atau USDT palsu ke alamat pembayaran kami, dan untuk setiap alamat yang awal dan akhirnya cocok 3 karakter atau lebih dengan alamat terakhir yang kami pakai.',
-      mineSum: 'Mau membayar seseorang? Tambahkan alamat Anda sendiri untuk dibandingkan dengan orang-orang yang benar-benar pernah Anda bayar',
+      mineSum: 'Mau membayar seseorang? Tambahkan alamat Anda sendiri',
       minePh: 'Alamat TRON Anda sendiri (hanya ada di halaman ini)',
-      mineNote: 'Alamat Anda sendiri dicek secara terpisah, dan perbandingannya terjadi di sini, di browser Anda - kami tidak pernah tahu bahwa keduanya berkaitan, dan tidak ada satu pun yang kami simpan.',
+      mineNote: 'Kami membandingkannya dengan orang-orang yang benar-benar pernah Anda bayar. Alamat Anda sendiri dicek secara terpisah, dan perbandingannya terjadi di sini, di browser Anda - kami tidak pernah tahu bahwa keduanya berkaitan, dan tidak ada satu pun yang kami simpan.',
       checking: 'Membaca riwayat on-chain… (beberapa detik)',
-      evm: 'Untuk alamat EVM (0x…), kali ini yang dicek hanya apakah alamat ini terverifikasi; cek peracunan untuk alamat EVM belum dibuka - TRON lebih dulu.',
+      evm: 'Untuk alamat EVM (0x…), kali ini yang dicek hanya apakah alamat ini terverifikasi dan apakah namanya sama dengan kontrak resmi yang terdaftar; cek peracunan untuk alamat EVM belum dibuka - TRON lebih dulu.',
       bad: 'Ini bukan alamat TRON yang valid (diawali T, 34 karakter, checksum harus cocok) - kemungkinan ada satu karakter yang salah tersalin. Salin lagi dari tempat asal orang tersebut memberikannya kepada Anda.',
       mineBad: 'Alamat Anda sendiri bukan alamat TRON yang valid, jadi hanya alamat di atas yang dicek.',
       same: 'Kedua alamat itu sama.',
@@ -152,6 +161,10 @@
       vfWhat: 'Verifikasi membuktikan bahwa alamat-alamat ini, situs web ini, dan saluran ini dipegang oleh pihak yang sama - bukan bahwa seseorang adalah orang baik.',
       vfLike: (l) => '⛔ Berhenti: alamat ini mirip alamat terverifikasi milik @' + l.name + ', tetapi BUKAN alamat yang sama',
       vfLikeWhy: (l) => 'Untuk membayar @' + l.name + ', salin alamat hanya dari kartu pembayarannya.',
+      vfMs: (on) => 'Ini dompet multisig: pemiliknya hanya dicek di jaringan-jaringan ini - ' + on + '. Di jaringan lain, alamat yang sama mungkin dikendalikan orang lain.',
+      vfSame: (x) => '⚠ Namanya sama, tetapi bukan kontrak resmi yang didaftarkan oleh @' + x.name,
+      vfSameWhy: (x) => 'Di ' + x.chainLabel + ', kontrak ini bernama "' + x.label + '" - sama dengan kontrak resmi yang didaftarkan @' + x.name + ', tetapi alamatnya berbeda. Yang terdaftar:',
+      vfSameTip: 'Siapa pun bisa meniru nama; tidak ada yang bisa meniru alamat - pegang hanya alamat yang terdaftar di kartu pembayaran.',
       vfCard: (n) => 'Buka kartu pembayaran @' + n + ' ↗', vfL: 'terverifikasi',
       nsTag: 'BERITA', nsAll: 'Semua berita', nsHide: 'sembunyikan selama 24 jam',
       cardsH: 'Berita keamanan · yang benar-benar terjadi', allBtn: 'Lihat semua 66 kasus →',
@@ -211,16 +224,24 @@
 
   // ── 认证：✅ 这个地址在谁的名片上 / ⛔ 长得像谁的认证地址（服务器回的 vf；名字、地址都先过一遍样子再用）──
   const SITE = /^https?:$/.test(location.protocol) ? '' : 'https://0x000000000.com';   // 下载到电脑上的那一份：链接写完整网址
+  const MS_CHAIN = { ethereum: 'Ethereum', bsc: 'BSC', base: 'Base', arbitrum: 'Arbitrum', optimism: 'Optimism', polygon: 'Polygon', avalanche: 'Avalanche', linea: 'Linea', zksync: 'zkSync' };   // VFMULTISIG0X_20260929
   function vfBlock(vf, addr, chain) {
     if (!vf) return '';
     const card = (n) => (/^[a-z0-9_]{3,20}$/.test(n) ? '<p><a href="' + SITE + '/@' + n + '" target="_blank" rel="noopener noreferrer">' + esc(T('vfCard')(n)) + '</a></p>' : '');
     const v = vf.verified, l = vf.like;
     if (v && typeof v.name === 'string') { const c = v.contract === true ? 'C' : '';
       return '<div class="fc-card lv-' + (v.status === 'live' ? 'green' : 'amber') + '"><div class="fc-h">' + esc(T((v.status === 'live' ? 'vfLive' : 'vfNotice') + c)(v)) + '</div>'
-      + '<p class="fc-dim">' + esc(T('vfWhat' + c)) + '</p>' + card(v.name) + '</div>'; }
-    if (l && typeof l.name === 'string' && typeof l.address === 'string') return '<div class="fc-card lv-red"><div class="fc-h">' + esc(T('vfLike')(l)) + '</div>'
+      + '<p class="fc-dim">' + esc(T('vfWhat' + c)) + '</p>'
+      + (v.multisig === true && Array.isArray(v.on) && v.on.length ? '<p class="fc-dim">' + esc(T('vfMs')(v.on.map((k) => MS_CHAIN[k] || '?').join(LI() === 0 ? '、' : ', '))) + '</p>' : '')
+      + card(v.name) + '</div>'; }
+    let out = '';
+    if (l && typeof l.name === 'string' && typeof l.address === 'string') out += '<div class="fc-card lv-red"><div class="fc-h">' + esc(T('vfLike')(l)) + '</div>'
       + pair(addr, T('thisL'), l.address, '@' + l.name + ' · ' + T('vfL'), l.head, l.tail, '', chain) + '<p>' + esc(T('vfLikeWhy')(l)) + '</p>' + card(l.name) + '</div>';
-    return '';
+    const x = vf.sameName;   // C2NAMECHECK0X_20260929
+    if (x && typeof x.name === 'string' && typeof x.label === 'string' && typeof x.chainLabel === 'string' && /^0x[0-9a-fA-F]{40}$/.test(x.official || ''))
+      out += '<div class="fc-card lv-amber"><div class="fc-h">' + esc(T('vfSame')(x)) + '</div><p>' + esc(T('vfSameWhy')(x)) + '</p>'
+        + '<p class="fc-addr"><code>' + esc(x.official) + '</code></p><p class="fc-dim">' + esc(T('vfSameTip')) + '</p>' + card(x.name) + '</div>';
+    return out;
   }
   function renderEvm(a, vf) {
     const box = $$('fcResult');
