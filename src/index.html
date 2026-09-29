@@ -71,7 +71,7 @@
       </div>
       <details class="fc-sub"><summary id="fcSub">This is exactly how 0x000000000 protects its own money.</summary><p id="fcSubWhy"></p></details>
       <details class="fc-own">
-        <summary id="fcMineSum">Paying someone? Add your own address to compare against the people you have actually paid</summary>
+        <summary id="fcMineSum">Paying someone? Add your own address</summary>
         <input id="fcMine" class="fc-input small" type="text" spellcheck="false" autocapitalize="off" autocorrect="off" aria-labelledby="fcMineSum" placeholder="Your own TRON address (stays on this page only)">
         <div class="fc-note" id="fcMineNote"></div>
       </details>
@@ -84,15 +84,14 @@
       <div class="nc-wrap" id="ncWrap"></div>
     </section>
 
-    <!-- CONTRACT0X_20260928：三张入口卡片（构思 v3 第一章：防骗提醒 · 个人靓号 · 给项目方）—— 三样东西三页，名字、颜色都不一样 -->
-    <section class="ecards" aria-labelledby="ecHead">
-      <div class="nc-head"><span id="ecHead" data-i18n="ecHead">Three things, three pages - so they never get mixed up</span></div>
-      <div class="ec-wrap">
-        <a class="ec ec-alert" href="alerts.html" data-site="alerts.html"><b data-i18n="ec1T">Scam alerts</b><span data-i18n="ec1S">Know when someone imitates your address</span><i data-i18n="ec1Go">See alerts →</i></a>
-        <button type="button" class="ec ec-vanity" id="ecVanity"><b data-i18n="ec2T">Vanity Wallet (this page)</b><span data-i18n="ec2S">Your own address - only you hold the key</span><i data-i18n="ec2Go">See prices ↓</i></button>
-        <div class="ec ec-proj"><b data-i18n="ec3T">For project teams</b><span data-i18n="ec3S">Contract and token addresses - no keys involved</span><i class="ec-links"><a href="/contract" data-site="contract" data-i18n="ec3a">Vanity Contract →</a><a href="/token" data-site="token" data-i18n="ec3b">Token Address →</a></i></div>
-      </div>
-    </section>
+    <!-- CONTRACT0X_20260928：入口（构思 v3 第一章：防骗提醒 · 个人靓号 · 给项目方）—— 三样东西三页，名字、颜色都不一样。
+         LESSMORE0X_20260929（DSJ 09-29「可以，做吧」）：三张卡片改成一排按钮 —— 每样是什么，下面「三个铸造页」那张对照表点开就在。 -->
+    <nav class="ecards ec-row" aria-label="0x000000000">
+      <a class="ecb ec-alert" href="alerts.html" data-site="alerts.html" data-i18n="ecb1">Scam alerts →</a>
+      <button type="button" class="ecb ec-vanity" id="ecVanity" data-i18n="ecb2">Vanity Wallet ↓</button>
+      <a class="ecb ec-ct" href="/contract" data-site="contract" data-i18n="ec3a">Vanity Contract →</a>
+      <a class="ecb ec-tk" href="/token" data-site="token" data-i18n="ec3b">Token Address →</a>
+    </nav>
 
     <!-- CONTRACT0X_20260928：构思 v3 第一章「防混的三条规矩」第 1、2 条 —— 三个铸造页的页首都写「你现在在：……」，下面是同一张三格对照表。
          这一页是个人靓号（主色蓝）。表里的字跟合约靓号页、发币地址定制页逐字相同：order-ui.test 第 8 段拿这里跟 js/c2app.js 那一份比，差一个字就不出包。
@@ -102,7 +101,8 @@
     </section>
     <section class="block" id="secCmp">
       <details class="fold"><summary class="cmp-head" id="cmpHead" data-i18n="cmpHead">Three minting pages - make sure you are on the right one:</summary>
-      <div class="tblwrap"><table class="cmp" id="cmpTable">
+      <!-- DLNARROW0X_20260929：三页对照表本来就宽（四列），手机上在自己的框里横着划 —— data-wide 就是跟窄屏检查（test/narrow.cjs）说「这张是故意宽的」 -->
+      <div class="tblwrap" data-wide><table class="cmp" id="cmpTable">
         <tr><th></th><th class="cur" data-i18n="navVanity">Vanity Wallet</th><th data-i18n="navContract">Vanity Contract</th><th data-i18n="navToken">Token Address</th></tr>
         <tr><th data-i18n="cmpWhat">What</th><td class="cur" data-i18n="cmpWhat1">Your own wallet address</td><td data-i18n="cmpWhat2">The address of a contract you deploy</td><td data-i18n="cmpWhat3">The contract address of a token you issue</td></tr>
         <tr><th data-i18n="cmpFor">For</th><td class="cur" data-i18n="cmpFor1">Individuals, merchants</td><td data-i18n="cmpFor2">Project teams</td><td data-i18n="cmpFor3">Token issuers, launch platforms</td></tr>
@@ -201,7 +201,8 @@
             <li data-i18n="proof2">"Make key" needs no network: switch off Wi-Fi before clicking and it still works.</li>
             <li><span data-i18n="proof3">This page is a single file, byte-for-byte identical to the copy published on GitHub. GitHub's machines download the live page every hour and compare fingerprints, and run the whole flow in a real browser on every new version to check that no private key is sent - we cannot touch either check.</span> <span class="dim"><span data-i18n="proofVer">page version</span> <span id="buildId"><!--BUILD_ID--></span></span></li>
           </ul></details>
-          <div class="proof-links"><a id="dlPage" href="0x000000000.html" download="0x000000000.html" data-i18n="proofDl">Download the minting page to your computer</a> · <a href="https://github.com/0x000000000-com/0x000000000" target="_blank" rel="noopener" data-i18n="proofGh">Verify on GitHub</a></div>
+          <!-- LESSMORE0X_20260929：原来这里还有一个「下载铸造页面到自己电脑上」—— 网站上它跟下面那个大「下载」按钮重复，下载下来的那份又一直把它藏着（藏了还留下一个孤零零的「·」）。拿掉，只留「到 GitHub 核对」。 -->
+          <div class="proof-links"><a href="https://github.com/0x000000000-com/0x000000000" target="_blank" rel="noopener" data-i18n="proofGh">Verify on GitHub</a></div>
         </div>
         <!-- DLONLY0X_20260924：DSJ「直接改成全下载到电脑模式，网站上的6个步骤也直接撤掉，6个步骤只显示在下载到电脑页面」。
              同一个文件、同一个指纹：在 0x000000000.com 上打开只显示下面这块「下载」；下载到电脑上双击打开才显示 6 步。 -->
@@ -278,13 +279,18 @@
     <div class="prompt cursor-line">PS C:\0x000000000&gt;<span class="caret" aria-hidden="true">█</span></div>
 
     <footer class="foot">
-      <div><a href="faq.html" data-site="faq.html">FAQ</a> · <a href="partners.html" data-site="partners.html" data-i18n="footPartners">Partners</a> · <a href="verify.html" data-site="verify.html" data-i18n="footVerify">Verification · payment cards</a> · <a href="alerts.html" data-site="alerts.html" data-i18n="footAlerts">Paid alerts</a> · <a href="track.html" data-site="track.html" data-i18n="footTrack">Track an order</a> · <a href="admin.html">Admin</a> · <span data-i18n="foot1">page code published on GitHub, verifiable byte for byte · custom zone non-custodial · USDT on BSC (BEP20) only</span></div>
-      <!-- FREECHECK0X_20260928：构思 v3 第三章第 1 条（DSJ：「这句话是精髓」）—— 每一页最底下固定放这几句 -->
-      <div class="warnline" data-i18n="footNever">0x000000000 will never ask you to connect your wallet, to sign or approve anything for us in a wallet app, or to send us money to "verify". Anyone who asks is fake.</div>
-      <div class="warnline" data-i18n="foot2">The platform will never ask for your private key or backup file - any message asking for keys is phishing.</div>
-      <details class="fold dimline"><summary data-i18n="footMore">The only official website: 0x000000000.com (nine zeros)</summary>
+      <div><a href="faq.html" data-site="faq.html">FAQ</a> · <a href="partners.html" data-site="partners.html" data-i18n="footPartners">Partners</a> · <a href="verify.html" data-site="verify.html" data-i18n="footVerify">Verification · payment cards</a> · <a href="alerts.html" data-site="alerts.html" data-i18n="footAlerts">Paid alerts</a> · <a href="track.html" data-site="track.html" data-i18n="footTrack">Track an order</a> · <a href="admin.html">Admin</a></div>
+      <!-- FREECHECK0X_20260928：构思 v3 第三章第 1 条（DSJ：「这句话是精髓」）—— 每一页最底下固定放这几句。
+           LESSMORE0X_20260929：看得见的合成一行；原来的每一句一个字没删，都在下面「更多」里。
+           BOTSITE0X_20260929：官方机器人跟官方网址写在同一行（构思 v3 信任第 4 条：付钱前从收藏夹打开官网，或者问官方机器人）。 -->
+      <div class="warnline"><span data-i18n="footShort">0x000000000 never asks for your private key, a wallet connection, a signature or a payment to "verify" - anyone who does is fake. Official:</span> 0x000000000.com · <a class="botlink" href="https://t.me/OxOOOOOOOOObot" target="_blank" rel="noopener">@OxOOOOOOOOObot</a></div>
+      <details class="fold dimline"><summary data-i18n="footMore">More</summary>
+      <div class="dimline"><span data-i18n="foot1">page code published on GitHub, verifiable byte for byte · custom zone non-custodial · USDT on BSC (BEP20) only</span></div>
+      <div class="dimline" data-i18n="footNever">0x000000000 will never ask you to connect your wallet, to sign or approve anything for us in a wallet app, or to send us money to "verify". Anyone who asks is fake.</div>
+      <div class="dimline" data-i18n="foot2">The platform will never ask for your private key or backup file - any message asking for keys is phishing.</div>
       <div class="dimline" data-i18n="footSign">The minting page signs a few times inside the page (placing the order, collecting, filing the receipt), with the key made and built for that order on your own computer. It signs a short proof text - never a transfer, never an approval - only to prove the order is yours.</div>
-      <div class="dimline" data-i18n="footOne">The only official website: 0x 000 000 000 .com (nine zeros after 0x) · 0x000000000 has not issued any token · bookmark it and always come in from the bookmark.</div></details>
+      <div class="dimline" data-i18n="footOne">The only official website: 0x 000 000 000 .com (nine zeros after 0x) · 0x000000000 has not issued any token · bookmark it and always come in from the bookmark.</div>
+      <div class="dimline" data-i18n="footBot">The only official bot: @OxOOOOOOOOObot on Telegram (every O is the letter O, not a zero). Send it a website or a @username and it tells you whether it is ours; send it a TRON address and it checks it for poisoning.</div></details>
     </footer>
   </div>
 </main>
