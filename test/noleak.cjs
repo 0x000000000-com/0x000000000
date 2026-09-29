@@ -107,15 +107,15 @@ async function refModes(browser) {
     const p = await c.newPage(); p.on('pageerror', (e) => errs.push(e.message));
     await p.goto('https://0x000000000.com/' + qs); await sleep(1400);
     const v = await p.evaluate(() => ({ url: location.href, show: !document.querySelector('#dlRef').hidden, text: document.querySelector('#dlRef').textContent,
-      d1: (document.querySelector('#dlPage') || {}).getAttribute && document.querySelector('#dlPage').getAttribute('download'),
+      all: [...document.querySelectorAll('a[download]')].map((x) => x.getAttribute('download')),   // LESSMORE0X_20260929：页面上每一个下载链接都要带推荐码（原来铸造区那个重复的链接拿掉了，只剩一个）
       d2: (document.querySelector('#dlPage2') || {}).getAttribute && document.querySelector('#dlPage2').getAttribute('download'),
       h2: (document.querySelector('#dlPage2') || {}).getAttribute && document.querySelector('#dlPage2').getAttribute('href') }));
     await c.close();
     return { ...v, sent: sent.filter((x) => x.startsWith('GET /api') || x.startsWith('POST')), errs };
   };
   const a = await site('?ref=' + REF_CODE.toLowerCase());
-  out.push([a.show && a.text.includes(REF_CODE) && a.d1 === '0x000000000_ref-' + REF_CODE + '.html' && a.d2 === a.d1 && a.h2 === '0x000000000.html',
-    `网站上从推荐链接进来：「下载」那一块说了推荐码 ${REF_CODE}，两个下载按钮的文件名都是 ${a.d2}（下载的还是同一个 0x000000000.html）`]);
+  out.push([a.show && a.text.includes(REF_CODE) && a.all.length >= 1 && a.all.every((x) => x === '0x000000000_ref-' + REF_CODE + '.html') && a.h2 === '0x000000000.html',
+    `网站上从推荐链接进来：「下载」那一块说了推荐码 ${REF_CODE}，页面上 ${a.all.length} 个下载链接的文件名：${a.all.join(' / ')}（每一个都要带推荐码；下载的还是同一个 0x000000000.html）`]);
   out.push([a.url === 'https://0x000000000.com/' && !a.sent.some((x) => x.toUpperCase().includes(REF_CODE)) && !a.errs.length,
     `地址栏洗成 ${a.url}；网站上发出去的 ${a.sent.length} 个请求一个都不带推荐码` + (a.errs.length ? '；页面报错：' + a.errs.join(' | ') : '')]);
   const b = await site('?ref=AB0CDE');
