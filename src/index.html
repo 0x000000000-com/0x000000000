@@ -57,14 +57,14 @@
   <div class="body" id="body">
 
     <!-- FREECHECK0X_20260928：首页正中间的免费查（构思 v3：像 Google、Namecheap 那样，页面上最大的就是它；框的上下边沿各一条金色代码流）。
-         代码流里的「地址」是随手编的，而且故意带一个「0」—— 波场地址里根本没有 0 这个字，没人能照着转钱。 -->
+         代码流里的「地址」是随手编的，波场、以太坊类轮着来，每一个都故意带一个那一类地址里不可能有的字（波场带「0」，以太坊类带「x」）—— 没人能照着转钱。 -->
     <section class="fc" id="secCheck" aria-labelledby="fcTitle">
       <h1 class="fc-title" id="fcTitle">Free check: has this address been poisoned?</h1>
       <div class="fc-box">
         <div class="fc-stream" aria-hidden="true"><span id="fcS1"></span></div>
         <form class="fc-form" id="fcForm" autocomplete="off" novalidate>
           <span class="fc-dollar" aria-hidden="true">$</span>
-          <input id="fcAddr" class="fc-input" type="text" inputmode="text" spellcheck="false" autocapitalize="off" autocorrect="off" aria-labelledby="fcTitle" placeholder="Paste a TRON address T…">
+          <input id="fcAddr" class="fc-input" type="text" inputmode="text" spellcheck="false" autocapitalize="off" autocorrect="off" aria-labelledby="fcTitle" placeholder="Paste an address: TRON T… or 0x…">
           <button type="submit" class="fc-go" id="fcGo">Check</button>
         </form>
         <div class="fc-stream rev" aria-hidden="true"><span id="fcS2"></span></div>
@@ -72,7 +72,7 @@
       <details class="fc-sub"><summary id="fcSub">This is exactly how 0x000000000 protects its own money.</summary><p id="fcSubWhy"></p></details>
       <details class="fc-own">
         <summary id="fcMineSum">Paying someone? Add your own address</summary>
-        <input id="fcMine" class="fc-input small" type="text" spellcheck="false" autocapitalize="off" autocorrect="off" aria-labelledby="fcMineSum" placeholder="Your own TRON address (stays on this page only)">
+        <input id="fcMine" class="fc-input small" type="text" spellcheck="false" autocapitalize="off" autocorrect="off" aria-labelledby="fcMineSum" placeholder="Your own address (stays on this page only)">
         <div class="fc-note" id="fcMineNote"></div>
       </details>
       <div class="fc-result" id="fcResult" aria-live="polite" hidden></div>
@@ -290,7 +290,7 @@
       <div class="dimline" data-i18n="foot2">The platform will never ask for your private key or backup file - any message asking for keys is phishing.</div>
       <div class="dimline" data-i18n="footSign">The minting page signs a few times inside the page (placing the order, collecting, filing the receipt), with the key made and built for that order on your own computer. It signs a short proof text - never a transfer, never an approval - only to prove the order is yours.</div>
       <div class="dimline" data-i18n="footOne">The only official website: 0x 000 000 000 .com (nine zeros after 0x) · 0x000000000 has not issued any token · bookmark it and always come in from the bookmark.</div>
-      <div class="dimline" data-i18n="footBot">The only official bot: @OxOOOOOOOOObot on Telegram (every O is the letter O, not a zero). Send it a website or a @username and it tells you whether it is ours; send it a TRON address and it checks it for poisoning.</div></details>
+      <div class="dimline" data-i18n="footBot">The only official bot: @OxOOOOOOOOObot on Telegram (every O is the letter O, not a zero). Send it a website or a @username and it tells you whether it is ours; send it an address (TRON or EVM 0x…) and it checks it for poisoning.</div></details>
     </footer>
   </div>
 </main>
