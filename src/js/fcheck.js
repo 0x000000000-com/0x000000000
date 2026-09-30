@@ -5,7 +5,9 @@
 //     跟你要付钱的地址比，是在这里（你的浏览器里）用 judge.js 比的 —— 服务器不知道这两个地址是一起查的。
 //   唯一记在浏览器里的：快讯细条被你点 × 关掉的时间（24 小时后再出现）。
 //   VERIFY0X_20260928：服务器顺手回一个 vf —— 这个地址是不是认证过的（✅ @某某）、像不像某个认证地址（⛔ 先别转）。
-//     以太坊类地址（0x…）投毒记录那一半还没开，但认证这一半照查。
+//     以太坊类地址（0x…）：数据源没接时只查认证这一半（服务器回 result = null）。
+//   EVMON0X_20260930：数据源接了之后，结果里带 chains（每条链查没查、没查的原因）—— 这里逐条写出来；有链没查时（免费档查不了 BSC）
+//     「没发现」「没记录」不给 ✅：改成 ℹ + 黄框 +「在查了的那几条链上」，免得把 BSC 上被投毒的地址说成没事。
 (function () {
   if (typeof ZJ === 'undefined' || typeof NEWS === 'undefined') return;
   const TX = 'https://tronscan.org/#/transaction/';
@@ -35,6 +37,12 @@
       caution: (p) => '它几乎没有真实的 USDT 往来，却跟 ' + p.zfPeers + ' 个地址有 0 元转账或假 USDT 记录。付钱之前，找对方用别的方式再核对一次。',
       clean: '在它最近的记录里，没看到有人往它这里塞零头 / 0 元 / 假 USDT 来仿它的转账对象；它自己也没有在群发零头。',
       empty: '这个地址在链上还没有任何记录。付钱前确认它真是对方给你的。',
+      // EVMON0X_20260930：以太坊类 —— 有链没查时
+      hPart: { clean: 'ℹ 查了的链上没发现投毒记录', empty: 'ℹ 查了的链上还没有记录' },
+      evmClean: (on) => '在 ' + on.join('、') + ' 上，没看到有人往它这里塞零头 / 0 元 / 假 USDT 来仿它的转账对象；它自己也没有在群发零头。',
+      evmEmpty: (on) => '这个地址在 ' + on.join('、') + ' 上还没有记录。付钱前确认它真是对方给你的。',
+      evmChains: (on, plan, err) => '查了：' + on.join('、') + (plan.length ? '。没查：' + plan.join('、') + '（我们接的数据源这一档不含；在这几条链上收付款的话，这次的结果不算数）' : '')
+        + (err.length ? '。这次没连上：' + err.join('、') + '（过一会再查一次）' : '') + '。',
       window: (w) => '看了最近 ' + w.n + ' 笔转账' + (w.complete ? '' : '（更早的没看）') + '。',
       spam: (s) => '另外有 ' + s.senders + ' 个地址往这里打过零头，但不像它的任何一个转账对象 —— 群发的垃圾，不用理。',
       fakeL: '假', realL: '真', paidL: '付过', thisL: '这个', pairWhy: '两个它都付过钱', recvWhy: '一个只打钱进来，却很像它付过钱的那个',
@@ -88,6 +96,11 @@
       caution: (p) => 'It has almost no real USDT activity, yet has zero-value or fake-USDT records with ' + p.zfPeers + ' addresses. Before paying, confirm it with the other person through another channel.',
       clean: 'In its recent history nobody planted dust, zero-value or fake USDT to imitate its contacts, and it is not spraying dust itself.',
       empty: 'This address has no history on chain yet. Make sure it really came from the person you are paying.',
+      hPart: { clean: 'ℹ No poisoning found on the chains checked', empty: 'ℹ No history on the chains checked' },
+      evmClean: (on) => 'On ' + on.join(', ') + ', nobody planted dust, zero-value or fake USDT to imitate its contacts, and it is not spraying dust itself.',
+      evmEmpty: (on) => 'This address has no history on ' + on.join(', ') + ' yet. Make sure it really came from the person you are paying.',
+      evmChains: (on, plan, err) => 'Checked: ' + on.join(', ') + (plan.length ? '. Not checked: ' + plan.join(', ') + ' (our data plan does not cover them - if you send or receive on these chains, this result does not cover them)' : '')
+        + (err.length ? '. Could not reach this time: ' + err.join(', ') + ' (try again in a moment)' : '') + '.',
       window: (w) => 'Looked at the latest ' + w.n + ' transfers' + (w.complete ? '' : ' (older ones not checked)') + '.',
       spam: (s) => 'Also: ' + s.senders + ' addresses sent it dust but look like none of its contacts - mass spam, safe to ignore.',
       fakeL: 'fake', realL: 'real', paidL: 'paid', thisL: 'this', pairWhy: 'it paid both of them', recvWhy: 'one only sent money in, yet looks like one it paid',
@@ -140,6 +153,11 @@
       caution: (p) => 'Alamat ini hampir tidak punya aktivitas USDT nyata, tetapi punya catatan transfer bernilai nol atau USDT palsu dengan ' + p.zfPeers + ' alamat. Sebelum membayar, pastikan dengan orang tersebut lewat saluran lain.',
       clean: 'Dalam riwayat terbarunya, tidak ada yang menyelipkan debu, transfer bernilai nol, atau USDT palsu untuk meniru kontaknya, dan alamat ini sendiri tidak sedang menyebar debu.',
       empty: 'Alamat ini belum punya riwayat on-chain. Pastikan alamat ini benar-benar berasal dari orang yang Anda bayar.',
+      hPart: { clean: 'ℹ Tidak ditemukan peracunan di jaringan yang dicek', empty: 'ℹ Belum ada riwayat di jaringan yang dicek' },
+      evmClean: (on) => 'Di ' + on.join(', ') + ', tidak ada yang menyelipkan debu, transfer bernilai nol, atau USDT palsu untuk meniru kontaknya, dan alamat ini sendiri tidak sedang menyebar debu.',
+      evmEmpty: (on) => 'Alamat ini belum punya riwayat di ' + on.join(', ') + '. Pastikan alamat ini benar-benar berasal dari orang yang Anda bayar.',
+      evmChains: (on, plan, err) => 'Dicek: ' + on.join(', ') + (plan.length ? '. Tidak dicek: ' + plan.join(', ') + ' (paket data kami tidak mencakupnya - jika Anda mengirim atau menerima di jaringan ini, hasil ini tidak mencakupnya)' : '')
+        + (err.length ? '. Kali ini tidak terhubung: ' + err.join(', ') + ' (coba lagi sebentar lagi)' : '') + '.',
       window: (w) => 'Sudah melihat ' + w.n + ' transfer terakhir' + (w.complete ? '' : ' (yang lebih lama tidak dicek)') + '.',
       spam: (s) => 'Selain itu: ' + s.senders + ' alamat mengirim debu ke sini tetapi tidak mirip satu pun kontaknya - spam massal, aman diabaikan.',
       fakeL: 'palsu', realL: 'asli', paidL: 'dibayar', thisL: 'ini', pairWhy: 'ia pernah membayar keduanya', recvWhy: 'yang satu hanya mengirim uang masuk, tetapi mirip dengan yang pernah dibayarnya',
@@ -254,13 +272,17 @@
     const L = [], i = LI(), lvl = { poisoner: 'red', targeted: 'amber', lookalike: 'amber', caution: 'amber', clean: 'green', empty: 'green' };
     const v = r.verdict === 'clean' && !r.window.n ? 'empty' : r.verdict;
     const ch = r.chain === 'evm' ? 'evm' : 'tron';
+    // EVMON0X_20260930：以太坊类每条链查没查（why：plan = 数据源这一档不含 · error = 这次没连上）
+    const ev = ch === 'evm' && Array.isArray(r.chains) ? r.chains : null, nm = (c) => (lang === 'zh' && c.name === 'Ethereum' ? '以太坊' : c.name);
+    const on = ev ? ev.filter((c) => c.checked).map(nm) : [], plan = ev ? ev.filter((c) => !c.checked && c.why !== 'error').map(nm) : [], err = ev ? ev.filter((c) => !c.checked && c.why === 'error').map(nm) : [];
+    const part = !!ev && plan.length + err.length > 0 && (v === 'clean' || v === 'empty');
     L.push(vfBlock(vf, r.address, ch));
     if (own) {
       const ml = { poison: 'red', acted: 'red', red: 'red', yellow: 'amber', known: 'green', none: 'green' }[own.level] || 'green';
       L.push('<div class="fc-card lv-' + ml + '"><div class="fc-h">' + esc(T('mineH')[own.level] || '') + '<span class="fc-dim">' + esc(T('mineCmp')(mineN)) + '</span></div>'
         + (own.with && ['poison', 'red', 'yellow'].includes(own.level) ? pair(r.address, T('thisL'), own.with, T('paidL'), own.head, own.tail, '', ch) : '') + '</div>');
     }
-    L.push('<div class="fc-card lv-' + lvl[v] + '"><div class="fc-h">' + esc(T('h')[v]) + '</div><div class="fc-addr"><code>' + esc(r.address) + '</code></div>');
+    L.push('<div class="fc-card lv-' + (part ? 'amber' : lvl[v]) + '"><div class="fc-h">' + esc(part ? T('hPart')[v] : T('h')[v]) + '</div><div class="fc-addr"><code>' + esc(r.address) + '</code></div>');
     if (v === 'poisoner') L.push('<p>' + esc(T('poisoner')(r.profile)) + '</p>');
     else if (v === 'targeted') {
       L.push('<p>' + esc(T('targeted')(r.poisonCount, new Set(r.poison.map((p) => p.imitates)).size)) + '</p>');
@@ -271,8 +293,9 @@
       L.push('<p>' + esc(T('lookalike')) + '</p>');
       for (const p of r.lookalikes.slice(0, 5)) L.push(pair(p.address, '?', p.imitates, T('paidL'), p.head, p.tail, esc(p.kind === 'pair' ? T('pairWhy') : T('recvWhy')), ch));
     } else if (v === 'caution') L.push('<p>' + esc(T('caution')(r.profile)) + '</p>');
-    else L.push('<p>' + esc(T(v === 'empty' ? 'empty' : 'clean')) + '</p>');
+    else L.push('<p>' + esc(part ? T(v === 'empty' ? 'evmEmpty' : 'evmClean')(on) : T(v === 'empty' ? 'empty' : 'clean')) + '</p>');
     L.push('<p class="fc-dim">' + esc((r.window.n ? T('window')(r.window) : '') + (r.spam && r.spam.senders && v !== 'poisoner' ? ' ' + T('spam')(r.spam) : '')) + '</p>');
+    if (ev) L.push('<p' + (plan.length + err.length ? '' : ' class="fc-dim"') + '>' + esc(T('evmChains')(on, plan, err)) + '</p>');   // 有链没查：不用灰字，照正文的样子写
     if (note) L.push('<p class="fc-dim">' + esc(note) + '</p>');
     L.push('</div>');
     L.push('<p class="fc-tip">' + esc(T('tip')) + '</p>');
