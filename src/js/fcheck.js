@@ -18,16 +18,16 @@
   const S = {
     zh: {
       title: '免费查：这个地址有没有被投毒？',
-      ph: ['贴一个波场地址 T…', '贴你要转钱过去的地址', '贴你自己的地址 —— 看谁在仿你'],
+      ph: ['贴一个地址：波场 T… 或 0x…', '贴你要转钱过去的地址', '贴你自己的地址 —— 看谁在仿你'],
       go: '查一下', sub: '零九零自己的钱，就是这样防的。',
       subWhy: '我们自己的取款工具，每次往外转钱之前跑的就是同一份判法（judge.js，代码公开在 GitHub）：往我们收款地址塞过零头 / 0 元 / 假 USDT 的地址、跟上次用的地址头尾像 3 位以上的地址，一律拦下。',
       mineSum: '要付钱给别人？加上你自己的地址',
-      minePh: '你自己的波场地址（只留在这一页里）',
+      minePh: '你自己的地址（只留在这一页里）',
       mineNote: '拿你真的转过账的对象来比。你自己的地址会单独查一次；两个地址的比对在你的浏览器里做 —— 我们不知道这两个是一起查的，也不存。',
       checking: '正在看链上记录……（十几秒）',
-      evm: '以太坊类地址（0x…）这一次只查了它是不是认证过的地址、是不是跟登记的官方合约同名；有没有被投毒还没开查，先开的是波场。',
-      bad: '这不是有效的波场地址（T 开头、34 位、校验码要对）—— 很可能抄错了一位。回到对方给你地址的原始地方，重新复制一次。',
-      mineBad: '「你自己的地址」不是有效的波场地址，这一次只查了上面那一个。',
+      evm: '以太坊类地址（0x…）这一次只查了它是不是认证过的地址、是不是跟登记的官方合约同名；有没有被投毒这一次没查（以太坊类的链上数据现在没接上）。',
+      bad: '这不是有效的地址（波场：T 开头、34 位、校验码要对；以太坊类：0x 开头、42 位）—— 很可能抄错了一位。回到对方给你地址的原始地方，重新复制一次。',
+      mineBad: '「你自己的地址」不是有效的地址，或者跟上面那个不是同一类（波场对波场、以太坊类对以太坊类），这一次只查了上面那一个。',
       same: '两个地址是同一个。',
       net: '这一次没查成：',
       h: { poisoner: '⛔ 这是投毒地址', targeted: '⚠ 有人在仿这个地址的转账对象', lookalike: '⚠ 这个地址的记录里有长得很像的地址', caution: '⚠ 小心：几乎没有真实往来', clean: '✅ 没发现投毒记录', empty: '✅ 链上还没有记录（新地址）' },
@@ -77,16 +77,16 @@
     },
     en: {
       title: 'Free check: has this address been poisoned?',
-      ph: ['Paste a TRON address T…', 'Paste the address you are about to pay', 'Paste your own address - see who is imitating you'],
+      ph: ['Paste an address: TRON T… or 0x…', 'Paste the address you are about to pay', 'Paste your own address - see who is imitating you'],
       go: 'Check', sub: 'This is exactly how 0x000000000 protects its own money.',
       subWhy: 'Our own withdrawal tool runs the very same rules (judge.js, published on GitHub) before it sends any money out: it stops for any address that planted dust, zero-value or fake USDT on our payment addresses, and for any address whose start and end match the last one we used in 3 or more characters.',
       mineSum: 'Paying someone? Add your own address',
-      minePh: 'Your own TRON address (stays on this page only)',
+      minePh: 'Your own address (stays on this page only)',
       mineNote: 'We compare it with the people you have actually paid. Your own address is checked separately, and the comparison happens here in your browser - we never learn that the two go together, and we store neither.',
       checking: 'Reading the chain history… (a few seconds)',
-      evm: 'For EVM addresses (0x…) this only checked whether it is a verified address and whether it shares a name with a registered official contract; poisoning checks for them are not open yet - TRON comes first.',
-      bad: 'This is not a valid TRON address (starts with T, 34 characters, the checksum must match) - one character was probably copied wrong. Copy it again from where the other person originally gave it to you.',
-      mineBad: 'Your own address is not a valid TRON address, so only the address above was checked.',
+      evm: 'For EVM addresses (0x…) this only checked whether it is a verified address and whether it shares a name with a registered official contract; poisoning was not checked this time (the EVM chain data source is not connected right now).',
+      bad: 'This is not a valid address (TRON: starts with T, 34 characters, the checksum must match; EVM: starts with 0x, 42 characters) - one character was probably copied wrong. Copy it again from where the other person originally gave it to you.',
+      mineBad: 'Your own address is not a valid address, or not the same kind as the one above (TRON with TRON, EVM with EVM), so only the address above was checked.',
       same: 'Both addresses are the same.',
       net: 'This check did not go through: ',
       h: { poisoner: '⛔ This is a poisoning address', targeted: '⚠ Someone is imitating the contacts of this address', lookalike: '⚠ This history contains addresses that look very alike', caution: '⚠ Careful: almost no real activity', clean: '✅ No poisoning found', empty: '✅ No history on chain yet (a new address)' },
@@ -134,16 +134,16 @@
     // IDLANG0X_20260928：印尼文。键、参数、数组长度跟 en 一一对应（从英文译；数字、地址、USDT、TRON 这类照抄）。
     id: {
       title: 'Cek gratis: apakah alamat ini sudah diracun?',
-      ph: ['Tempel alamat TRON T…', 'Tempel alamat yang akan Anda bayar', 'Tempel alamat Anda sendiri - lihat siapa yang meniru Anda'],
+      ph: ['Tempel alamat: TRON T… atau 0x…', 'Tempel alamat yang akan Anda bayar', 'Tempel alamat Anda sendiri - lihat siapa yang meniru Anda'],
       go: 'Cek', sub: 'Beginilah cara 0x000000000 melindungi uangnya sendiri.',
       subWhy: 'Alat penarikan kami sendiri menjalankan aturan yang persis sama (judge.js, dipublikasikan di GitHub) sebelum mengirim uang keluar: alat itu berhenti untuk setiap alamat yang pernah menyelipkan debu, transfer bernilai nol, atau USDT palsu ke alamat pembayaran kami, dan untuk setiap alamat yang awal dan akhirnya cocok 3 karakter atau lebih dengan alamat terakhir yang kami pakai.',
       mineSum: 'Mau membayar seseorang? Tambahkan alamat Anda sendiri',
-      minePh: 'Alamat TRON Anda sendiri (hanya ada di halaman ini)',
+      minePh: 'Alamat Anda sendiri (hanya ada di halaman ini)',
       mineNote: 'Kami membandingkannya dengan orang-orang yang benar-benar pernah Anda bayar. Alamat Anda sendiri dicek secara terpisah, dan perbandingannya terjadi di sini, di browser Anda - kami tidak pernah tahu bahwa keduanya berkaitan, dan tidak ada satu pun yang kami simpan.',
       checking: 'Membaca riwayat on-chain… (beberapa detik)',
-      evm: 'Untuk alamat EVM (0x…), kali ini yang dicek hanya apakah alamat ini terverifikasi dan apakah namanya sama dengan kontrak resmi yang terdaftar; cek peracunan untuk alamat EVM belum dibuka - TRON lebih dulu.',
-      bad: 'Ini bukan alamat TRON yang valid (diawali T, 34 karakter, checksum harus cocok) - kemungkinan ada satu karakter yang salah tersalin. Salin lagi dari tempat asal orang tersebut memberikannya kepada Anda.',
-      mineBad: 'Alamat Anda sendiri bukan alamat TRON yang valid, jadi hanya alamat di atas yang dicek.',
+      evm: 'Untuk alamat EVM (0x…), kali ini yang dicek hanya apakah alamat ini terverifikasi dan apakah namanya sama dengan kontrak resmi yang terdaftar; peracunan tidak dicek kali ini (sumber data jaringan EVM sedang tidak tersambung).',
+      bad: 'Ini bukan alamat yang valid (TRON: diawali T, 34 karakter, checksum harus cocok; EVM: diawali 0x, 42 karakter) - kemungkinan ada satu karakter yang salah tersalin. Salin lagi dari tempat asal orang tersebut memberikannya kepada Anda.',
+      mineBad: 'Alamat Anda sendiri bukan alamat yang valid, atau tidak sejenis dengan alamat di atas (TRON dengan TRON, EVM dengan EVM), jadi hanya alamat di atas yang dicek.',
       same: 'Kedua alamat itu sama.',
       net: 'Pengecekan ini tidak berhasil: ',
       h: { poisoner: '⛔ Ini alamat peracun', targeted: '⚠ Ada yang meniru kontak alamat ini', lookalike: '⚠ Riwayat ini berisi alamat-alamat yang sangat mirip', caution: '⚠ Hati-hati: hampir tidak ada aktivitas nyata', clean: '✅ Tidak ditemukan peracunan', empty: '✅ Belum ada riwayat on-chain (alamat baru)' },
@@ -363,11 +363,14 @@
     };
     step();
   }
-  // ── 代码流：随手编的地址，故意带一个「0」（波场地址里根本没有 0 这个字）—— 永远不可能是真地址，没人能照着转钱 ──
+  // ── 代码流：随手编的地址，波场、以太坊类轮着来（EVMCOPY0X_20260930：免费查两类都查了，代码流不再只滚波场）——
+  //    每一个都故意带一个那一类地址里不可能有的字：波场带「0」（base58 里没有 0），以太坊类带「x」（十六进制里没有 x）
+  //    —— 永远不可能是真地址，没人能照着转钱 ──
+  const HEX = '0123456789abcdef';
+  function streamTron() { let s = 'T'; for (let k = 0; k < 33; k++) s += B58[Math.floor(Math.random() * 58)]; const at = 3 + Math.floor(Math.random() * 28); return s.slice(0, at) + '0' + s.slice(at + 1); }
+  function streamEvm() { let s = '0x'; for (let k = 0; k < 40; k++) s += HEX[Math.floor(Math.random() * 16)]; const at = 4 + Math.floor(Math.random() * 36); return s.slice(0, at) + 'x' + s.slice(at + 1); }
   function stream() {
-    const pick = () => B58[Math.floor(Math.random() * 58)];
-    const one = () => { let s = 'T'; for (let k = 0; k < 33; k++) s += pick(); const at = 3 + Math.floor(Math.random() * 28); return s.slice(0, at) + '0' + s.slice(at + 1); };
-    for (const id of ['fcS1', 'fcS2']) { const el = $$(id); if (el) { const t = Array.from({ length: 8 }, one).join('   '); el.textContent = t + '   ' + t; } }
+    ['fcS1', 'fcS2'].forEach((id, j) => { const el = $$(id); if (el) { const t = Array.from({ length: 8 }, (_, k) => ((k + j) % 2 ? streamEvm() : streamTron())).join('   '); el.textContent = t + '   ' + t; } });
   }
 
   // ── 快讯细条（每页最顶上）：一次一条，6 秒换；鼠标放上去就停；× 关掉 24 小时 ──

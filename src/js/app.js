@@ -108,7 +108,7 @@ const dict = {
     footSign: '铸造页会在页面里自动签几次名（下单、取货、交收条），用的是这一单在你电脑上生成、合成的钥匙，签的只是一段证明文字，不是转账、不是授权 —— 只用来证明这一单是你的。',
     footOne: '官方网址只有一个：0x 000 000 000 .com（0x 后面 9 个 0）· 零九零没有发行任何代币 · 收藏官网，以后只从收藏夹进。',
     footShort: '零九零永远不会要你的私钥、不会让你连钱包、签名或转钱「验证」—— 这样要的都是假的。官方只有：',
-    footBot: '官方机器人只有一个：Telegram 上的 @OxOOOOOOOOObot（里面的 O 全是字母 O，不是数字 0）。发一个网址或 @用户名给它，它告诉你是不是我们的；发一个波场地址，它帮你查有没有被投毒。',
+    footBot: '官方机器人只有一个：Telegram 上的 @OxOOOOOOOOObot（里面的 O 全是字母 O，不是数字 0）。发一个网址或 @用户名给它，它告诉你是不是我们的；发一个地址（波场或以太坊类 0x…），它帮你查有没有被投毒。',
     thOrder: '订单 Order', thPattern: '模式 Pattern', thStatus: '状态 Status', thPrice2: '价格 USDT',
     boot: [
       'Windows PowerShell',
@@ -355,7 +355,7 @@ const dict = {
     footSign: 'The minting page signs a few times inside the page (placing the order, collecting, filing the receipt), with the key made and built for that order on your own computer. It signs a short proof text - never a transfer, never an approval - only to prove the order is yours.',
     footOne: 'The only official website: 0x 000 000 000 .com (nine zeros after 0x) · 0x000000000 has not issued any token · bookmark it and always come in from the bookmark.',
     footShort: '0x000000000 never asks for your private key, a wallet connection, a signature or a payment to "verify" - anyone who does is fake. Official:',
-    footBot: 'The only official bot: @OxOOOOOOOOObot on Telegram (every O is the letter O, not a zero). Send it a website or a @username and it tells you whether it is ours; send it a TRON address and it checks it for poisoning.',
+    footBot: 'The only official bot: @OxOOOOOOOOObot on Telegram (every O is the letter O, not a zero). Send it a website or a @username and it tells you whether it is ours; send it an address (TRON or EVM 0x…) and it checks it for poisoning.',
     thOrder: 'Order', thPattern: 'Pattern', thStatus: 'Status', thPrice2: 'Price USDT',
     boot: [
       'Windows PowerShell',
@@ -593,7 +593,7 @@ const dict = {
     footSign: 'Halaman cetak menandatangani beberapa kali di dalam halaman (saat memesan, mengambil, mengirim tanda terima), dengan kunci yang dibuat dan dirakit untuk pesanan itu di komputer Anda sendiri. Yang ditandatangani hanyalah teks bukti pendek - tidak pernah transfer, tidak pernah persetujuan - hanya untuk membuktikan pesanan itu milik Anda.',
     footOne: 'Satu-satunya situs resmi: 0x 000 000 000 .com (sembilan angka nol setelah 0x) · 0x000000000 tidak pernah menerbitkan token apa pun · simpan di bookmark dan selalu masuk dari bookmark.',
     footShort: '0x000000000 tidak pernah meminta kunci privat Anda, koneksi dompet, tanda tangan, atau pembayaran untuk "verifikasi" - siapa pun yang memintanya palsu. Resmi:',
-    footBot: 'Satu-satunya bot resmi: @OxOOOOOOOOObot di Telegram (setiap O adalah huruf O, bukan angka nol). Kirimkan situs web atau @username dan bot akan memberi tahu apakah itu milik kami; kirimkan alamat TRON dan bot akan memeriksa apakah alamat itu diracun.',
+    footBot: 'Satu-satunya bot resmi: @OxOOOOOOOOObot di Telegram (setiap O adalah huruf O, bukan angka nol). Kirimkan situs web atau @username dan bot akan memberi tahu apakah itu milik kami; kirimkan alamat (TRON atau EVM 0x…) dan bot akan memeriksa apakah alamat itu diracun.',
     thOrder: 'Pesanan', thPattern: 'Pola', thStatus: 'Status', thPrice2: 'Harga USDT',
     boot: [
       'Windows PowerShell',
