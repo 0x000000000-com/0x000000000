@@ -53,6 +53,37 @@ a{color:var(--gold-b)}
 .small{font-size:12px;color:var(--faint)}
 code.snip{display:block;background:#0a0d14;border:1px solid var(--line2);border-radius:8px;padding:8px 10px;font-size:12px;overflow-x:auto;white-space:pre}
 .foot{border-top:1px solid var(--line);margin-top:22px;padding-top:14px;font-size:12.5px;color:var(--dim)}
+/* CARDPNG0X_20261001：页面顶上那张卡 —— 跟机器人发的名片图同一个样子（黄勾金、蓝勾蓝、公示中琥珀、过期 / 撤销灰色带红叉）。DSJ：「这个就是所谓的黄勾卡片？就这？」 */
+.vcard{--vc-a:#f6e3a1;--vc-b:#ebc65c;--vc-d:#9a7419;--vc-title:#ebc65c;--vc-ink:#1a1405;--vc-glow:rgba(235,198,92,.16);--vc-soft:rgba(235,198,92,.16);
+  position:relative;overflow:hidden;border-radius:22px;padding:20px 22px 16px;margin:4px 0 12px;background:linear-gradient(135deg,#171c29,#090c13 72%);border:1.5px solid var(--vc-d);box-shadow:0 18px 44px -22px var(--vc-glow)}
+.vcard.blue{--vc-a:#cfe2ff;--vc-b:#6aa9ff;--vc-d:#1d4ed8;--vc-title:#8dbcff;--vc-ink:#ffffff;--vc-glow:rgba(106,169,255,.16);--vc-soft:rgba(106,169,255,.16)}
+.vcard.notice{--vc-a:#f8d79c;--vc-b:#e8a13c;--vc-d:#8a5a12;--vc-title:#e8a13c;--vc-ink:#1a1405;--vc-glow:rgba(232,161,60,.14);--vc-soft:rgba(232,161,60,.16)}
+.vcard.void{--vc-a:#b4bac4;--vc-b:#6b7280;--vc-d:#374151;--vc-title:#e5484d;--vc-ink:#e5484d;--vc-glow:rgba(107,114,128,.12);--vc-soft:rgba(107,114,128,.18)}
+.vcard::before{content:"";position:absolute;inset:7px;border-radius:16px;border:1px solid var(--vc-soft);pointer-events:none}
+.vcard::after{content:"";position:absolute;right:-110px;top:-110px;width:340px;height:340px;background:radial-gradient(closest-side,var(--vc-glow),transparent);pointer-events:none}
+.vcard>*{position:relative;z-index:1}
+.vc-top{display:flex;align-items:flex-start;gap:12px}
+.vc-brand{display:flex;align-items:center;gap:10px;color:#e9e5d9;font-weight:700;font-size:16px;line-height:1.3;min-width:0}
+.vc-brand .logo-mark{width:30px;height:30px}
+.vc-brand small{display:block;font-weight:400;font-size:11px;color:var(--dim);letter-spacing:.14em}
+.vc-seal{margin-left:auto;width:96px;height:96px;flex:none;filter:drop-shadow(0 6px 10px rgba(0,0,0,.45))}
+.vc-name{font-size:28px;font-weight:700;color:#f3efe3;line-height:1.2;margin:0 0 2px;overflow-wrap:anywhere}
+.vc-tier{font-size:16px;font-weight:700;color:var(--vc-title);margin:0 0 10px}
+.vc-pill{display:inline-flex;align-items:center;gap:8px;border-radius:999px;padding:2px 13px;font-size:13px;border:1px solid rgba(47,191,143,.45);background:rgba(47,191,143,.12);color:var(--up)}
+.vc-pill.notice{border-color:rgba(232,161,60,.45);background:rgba(232,161,60,.12);color:var(--warn)}
+.vc-pill i{width:8px;height:8px;border-radius:50%;background:currentColor;flex:none}
+.vc-body{display:flex;gap:16px;align-items:flex-start;margin-top:12px}
+.vc-rows{flex:1;min-width:0}
+.vc-row{display:flex;gap:8px;align-items:baseline;margin:5px 0;font-size:13.5px;overflow-wrap:anywhere;min-width:0}
+.vc-row .k{color:var(--dim);flex:none}
+.vc-row .v{min-width:0}
+.vc-row .ck{flex:none;width:17px;height:17px;border-radius:50%;background:var(--vc-soft);color:var(--vc-b);display:inline-flex;align-items:center;justify-content:center;font-size:11px;line-height:1;align-self:center}
+.vc-qr{flex:none;width:124px;text-align:center;font-size:11px;color:var(--dim)}
+.vc-qr .q{background:#fff;border-radius:9px;padding:5px;margin-bottom:4px}.vc-qr .q svg{display:block;width:100%;height:auto}
+.vc-foot{border-top:1px solid var(--line);margin-top:12px;padding-top:9px;font-size:12px}
+.vc-foot .d{color:var(--dim)}.vc-foot .n{color:var(--warn);margin-top:3px}
+.vc-save{margin:0 0 16px;font-size:13px}
+@media (max-width:520px){.vcard{padding:16px 15px 13px}.vc-seal{width:70px;height:70px}.vc-name{font-size:22px}.vc-body{flex-direction:column;align-items:stretch}.vc-qr{width:116px;margin:6px auto 0}}
 .foot .never{color:var(--warn);margin:8px 0}
 @media (max-width:480px){.status{font-size:18px}.addr{font-size:15px}}
 </style>
@@ -120,6 +151,10 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
       never2: '平台永远不会索要你的私钥或备份文件 —— 任何索要私钥的消息都是钓鱼。',
       officialUrl: '官方网址只有一个：0x 000 000 000 .com（0x 后面 9 个 0）· 零九零没有发行任何代币。',
       links: [['/', '首页'], ['/verify.html', '认证是什么'], ['/alerts.html', '付费提醒'], ['/wp', '白皮书']],
+      vc: { brand: '认证名片', official: '零九零官方 · 黄勾', yellow: '黄勾 · 商家 / 项目方认证', blue: '蓝勾 · 个人认证', live: '生效中', days: (n) => '已认证 ' + n + ' 天',
+        notice: '公示中 · 还没生效', expired: '已过期 · 别照着付钱', revoked: '已撤销 · 别照着付钱', site: '官网', bot: '官方机器人', code: '开源代码', x: 'X', tg: 'TG 频道', addrs: '收款地址',
+        addrN: (n) => n + ' 个', sep: '、', chain: { evm: '以太坊类', tron: '波场' }, since: '认证于 ', until: '到期 ', scan: '扫码核对', onlyUrl: '官网只有一个：0x 000 000 000 .com（0x 后面 9 个 0）',
+        never: '零九零永远不会让你连接钱包、签名或转钱「验证」', voidNote: '这张名片现在不作数。付钱之前，找对方本人重新核对。', noticeNote: '公示 48 小时，没人举报才生效。', save: '存成图片（发给别人看）' },
     },
     en: {
       title: (n) => '@' + n + ' — 0x000000000 payment card', loading: 'Reading the card from the platform…',
@@ -162,6 +197,10 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
       never2: 'The platform will never ask for your private key or backup file - any message asking for keys is phishing.',
       officialUrl: 'The only official website: 0x 000 000 000 .com (nine zeros after 0x) · 0x000000000 has not issued any token.',
       links: [['/', 'Home'], ['/verify.html', 'What verification is'], ['/alerts.html', 'Paid alerts'], ['/wp', 'White paper']],
+      vc: { brand: 'VERIFIED CARD', official: '0x000000000 official · gold check', yellow: 'Gold check · business / project', blue: 'Blue check · personal', live: 'LIVE', days: (n) => 'verified for ' + n + (n === 1 ? ' day' : ' days'),
+        notice: 'Under notice · not live yet', expired: 'Expired · do not pay from it', revoked: 'Revoked · do not pay from it', site: 'Website', bot: 'Official bot', code: 'Open source', x: 'X', tg: 'TG channel', addrs: 'Payment addresses',
+        addrN: (n) => String(n), sep: ', ', chain: { evm: 'EVM', tron: 'TRON' }, since: 'Since ', until: 'Until ', scan: 'Scan to check', onlyUrl: 'One official site: 0x 000 000 000 .com (nine zeros after 0x)',
+        never: 'We never ask you to connect a wallet, sign, or send money to "verify".', voidNote: 'This card does not count now. Check with them again before paying.', noticeNote: 'Public notice for 48 hours; it goes live only if nobody reports it.', save: 'Save as an image (to share)' },
     },
     // IDLANG0X_20260928：印尼文（DSJ「增加印尼文」）。键、数组长度、函数参数跟 en 一一对应。
     id: {
@@ -205,6 +244,10 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
       never2: 'Platform tidak akan pernah meminta kunci privat atau file cadangan Anda - pesan apa pun yang meminta kunci adalah phishing.',
       officialUrl: 'Satu-satunya situs resmi: 0x 000 000 000 .com (sembilan angka nol setelah 0x) · 0x000000000 tidak pernah menerbitkan token apa pun.',
       links: [['/', 'Beranda'], ['/verify.html', 'Apa itu verifikasi'], ['/alerts.html', 'Peringatan berbayar'], ['/wp', 'Whitepaper']],
+      vc: { brand: 'KARTU TERVERIFIKASI', official: 'Resmi 0x000000000 · centang kuning', yellow: 'Centang kuning · bisnis / proyek', blue: 'Centang biru · pribadi', live: 'AKTIF', days: (n) => 'terverifikasi ' + n + ' hari',
+        notice: 'Masa pengumuman · belum aktif', expired: 'Kedaluwarsa · jangan bayar', revoked: 'Dicabut · jangan bayar', site: 'Situs', bot: 'Bot resmi', code: 'Kode terbuka', x: 'X', tg: 'Kanal TG', addrs: 'Alamat pembayaran',
+        addrN: (n) => String(n), sep: ', ', chain: { evm: 'EVM', tron: 'TRON' }, since: 'Sejak ', until: 'Sampai ', scan: 'Pindai untuk cek', onlyUrl: 'Satu situs resmi: 0x 000 000 000 .com (sembilan nol setelah 0x)',
+        never: 'Kami tidak pernah minta Anda hubungkan dompet, tanda tangan, atau kirim uang.', voidNote: 'Kartu ini tidak berlaku. Cek lagi dengan pemiliknya sebelum bayar.', noticeNote: 'Diumumkan 48 jam; aktif hanya jika tidak ada laporan.', save: 'Simpan sebagai gambar (untuk dibagikan)' },
     },
   };
   // VFMULTISIG0X_20260929：多签核对过的链（平台回的 on：链的代号 → 名字；认不出的代号不显示）
@@ -264,6 +307,43 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
   }
   function qrSvg(text) { const q = qrcode(0, 'M'); q.addData(text); q.make(); return q.createSvgTag({ cellSize: 4, margin: 2, scalable: true }); }
 
+  // CARDPNG0X_20261001：页面顶上那张卡（跟机器人发的名片图同一个样子；二维码打开的就是这一页）。只放名片上本来就有的东西
+  function sealSvg(kind) {
+    const ro = Array.from({ length: 84 }, (_, i) => { const t = (i / 84) * 2 * Math.PI, r = 46 + 2.4 * Math.cos(14 * t); return (52 + r * Math.cos(t)).toFixed(2) + ',' + (52 + r * Math.sin(t)).toFixed(2); }).join(' ');
+    const ink = 'style="stroke:var(--vc-ink)"', mark = kind === 'void' ? '<path d="M38 38l28 28M66 38l-28 28" ' + ink + ' stroke-width="8" stroke-linecap="round"/>'
+      : kind === 'notice' ? [38, 52, 66].map((x) => '<circle cx="' + x + '" cy="52" r="4.6" style="fill:var(--vc-ink)"/>').join('')
+      : '<path d="M33 53l13 13 27-27" fill="none" ' + ink + ' stroke-width="8.5" stroke-linecap="round" stroke-linejoin="round"/>';
+    return '<svg class="vc-seal" viewBox="0 0 104 104" aria-hidden="true"><defs><linearGradient id="vcg" x1="0.2" y1="0" x2="0.8" y2="1"><stop offset="0" style="stop-color:var(--vc-a)"/><stop offset="1" style="stop-color:var(--vc-d)"/></linearGradient></defs>'
+      + '<polygon points="' + ro + '" fill="url(#vcg)"/><circle cx="52" cy="52" r="36" fill="none" style="stroke:var(--vc-d)" stroke-opacity=".6" stroke-width="1.5"/>' + mark + '</svg>';
+  }
+  function vcardEl(c) {
+    const V = T[lang].vc, off = c.status === 'revoked' || c.status === 'expired', notice = c.status === 'notice';
+    const kind = off ? 'void' : notice ? 'notice' : c.tier === 'blue' ? 'blue' : 'gold', card = el('section', 'vcard ' + kind);
+    card.setAttribute('aria-label', '@' + c.name + ' · ' + (off ? V[c.status] : c.official ? V.official : V[c.tier === 'blue' ? 'blue' : 'yellow']));
+    const top = el('div', 'vc-top'), brand = el('div', 'vc-brand'), bt = el('div');
+    bt.append(document.createTextNode('0x000000000'), el('small', null, V.brand));
+    brand.append(el('span', 'logo-mark'), bt);
+    top.append(brand); top.insertAdjacentHTML('beforeend', sealSvg(kind));
+    card.append(top, el('div', 'vc-name', '@' + c.name), el('div', 'vc-tier', off ? V[c.status] : c.official ? V.official : V[c.tier === 'blue' ? 'blue' : 'yellow']));
+    if (!off) { const p = el('div', 'vc-pill' + (notice ? ' notice' : '')); p.append(el('i'), document.createTextNode(notice ? V.notice : c.official ? V.live : V.live + ' · ' + V.days(c.days || 0))); card.append(p); }
+    const body = el('div', 'vc-body'), rows = el('div', 'vc-rows');
+    const row = (k, v) => { const r = el('div', 'vc-row'); r.append(el('span', 'ck', '✓'), el('span', 'k', k), el('span', 'v', v)); rows.append(r); };
+    if (off) rows.append(el('div', 'vc-row', V.voidNote));
+    else if (c.official) { row(V.site, String(c.site || 'https://0x000000000.com').replace(/^https?:\/\//, '')); if (c.bot) row(V.bot, c.bot); if (c.github) row(V.code, String(c.github).replace(/^https?:\/\//, '')); }
+    else {
+      if (c.domain) row(V.site, c.domain); if (c.x) row(V.x, '@' + c.x.handle); if (c.tg) row(V.tg, 't.me/' + c.tg.channel);
+      const live = (c.addresses || []).filter((a) => a.state !== 'adding'), ch = [...new Set(live.map((a) => a.chain))].map((k) => V.chain[k] || k);
+      if (live.length) row(V.addrs, V.addrN(live.length) + (ch.length ? ' · ' + ch.join(V.sep) : ''));
+    }
+    const qr = el('div', 'vc-qr'), q = el('div', 'q');
+    q.innerHTML = qrSvg('https://0x000000000.com/@' + c.name); q.setAttribute('role', 'img'); q.setAttribute('aria-label', 'QR 0x000000000.com/@' + c.name);
+    qr.append(q, el('div', null, V.scan)); body.append(rows, qr); card.append(body);
+    const foot = el('div', 'vc-foot'), d = c.official ? V.onlyUrl : notice ? V.noticeNote : [c.since ? V.since + utc(c.since).slice(0, 10) : '', c.expiresAt ? V.until + utc(c.expiresAt).slice(0, 10) : ''].filter(Boolean).join(' · ');
+    if (d) foot.append(el('div', 'd', d));
+    foot.append(el('div', 'n', V.never)); card.append(foot);
+    return card;
+  }
+  function saveLink(c) { const p = el('p', 'vc-save'), a = el('a', null, T[lang].vc.save); a.href = '/api/card/' + c.name + '.png?lang=' + lang; a.download = '0x000000000-' + c.name + '.png'; p.append(a); return p; }
   function addrBox(a) {
     const L = T[lang], box = el('div', 'box' + (a.state === 'removing' ? ' warn' : ''));
     const head = el('div', 'row-h');
@@ -306,7 +386,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     else if (state === 'none') { document.title = L.title(NAME); app.append(el('div', 'status bad', L.none(NAME)), el('div', 'box bad', L.noneNote)); }
     else if (data && data.official) {
       document.title = L.title(data.name);
-      app.append(el('div', 'status live', L.official), el('p', 'sub', L.officialSub));
+      app.append(vcardEl(data), saveLink(data), el('p', 'sub', L.officialSub));   // CARDPNG0X_20261001：原来这里只有一行绿色 ✅
       const b = el('div', 'box');
       const kv = (k, v, href) => { const d = el('div', 'kv'); d.append(el('span', 'k', k + (lang === 'zh' ? '：' : ': '))); if (href) { const a = el('a', null, v); a.href = href; a.target = '_blank'; a.rel = 'noopener'; d.append(a); } else d.append(el('span', null, v)); return d; };
       b.append(kv(L.oSite, data.site, data.site));
@@ -319,9 +399,9 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
       document.title = L.title(n);
       $('#ttl').textContent = '0x000000000 — @' + n;
       // 撤销的、过期的：只说状态，不列地址、不给核对框（平台也不再给地址 —— 我们不替它担保了）
-      if (c.status === 'revoked' || c.status === 'expired') app.append(el('div', 'status bad', c.status === 'revoked' ? L.revoked(c) : L.expired(c)), el('div', 'box bad', c.status === 'revoked' ? L.revokedNote : L.expiredNote));
+      if (c.status === 'revoked' || c.status === 'expired') app.append(vcardEl(c), el('div', 'box bad', c.status === 'revoked' ? L.revokedNote : L.expiredNote));   // CARDPNG0X_20261001：灰色带红叉的卡
       else {
-        app.append(el('div', 'status ' + (c.status === 'live' ? 'live' : c.status === 'notice' ? 'notice' : 'bad'), c.status === 'live' ? L.live(c) : c.status === 'notice' ? L.notice(c) : L.expired(c)));
+        app.append(vcardEl(c), saveLink(c));   // CARDPNG0X_20261001：原来是一行「✅ @名字 · 黄勾 …」
         if (c.status === 'notice') app.append(el('div', 'box warn', L.noticeNote));
         app.append(el('p', 'sub', L.what.replace('{n}', n)));
         app.append(el('div', 'box warn', L.copyFromHere));

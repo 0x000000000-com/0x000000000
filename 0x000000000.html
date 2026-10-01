@@ -750,7 +750,7 @@ details.netline[open]>summary{margin-bottom:4px}
           <ul class="proof">
             <li data-i18n="proof1">Your half of the key is created on your own computer and only ever stored there. The platform only receives a public key (public, like a bank account number) and signatures (proof that you hold your half, without revealing it). Everything the minting page says to the platform is listed at its bottom under "Every word this page said to the platform" - check it yourself.</li>
             <li data-i18n="proof2">"Make key" needs no network: switch off Wi-Fi before clicking and it still works.</li>
-            <li><span data-i18n="proof3">This page is a single file, byte-for-byte identical to the copy published on GitHub. GitHub's machines download the live page every hour and compare fingerprints, and run the whole flow in a real browser on every new version to check that no private key is sent - we cannot touch either check.</span> <span class="dim"><span data-i18n="proofVer">page version</span> <span id="buildId">f0fa36c1c93e</span></span></li>
+            <li><span data-i18n="proof3">This page is a single file, byte-for-byte identical to the copy published on GitHub. GitHub's machines download the live page every hour and compare fingerprints, and run the whole flow in a real browser on every new version to check that no private key is sent - we cannot touch either check.</span> <span class="dim"><span data-i18n="proofVer">page version</span> <span id="buildId">09be04086045</span></span></li>
           </ul></details>
           <!-- LESSMORE0X_20260929：原来这里还有一个「下载铸造页面到自己电脑上」—— 网站上它跟下面那个大「下载」按钮重复，下载下来的那份又一直把它藏着（藏了还留下一个孤零零的「·」）。拿掉，只留「到 GitHub 核对」。 -->
           <div class="proof-links"><a href="https://github.com/0x000000000-com/0x000000000" target="_blank" rel="noopener" data-i18n="proofGh">Verify on GitHub</a></div>
@@ -3482,9 +3482,13 @@ initStars();
       mineBad: '「你自己的地址」不是有效的地址，或者跟上面那个不是同一类（波场对波场、以太坊类对以太坊类），这一次只查了上面那一个。',
       same: '两个地址是同一个。',
       net: '这一次没查成：',
-      h: { poisoner: '⛔ 这是投毒地址', targeted: '⚠ 有人在仿这个地址的转账对象', lookalike: '⚠ 这个地址的记录里有长得很像的地址', caution: '⚠ 小心：几乎没有真实往来', clean: '✅ 没发现投毒记录', empty: '✅ 链上还没有记录（新地址）' },
+      h: { poisoner: '⛔ 这是投毒地址', targeted: '⚠ 有人在仿这个地址转过账的对象（不是仿它自己）', lookalike: '⚠ 这个地址的记录里有长得很像的地址', caution: '⚠ 小心：几乎没有真实往来', clean: '✅ 没发现投毒记录', empty: '✅ 链上还没有记录（新地址）' },
       poisoner: (p) => '它最近往 ' + p.microTo + ' 个不同的地址打过 0.01 USDT 以下的零头（' + p.micro + ' 笔）—— 骗子就是这样把假地址塞进别人的转账记录。不要往这个地址转钱。',
-      targeted: (n, k) => n + ' 个假地址，仿了这个地址的 ' + k + ' 个转账对象。它们头尾跟真的对象一样、中间不一样 —— 只等你从转账记录里复制错。',
+      targeted: (n, k) => n + ' 个假地址，仿的是这个地址转过账的 ' + k + ' 个对象 —— 不是仿它自己。下面每一对：「真」是它真的转账对象，「假」是骗子造的、头尾跟「真」一样，被塞进这个地址的转账记录，只等你从记录里复制错。',
+      relSent: (a, d) => '↑ 真的这个：这个地址 ' + d + ' 付过它 ' + a + ' USDT —— 骗子仿的是它', relRecv: (a, d) => '↑ 真的这个：' + d + ' 它付过这个地址 ' + a + ' USDT —— 骗子仿的是它',
+      relSentN: (a, d, n) => '↑ 真的这个：这个地址跟它之间有 ' + n + ' 笔转账，一共付过它 ' + a + ' USDT（最近一笔 ' + d + '）—— 骗子仿的是它',
+      relRecvN: (a, d, n) => '↑ 真的这个：它跟这个地址之间有 ' + n + ' 笔转账，一共付过这个地址 ' + a + ' USDT（最近一笔 ' + d + '）—— 骗子仿的是它',
+      relSentK: '↑ 真的这个：这个地址付过它钱 —— 骗子仿的是它', relRecvK: '↑ 真的这个：它付过这个地址钱 —— 骗子仿的是它',
       lookalike: '其中一个可能是假的 —— 转账前核对整串地址。',
       caution: (p) => '它几乎没有真实的 USDT 往来，却跟 ' + p.zfPeers + ' 个地址有 0 元转账或假 USDT 记录。付钱之前，找对方用别的方式再核对一次。',
       clean: '在它最近的记录里，没看到有人往它这里塞零头 / 0 元 / 假 USDT 来仿它的转账对象；它自己也没有在群发零头。',
@@ -3541,9 +3545,13 @@ initStars();
       mineBad: 'Your own address is not a valid address, or not the same kind as the one above (TRON with TRON, EVM with EVM), so only the address above was checked.',
       same: 'Both addresses are the same.',
       net: 'This check did not go through: ',
-      h: { poisoner: '⛔ This is a poisoning address', targeted: '⚠ Someone is imitating the contacts of this address', lookalike: '⚠ This history contains addresses that look very alike', caution: '⚠ Careful: almost no real activity', clean: '✅ No poisoning found', empty: '✅ No history on chain yet (a new address)' },
+      h: { poisoner: '⛔ This is a poisoning address', targeted: '⚠ Someone is imitating the contacts of this address (not the address itself)', lookalike: '⚠ This history contains addresses that look very alike', caution: '⚠ Careful: almost no real activity', clean: '✅ No poisoning found', empty: '✅ No history on chain yet (a new address)' },
       poisoner: (p) => 'It recently sent dust under 0.01 USDT to ' + p.microTo + ' different addresses (' + p.micro + ' transfers). That is how scammers plant fake addresses in other people\'s transfer history. Do not send money to it.',
-      targeted: (n, k) => n + ' fake addresses imitate ' + k + ' of this address\'s contacts. Their start and end match the real contacts while the middle differs - waiting for a copy from the transfer history.',
+      targeted: (n, k) => n + ' fake addresses imitate ' + k + ' of the addresses this one has transacted with - not this address itself. In each pair below, "real" is the real contact and "fake" is the look-alike a scammer made, same start and end, planted in this address\'s history and waiting for a copy from it.',
+      relSent: (a, d) => '↑ The real one: this address paid it ' + a + ' USDT on ' + d + ' - that is what the scammer imitates', relRecv: (a, d) => '↑ The real one: it paid this address ' + a + ' USDT on ' + d + ' - that is what the scammer imitates',
+      relSentN: (a, d, n) => '↑ The real one: ' + n + ' transfers between them; this address paid it ' + a + ' USDT in total (latest ' + d + ') - that is what the scammer imitates',
+      relRecvN: (a, d, n) => '↑ The real one: ' + n + ' transfers between them; it paid this address ' + a + ' USDT in total (latest ' + d + ') - that is what the scammer imitates',
+      relSentK: '↑ The real one: this address has paid it - that is what the scammer imitates', relRecvK: '↑ The real one: it has paid this address - that is what the scammer imitates',
       lookalike: 'One of them may be fake - compare the whole address before you send.',
       caution: (p) => 'It has almost no real USDT activity, yet has zero-value or fake-USDT records with ' + p.zfPeers + ' addresses. Before paying, confirm it with the other person through another channel.',
       clean: 'In its recent history nobody planted dust, zero-value or fake USDT to imitate its contacts, and it is not spraying dust itself.',
@@ -3598,9 +3606,13 @@ initStars();
       mineBad: 'Alamat Anda sendiri bukan alamat yang valid, atau tidak sejenis dengan alamat di atas (TRON dengan TRON, EVM dengan EVM), jadi hanya alamat di atas yang dicek.',
       same: 'Kedua alamat itu sama.',
       net: 'Pengecekan ini tidak berhasil: ',
-      h: { poisoner: '⛔ Ini alamat peracun', targeted: '⚠ Ada yang meniru kontak alamat ini', lookalike: '⚠ Riwayat ini berisi alamat-alamat yang sangat mirip', caution: '⚠ Hati-hati: hampir tidak ada aktivitas nyata', clean: '✅ Tidak ditemukan peracunan', empty: '✅ Belum ada riwayat on-chain (alamat baru)' },
+      h: { poisoner: '⛔ Ini alamat peracun', targeted: '⚠ Ada yang meniru kontak alamat ini (bukan alamat ini sendiri)', lookalike: '⚠ Riwayat ini berisi alamat-alamat yang sangat mirip', caution: '⚠ Hati-hati: hampir tidak ada aktivitas nyata', clean: '✅ Tidak ditemukan peracunan', empty: '✅ Belum ada riwayat on-chain (alamat baru)' },
       poisoner: (p) => 'Baru-baru ini alamat ini mengirim debu di bawah 0.01 USDT ke ' + p.microTo + ' alamat berbeda (' + p.micro + ' transfer). Begitulah cara penipu menyelipkan alamat palsu ke riwayat transfer orang lain. Jangan kirim uang ke alamat ini.',
-      targeted: (n, k) => n + ' alamat palsu meniru ' + k + ' kontak alamat ini. Awal dan akhirnya cocok dengan kontak asli, sementara bagian tengahnya berbeda - menunggu disalin dari riwayat transfer.',
+      targeted: (n, k) => n + ' alamat palsu meniru ' + k + ' alamat yang pernah bertransaksi dengan alamat ini - bukan alamat ini sendiri. Di setiap pasangan di bawah, "asli" adalah kontak yang sebenarnya dan "palsu" tiruan buatan penipu, awal dan akhirnya sama, diselipkan ke riwayat alamat ini dan menunggu disalin.',
+      relSent: (a, d) => '↑ Yang asli: alamat ini membayarnya ' + a + ' USDT pada ' + d + ' - itulah yang ditiru penipu', relRecv: (a, d) => '↑ Yang asli: ia membayar alamat ini ' + a + ' USDT pada ' + d + ' - itulah yang ditiru penipu',
+      relSentN: (a, d, n) => '↑ Yang asli: ' + n + ' transfer di antara keduanya; alamat ini membayarnya total ' + a + ' USDT (terakhir ' + d + ') - itulah yang ditiru penipu',
+      relRecvN: (a, d, n) => '↑ Yang asli: ' + n + ' transfer di antara keduanya; ia membayar alamat ini total ' + a + ' USDT (terakhir ' + d + ') - itulah yang ditiru penipu',
+      relSentK: '↑ Yang asli: alamat ini pernah membayarnya - itulah yang ditiru penipu', relRecvK: '↑ Yang asli: ia pernah membayar alamat ini - itulah yang ditiru penipu',
       lookalike: 'Salah satunya mungkin palsu - bandingkan seluruh alamat sebelum mengirim.',
       caution: (p) => 'Alamat ini hampir tidak punya aktivitas USDT nyata, tetapi punya catatan transfer bernilai nol atau USDT palsu dengan ' + p.zfPeers + ' alamat. Sebelum membayar, pastikan dengan orang tersebut lewat saluran lain.',
       clean: 'Dalam riwayat terbarunya, tidak ada yang menyelipkan debu, transfer bernilai nol, atau USDT palsu untuk meniru kontaknya, dan alamat ini sendiri tidak sedang menyebar debu.',
@@ -3669,9 +3681,17 @@ initStars();
     const p = ZJ.pre(chain || 'tron'), n = a.length;
     return [...a].map((c, i) => '<i class="' + (i < p ? 'pf' : i < p + head || i >= n - tail ? 'ok' : 'no') + '">' + esc(c) + '</i>').join('');
   }
-  function pair(top, topL, bot, botL, head, tail, extra, chain) {
+  // CARDPNG0X_20261001：「真」的那个跟查的地址是什么关系（DSJ：「我贴的是99999的地址，但是显示8888的地址，不对吧？」）—— 先找带金额的 counterparties，再看 known
+  function relLine(r, addr) {
+    const c = (r.counterparties || []).find((x) => x.address === addr), k = (r.known || []).find((x) => x.address === addr);
+    const d = (ts) => (ts ? new Date(ts).toISOString().slice(0, 10) : '—');
+    // FCRELN0X_20261002：sent / received 是所有转账的合计、last 是最近一笔（不分方向）—— 不止一笔时写几笔、一共、最近一笔，不写成「某天付过它（合计）」
+    const t = c && Number(c.sent) > 0 ? T(c.n > 1 ? 'relSentN' : 'relSent')(c.sent, d(c.last), c.n) : c && Number(c.received) > 0 ? T(c.n > 1 ? 'relRecvN' : 'relRecv')(c.received, d(c.last), c.n) : k ? T(k.sent ? 'relSentK' : 'relRecvK') : '';
+    return t ? '<div class="fc-why">' + esc(t) + '</div>' : '';
+  }
+  function pair(top, topL, bot, botL, head, tail, extra, chain, rel) {
     return '<div class="fc-pair"><div class="fc-row"><b>' + esc(topL) + '</b><code>' + marked(top, head, tail, chain) + '</code></div>'
-      + '<div class="fc-row"><b>' + esc(botL) + '</b><code>' + marked(bot, head, tail, chain) + '</code></div>'
+      + '<div class="fc-row"><b>' + esc(botL) + '</b><code>' + marked(bot, head, tail, chain) + '</code></div>' + (rel || '')
       + '<div class="fc-why">' + esc(T('sameTxt')(head, tail)) + (extra ? ' · ' + extra : '') + '</div></div>';
   }
   const caseFind = (needle) => NEWS.find((x) => x.w[1].includes(needle) || x.a[1].includes(needle));
@@ -3739,7 +3759,7 @@ initStars();
     else if (v === 'targeted') {
       L.push('<p>' + esc(T('targeted')(r.poisonCount, new Set(r.poison.map((p) => p.imitates)).size)) + '</p>');
       for (const p of r.poison.slice(0, 5)) L.push(pair(p.address, T('fakeL'), p.imitates, T('realL'), p.head, p.tail,
-        esc(p.types.map((x) => T('types')[x] || x).join(' / ') + ' · ' + utc(p.last)) + (p.tx && p.tx[0] && txUrl(p.tx[0]) ? ' · <a href="' + esc(txUrl(p.tx[0])) + '" target="_blank" rel="noopener noreferrer">' + esc(T('tx')) + '</a>' : ''), ch));
+        esc(p.types.map((x) => T('types')[x] || x).join(' / ') + ' · ' + utc(p.last)) + (p.tx && p.tx[0] && txUrl(p.tx[0]) ? ' · <a href="' + esc(txUrl(p.tx[0])) + '" target="_blank" rel="noopener noreferrer">' + esc(T('tx')) + '</a>' : ''), ch, relLine(r, p.imitates)));
       if (r.poisonCount > 5) L.push('<p class="fc-dim">' + esc(T('more')(r.poisonCount - 5)) + '</p>');
     } else if (v === 'lookalike') {
       L.push('<p>' + esc(T('lookalike')) + '</p>');
