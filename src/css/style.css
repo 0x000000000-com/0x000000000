@@ -538,3 +538,7 @@ details.netline>summary::-webkit-details-marker{display:none}
 details.netline>summary::after{content:' ▾';color:var(--faint);font-weight:400}
 details.netline[open]>summary::after{content:' ▴'}
 details.netline[open]>summary{margin-bottom:4px}
+/* VOUCHER0X_20261002：付款这一步的两串长地址（个人靓号收款那一行、合约 / 发币页「USDT: 0x…」那一行）40 位不断行 ——
+   320 宽上把整页撑出去、390 宽上冲出卡片。原来就这样（窄屏检查只量开页时的样子，量不到下单之后才出现的这一步）；
+   跟 .note 同一个办法：放不下的长串才折行，普通字不受影响。 */
+#payInfo .lbl,.c2form>.step-desc{overflow-wrap:anywhere}
