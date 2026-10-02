@@ -77,6 +77,7 @@ code.snip{display:block;background:#0a0d14;border:1px solid var(--line2);border-
 .vc-row{display:flex;gap:8px;align-items:baseline;margin:5px 0;font-size:13.5px;overflow-wrap:anywhere;min-width:0}
 .vc-row .k{color:var(--dim);flex:none}
 .vc-row .v{min-width:0}
+.vc-row a.v{color:var(--vc-a);text-decoration:underline;text-decoration-color:var(--vc-soft);text-underline-offset:3px}.vc-row a.v:hover{text-decoration-color:currentColor}
 .vc-row .ck{flex:none;width:17px;height:17px;border-radius:50%;background:var(--vc-soft);color:var(--vc-b);display:inline-flex;align-items:center;justify-content:center;font-size:11px;line-height:1;align-self:center}
 .vc-qr{flex:none;width:124px;text-align:center;font-size:11px;color:var(--dim)}
 .vc-qr .q{background:#fff;border-radius:9px;padding:5px;margin-bottom:4px}.vc-qr .q svg{display:block;width:100%;height:auto}
@@ -116,7 +117,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
       notice: (c) => '⏳ @' + c.name + ' · 公示中，' + utc(c.noticeUntil) + ' 生效',
       noticeNote: '公示中：还没生效。48 小时里谁都能在官方机器人里举报；这期间付钱之前，另外找他本人核对一次。',
       expired: (c) => '✗ @' + c.name + ' · 认证已过期', expiredNote: '这张名片已经过期，✅ 去掉了。付钱之前找他本人重新核对，别照着过期的名片付。',
-      revoked: (c) => '✗ @' + c.name + ' · 认证已撤销', revokedNote: '零九零核实过举报之后撤销了这个认证。不要照这张名片付钱。',
+      revoked: (c) => '✗ @' + c.name + ' · 认证已撤销', revokedNote: '零九零核实过举报之后撤销了这个认证。不要照这张名片付钱。', pausedNote: '这张店主名片暂停了（店主号收回或平台锁定）。不要照这张名片付钱。',
       what: '零九零证明的是：下面这些地址、网址、频道在 @{n} 手里（控制权）—— 不证明他是好人。',
       copyFromHere: '从这里复制，别从聊天记录、转账记录里复制 —— 投毒骗子就是在转账记录里下手的。',
       addrHead: (a) => (a.chain === 'evm' ? (Array.isArray(a.on) ? '以太坊类多签（只核对过：' + a.on.map(chainOf).join('、') + '）' : '以太坊类（BSC、以太坊、Base……同一个地址）') : '波场 TRON') + (a.label && !Array.isArray(a.on) ? ' · ' + LBL.zh[a.label] : ''),
@@ -154,7 +155,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
       vc: { brand: '认证名片', official: '零九零官方 · 黄勾', yellow: '黄勾 · 商家 / 项目方认证', blue: '蓝勾 · 个人认证', live: '生效中', days: (n) => '已认证 ' + n + ' 天',
         notice: '公示中 · 还没生效', expired: '已过期 · 别照着付钱', revoked: '已撤销 · 别照着付钱', site: '官网', bot: '官方机器人', code: '开源代码', x: 'X', tg: 'TG 频道', addrs: '收款地址',
         addrN: (n) => n + ' 个', sep: '、', chain: { evm: '以太坊类', tron: '波场' }, since: '认证于 ', until: '到期 ', scan: '扫码核对', onlyUrl: '官网只有一个：0x 000 000 000 .com（0x 后面 9 个 0）',
-        never: '零九零永远不会让你连接钱包、签名或转钱「验证」', voidNote: '这张名片现在不作数。付钱之前，找对方本人重新核对。', noticeNote: '公示 48 小时，没人举报才生效。', save: '存成图片（发给别人看）', role: '身份', roleOwner: '零九零店主' },
+        never: '零九零永远不会让你连接钱包、签名或转钱「验证」', voidNote: '这张名片现在不作数。付钱之前，找对方本人重新核对。', noticeNote: '公示 48 小时，没人举报才生效。', save: '存成图片（发给别人看）', role: '身份', roleOwner: '零九零店主', tgUser: 'TG' },
     },
     en: {
       title: (n) => '@' + n + ' — 0x000000000 payment card', loading: 'Reading the card from the platform…',
@@ -162,7 +163,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
       notice: (c) => '⏳ @' + c.name + ' · on public notice, live at ' + utc(c.noticeUntil),
       noticeNote: 'On public notice: not live yet. For 48 hours anyone can report it in the official bot; until then, confirm with them another way before paying.',
       expired: (c) => '✗ @' + c.name + ' · verification expired', expiredNote: 'This card has expired and lost its ✅. Confirm with them again before paying - do not pay from an expired card.',
-      revoked: (c) => '✗ @' + c.name + ' · verification revoked', revokedNote: '0x000000000 revoked this verification after checking a report. Do not pay from this card.',
+      revoked: (c) => '✗ @' + c.name + ' · verification revoked', revokedNote: '0x000000000 revoked this verification after checking a report. Do not pay from this card.', pausedNote: 'This owner card is paused (owner account revoked or platform locked). Do not pay from this card.',
       what: 'What 0x000000000 proves: the addresses, website and channel below are controlled by @{n} - not that they are good people.',
       copyFromHere: 'Copy from here - never from a chat or your transfer history. That history is exactly where address poisoners strike.',
       addrHead: (a) => (a.chain === 'evm' ? (Array.isArray(a.on) ? 'EVM multisig (checked only on ' + a.on.map(chainOf).join(', ') + ')' : 'EVM (BSC, Ethereum, Base… same address)') : 'TRON') + (a.label && !Array.isArray(a.on) ? ' · ' + LBL.en[a.label] : ''),
@@ -200,7 +201,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
       vc: { brand: 'VERIFIED CARD', official: '0x000000000 official · gold check', yellow: 'Gold check · business / project', blue: 'Blue check · personal', live: 'LIVE', days: (n) => 'verified for ' + n + (n === 1 ? ' day' : ' days'),
         notice: 'Under notice · not live yet', expired: 'Expired · do not pay from it', revoked: 'Revoked · do not pay from it', site: 'Website', bot: 'Official bot', code: 'Open source', x: 'X', tg: 'TG channel', addrs: 'Payment addresses',
         addrN: (n) => String(n), sep: ', ', chain: { evm: 'EVM', tron: 'TRON' }, since: 'Since ', until: 'Until ', scan: 'Scan to check', onlyUrl: 'One official site: 0x 000 000 000 .com (nine zeros after 0x)',
-        never: 'We never ask you to connect a wallet, sign, or send money to "verify".', voidNote: 'This card does not count now. Check with them again before paying.', noticeNote: 'Public notice for 48 hours; it goes live only if nobody reports it.', save: 'Save as an image (to share)', role: 'Role', roleOwner: 'Owner of 0x000000000' },
+        never: 'We never ask you to connect a wallet, sign, or send money to "verify".', voidNote: 'This card does not count now. Check with them again before paying.', noticeNote: 'Public notice for 48 hours; it goes live only if nobody reports it.', save: 'Save as an image (to share)', role: 'Role', roleOwner: 'Owner of 0x000000000', tgUser: 'Telegram' },
     },
     // IDLANG0X_20260928：印尼文（DSJ「增加印尼文」）。键、数组长度、函数参数跟 en 一一对应。
     id: {
@@ -209,7 +210,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
       notice: (c) => '⏳ @' + c.name + ' · dalam masa pengumuman, aktif pada ' + utc(c.noticeUntil),
       noticeNote: 'Dalam masa pengumuman: belum aktif. Selama 48 jam siapa pun bisa melaporkannya di bot resmi; sampai saat itu, konfirmasikan dengan pemiliknya lewat cara lain sebelum membayar.',
       expired: (c) => '✗ @' + c.name + ' · verifikasi kedaluwarsa', expiredNote: 'Kartu ini sudah kedaluwarsa dan kehilangan ✅-nya. Konfirmasikan lagi dengan pemiliknya sebelum membayar - jangan membayar dari kartu yang kedaluwarsa.',
-      revoked: (c) => '✗ @' + c.name + ' · verifikasi dicabut', revokedNote: '0x000000000 mencabut verifikasi ini setelah memeriksa sebuah laporan. Jangan membayar dari kartu ini.',
+      revoked: (c) => '✗ @' + c.name + ' · verifikasi dicabut', revokedNote: '0x000000000 mencabut verifikasi ini setelah memeriksa sebuah laporan. Jangan membayar dari kartu ini.', pausedNote: 'Kartu pemilik ini dijeda (akun pemilik dicabut atau platform dikunci). Jangan membayar dari kartu ini.',
       what: 'Yang dibuktikan 0x000000000: alamat, situs web, dan kanal di bawah ini dikendalikan oleh @{n} - bukan bahwa mereka orang baik.',
       copyFromHere: 'Salin dari sini - jangan pernah dari chat atau riwayat transfer Anda. Riwayat itulah tempat pelaku peracunan alamat beraksi.',
       addrHead: (a) => (a.chain === 'evm' ? (Array.isArray(a.on) ? 'Multisig EVM (hanya dicek di ' + a.on.map(chainOf).join(', ') + ')' : 'EVM (BSC, Ethereum, Base… alamat sama)') : 'TRON') + (a.label && !Array.isArray(a.on) ? ' · ' + LBL.id[a.label] : ''),
@@ -247,7 +248,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
       vc: { brand: 'KARTU TERVERIFIKASI', official: 'Resmi 0x000000000 · centang kuning', yellow: 'Centang kuning · bisnis / proyek', blue: 'Centang biru · pribadi', live: 'AKTIF', days: (n) => 'terverifikasi ' + n + ' hari',
         notice: 'Masa pengumuman · belum aktif', expired: 'Kedaluwarsa · jangan bayar', revoked: 'Dicabut · jangan bayar', site: 'Situs', bot: 'Bot resmi', code: 'Kode terbuka', x: 'X', tg: 'Kanal TG', addrs: 'Alamat pembayaran',
         addrN: (n) => String(n), sep: ', ', chain: { evm: 'EVM', tron: 'TRON' }, since: 'Sejak ', until: 'Sampai ', scan: 'Pindai untuk cek', onlyUrl: 'Satu situs resmi: 0x 000 000 000 .com (sembilan nol setelah 0x)',
-        never: 'Kami tidak pernah minta Anda hubungkan dompet, tanda tangan, atau kirim uang.', voidNote: 'Kartu ini tidak berlaku. Cek lagi dengan pemiliknya sebelum bayar.', noticeNote: 'Diumumkan 48 jam; aktif hanya jika tidak ada laporan.', save: 'Simpan sebagai gambar (untuk dibagikan)', role: 'Peran', roleOwner: 'Pemilik 0x000000000' },
+        never: 'Kami tidak pernah minta Anda hubungkan dompet, tanda tangan, atau kirim uang.', voidNote: 'Kartu ini tidak berlaku. Cek lagi dengan pemiliknya sebelum bayar.', noticeNote: 'Diumumkan 48 jam; aktif hanya jika tidak ada laporan.', save: 'Simpan sebagai gambar (untuk dibagikan)', role: 'Peran', roleOwner: 'Pemilik 0x000000000', tgUser: 'Telegram' },
     },
   };
   // VFMULTISIG0X_20260929：多签核对过的链（平台回的 on：链的代号 → 名字；认不出的代号不显示）
@@ -329,19 +330,27 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     card.append(top, el('div', 'vc-name', '@' + shownOf(c)), el('div', 'vc-tier', off ? V[c.status] : c.official ? V.official : V[c.tier === 'blue' ? 'blue' : 'yellow']));
     if (!off) { const p = el('div', 'vc-pill' + (notice ? ' notice' : '')); p.append(el('i'), document.createTextNode(notice ? V.notice : c.official ? V.live : V.live + ' · ' + V.days(c.days || 0))); card.append(p); }
     const body = el('div', 'vc-body'), rows = el('div', 'vc-rows');
-    const row = (k, v) => { const r = el('div', 'vc-row'); r.append(el('span', 'ck', '✓'), el('span', 'k', k), el('span', 'v', v)); rows.append(r); };
+    const row = (k, v, href) => { const r = el('div', 'vc-row'), x = el(href ? 'a' : 'span', 'v', v); if (href) { x.href = href; x.target = '_blank'; x.rel = 'noopener'; } r.append(el('span', 'ck', '✓'), el('span', 'k', k), x); rows.append(r); };   // OWNERCARD2X_20261002：href = 这一行能点
     if (off) rows.append(el('div', 'vc-row', V.voidNote));
     else if (c.official) { row(V.site, String(c.site || 'https://0x000000000.com').replace(/^https?:\/\//, '')); if (c.bot) row(V.bot, c.bot); if (c.github) row(V.code, String(c.github).replace(/^https?:\/\//, '')); }
     else {
       if (c.owner) row(V.role, V.roleOwner);   // OWNERCARD0X_20261002：店主名片第一行「身份 零九零店主」（跟名片图同一行）
+      // OWNERCARD2X_20261002：店主名片跟名片图同样几行 —— 官网 · 官方机器人 · 开源代码 · TG（都能点；网址、用户名先验写法，不对的不画）
+      const tgName = (s) => (/^@?[A-Za-z0-9_]{5,32}$/.test(String(s || '')) ? String(s).replace(/^@/, '') : null), https = (u) => (/^https:\/\/[A-Za-z0-9.\/_-]+$/.test(String(u || '')) ? String(u) : null);
+      if (c.owner) {
+        if (https(c.site)) row(V.site, c.site.replace(/^https:\/\//, ''), c.site);
+        if (tgName(c.bot)) row(V.bot, '@' + tgName(c.bot), 'https://t.me/' + tgName(c.bot));
+        if (https(c.github)) row(V.code, c.github.replace(/^https:\/\//, ''), c.github);
+      }
       if (c.domain) row(V.site, c.domain); if (c.x) row(V.x, '@' + c.x.handle); if (c.tg) row(V.tg, 't.me/' + c.tg.channel);
+      if (c.owner && tgName(c.tgUser)) row(V.tgUser, '@' + tgName(c.tgUser), 'https://t.me/' + tgName(c.tgUser));
       const live = (c.addresses || []).filter((a) => a.state !== 'adding'), ch = [...new Set(live.map((a) => a.chain))].map((k) => V.chain[k] || k);
       if (live.length) row(V.addrs, V.addrN(live.length) + (ch.length ? ' · ' + ch.join(V.sep) : ''));
     }
     const qr = el('div', 'vc-qr'), q = el('div', 'q');
     q.innerHTML = qrSvg('https://0x000000000.com/@' + c.name); q.setAttribute('role', 'img'); q.setAttribute('aria-label', 'QR 0x000000000.com/@' + c.name);
     qr.append(q, el('div', null, V.scan)); body.append(rows, qr); card.append(body);
-    const foot = el('div', 'vc-foot'), d = c.official ? V.onlyUrl : notice ? V.noticeNote : [c.since ? V.since + utc(c.since).slice(0, 10) : '', c.expiresAt ? V.until + utc(c.expiresAt).slice(0, 10) : ''].filter(Boolean).join(' · ');
+    const foot = el('div', 'vc-foot'), d = c.official ? V.onlyUrl : notice ? V.noticeNote : [c.since ? V.since + utc(c.since).slice(0, 10) : '', c.expiresAt && !c.owner ? V.until + utc(c.expiresAt).slice(0, 10) : ''].filter(Boolean).join(' · ');   // OWNERCARD2X_20261002：店主名片不写到期
     if (d) foot.append(el('div', 'd', d));
     foot.append(el('div', 'n', V.never)); card.append(foot);
     return card;
@@ -402,7 +411,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
       document.title = L.title(sn);
       $('#ttl').textContent = '0x000000000 — @' + sn;
       // 撤销的、过期的：只说状态，不列地址、不给核对框（平台也不再给地址 —— 我们不替它担保了）
-      if (c.status === 'revoked' || c.status === 'expired') app.append(vcardEl(c), el('div', 'box bad', c.status === 'revoked' ? L.revokedNote : L.expiredNote));   // CARDPNG0X_20261001：灰色带红叉的卡
+      if (c.status === 'revoked' || c.status === 'expired') app.append(vcardEl(c), el('div', 'box bad', c.status === 'revoked' ? (c.paused ? L.pausedNote : L.revokedNote) : L.expiredNote));   // OWN2 复核：店主名片暂停（店主号收回 / 救援锁定）不说「核实过举报」   // CARDPNG0X_20261001：灰色带红叉的卡
       else {
         app.append(vcardEl(c), saveLink(c));   // CARDPNG0X_20261001：原来是一行「✅ @名字 · 黄勾 …」
         if (c.status === 'notice') app.append(el('div', 'box warn', L.noticeNote));
@@ -430,7 +439,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
         if (c.x) info.append(kv(L.x, '@' + c.x.handle, 'https://x.com/' + c.x.handle));
         if (c.tg) info.append(kv(L.tg, 't.me/' + c.tg.channel, 'https://t.me/' + c.tg.channel));
         if (c.since) info.append(kv(L.since, utc(c.since).slice(0, 10)));
-        if (c.expiresAt) info.append(kv(L.until, utc(c.expiresAt).slice(0, 10)));
+        if (c.expiresAt && !c.owner) info.append(kv(L.until, utc(c.expiresAt).slice(0, 10)));   // OWNERCARD2X_20261002：店主名片跟着店主号走，不会到期
         app.append(info);
         if (c.ref && /^https:\/\/0x000000000\.com\/\?ref=[2-9A-HJ-NP-Z]{6}$/.test(c.ref)) { const rb = el('div', 'box'); rb.append(el('div', 'row-h', L.refHead)); const a = el('a', null, L.refLink.replace('{n}', sn)); a.href = c.ref; rb.append(a); app.append(rb); }
         if (c.tier === 'yellow' && c.status === 'live') {
