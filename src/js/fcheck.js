@@ -265,20 +265,23 @@
   const MS_CHAIN = { ethereum: 'Ethereum', bsc: 'BSC', base: 'Base', arbitrum: 'Arbitrum', optimism: 'Optimism', polygon: 'Polygon', avalanche: 'Avalanche', linea: 'Linea', zksync: 'zkSync' };   // VFMULTISIG0X_20260929
   function vfBlock(vf, addr, chain) {
     if (!vf) return '';
-    const card = (n) => (/^[a-z0-9_]{3,20}$/.test(n) ? '<p><a href="' + SITE + '/@' + n + '" target="_blank" rel="noopener noreferrer">' + esc(T('vfCard')(n)) + '</a></p>' : '');
+    // OWNERCARD0X_20261002：@名字照打的大小写显示（@DSJ）—— 只认「小写之后就是 name」的那一种；链接照旧用小写的 name
+    const sh = (o) => (typeof o.shown === 'string' && /^[A-Za-z][A-Za-z0-9_]{2,19}$/.test(o.shown) && o.shown.toLowerCase() === o.name ? o.shown : o.name);
+    const dv = (o) => Object.assign({}, o, { name: sh(o) });
+    const card = (o) => (/^[a-z0-9_]{3,20}$/.test(o.name) ? '<p><a href="' + SITE + '/@' + o.name + '" target="_blank" rel="noopener noreferrer">' + esc(T('vfCard')(sh(o))) + '</a></p>' : '');
     const v = vf.verified, l = vf.like;
     if (v && typeof v.name === 'string') { const c = v.contract === true ? 'C' : '';
-      return '<div class="fc-card lv-' + (v.status === 'live' ? 'green' : 'amber') + '"><div class="fc-h">' + esc(T((v.status === 'live' ? 'vfLive' : 'vfNotice') + c)(v)) + '</div>'
+      return '<div class="fc-card lv-' + (v.status === 'live' ? 'green' : 'amber') + '"><div class="fc-h">' + esc(T((v.status === 'live' ? 'vfLive' : 'vfNotice') + c)(dv(v))) + '</div>'
       + '<p class="fc-dim">' + esc(T('vfWhat' + c)) + '</p>'
       + (v.multisig === true && Array.isArray(v.on) && v.on.length ? '<p class="fc-dim">' + esc(T('vfMs')(v.on.map((k) => MS_CHAIN[k] || '?').join(LI() === 0 ? '、' : ', '))) + '</p>' : '')
-      + card(v.name) + '</div>'; }
+      + card(v) + '</div>'; }
     let out = '';
-    if (l && typeof l.name === 'string' && typeof l.address === 'string') out += '<div class="fc-card lv-red"><div class="fc-h">' + esc(T('vfLike')(l)) + '</div>'
-      + pair(addr, T('thisL'), l.address, '@' + l.name + ' · ' + T('vfL'), l.head, l.tail, '', chain) + '<p>' + esc(T('vfLikeWhy')(l)) + '</p>' + card(l.name) + '</div>';
+    if (l && typeof l.name === 'string' && typeof l.address === 'string') out += '<div class="fc-card lv-red"><div class="fc-h">' + esc(T('vfLike')(dv(l))) + '</div>'
+      + pair(addr, T('thisL'), l.address, '@' + sh(l) + ' · ' + T('vfL'), l.head, l.tail, '', chain) + '<p>' + esc(T('vfLikeWhy')(dv(l))) + '</p>' + card(l) + '</div>';
     const x = vf.sameName;   // C2NAMECHECK0X_20260929
     if (x && typeof x.name === 'string' && typeof x.label === 'string' && typeof x.chainLabel === 'string' && /^0x[0-9a-fA-F]{40}$/.test(x.official || ''))
-      out += '<div class="fc-card lv-amber"><div class="fc-h">' + esc(T('vfSame')(x)) + '</div><p>' + esc(T('vfSameWhy')(x)) + '</p>'
-        + '<p class="fc-addr"><code>' + esc(x.official) + '</code></p><p class="fc-dim">' + esc(T('vfSameTip')) + '</p>' + card(x.name) + '</div>';
+      out += '<div class="fc-card lv-amber"><div class="fc-h">' + esc(T('vfSame')(dv(x))) + '</div><p>' + esc(T('vfSameWhy')(dv(x))) + '</p>'
+        + '<p class="fc-addr"><code>' + esc(x.official) + '</code></p><p class="fc-dim">' + esc(T('vfSameTip')) + '</p>' + card(x) + '</div>';
     return out;
   }
   function renderEvm(a, vf) {

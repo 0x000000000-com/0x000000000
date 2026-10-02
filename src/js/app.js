@@ -100,6 +100,7 @@ const dict = {
       download: '取货 —— 带了一个签名，证明是你本人来取',
       receipt: '交收条 —— 带了一个签名，证明你拿到了',
       leave: '说不打算付的原因 —— 只带了你点的那一个词（没有订单号）',
+      voucher: '用券 —— 只带了你填的券码',
       other: '其他',
     },
     foot2: '平台永远不会索要你的私钥或备份文件 —— 任何索要私钥的消息都是钓鱼。',
@@ -174,6 +175,10 @@ const dict = {
       payPickNow: '付款方式刚取到（刚才没联网）：上面「付款方式」现在可以选了。选好再点一次「下单」。',
       payInfo2: (a, amt, c, net) => '用 ' + net + ' 转 ' + amt + ' USDT 到  ' + a + '   · 到账后还要等 ' + c + ' 个确认',
       copyAddr: '复制地址',
+      // VOUCHER0X_20261002：金额下面一行小字「有券？」（现金券 / 免费券，一单一张）。券真不真、抵多少、还能不能用，全由平台判
+      vchAsk: '有券？', vchBtn: '用券',
+      vchPart: (h, c, d) => '已用券 ' + h + '，抵 ' + c + ' USDT，还要付 ' + d + ' USDT',
+      vchFull: '已用券全额抵扣，不用付款',
       pay: '就当已付款（原型）', payLive: '我转好了，开始盯',
       payNote: '每一单的收款地址都不一样，我们靠地址认单，所以别用别的单子的地址。转完这一页会自己往下走，不用刷新；也可以直接关掉，回头在下面「我的订单」里找回来。',
       // REF0X_20260928 第 8 步（每一步的记录）：付款页一键原因。只发四个词之一，不带订单号
@@ -348,6 +353,7 @@ const dict = {
       download: 'collect - carried a signature proving it is you',
       receipt: 'receipt - carried a signature proving you got it',
       leave: 'said why you are not paying - carried only the one word you tapped (no order number)',
+      voucher: 'voucher - carried only the code you typed',
       other: 'other',
     },
     foot2: 'The platform will never ask for your private key or backup file - any message asking for keys is phishing.',
@@ -418,6 +424,9 @@ const dict = {
       payPickNow: 'Payment options just loaded (you were offline): pick the chain you want to pay on above, then click "Place order" again.',
       payInfo2: (a, amt, c, net) => 'Send ' + amt + ' USDT over ' + net + ' to  ' + a + '   - then ' + c + ' confirmations',
       copyAddr: 'Copy address',
+      vchAsk: 'Have a voucher?', vchBtn: 'Apply',
+      vchPart: (h, c, d) => 'Voucher ' + h + ' applied: ' + c + ' USDT off, ' + d + ' USDT left to pay',
+      vchFull: 'Fully covered by the voucher - nothing to pay',
       pay: 'Count it as paid (prototype)', payLive: 'Sent it - start watching',
       payNote: 'Every order gets its own address and that is how we match payments, so never reuse another order\'s address. The page moves on by itself - no refresh needed. You can also close it and come back through "My orders" below.',
       leaveAsk: 'Not going to pay? Tap a reason (optional - only that one word is sent, no order number):',
@@ -586,6 +595,7 @@ const dict = {
       download: 'ambil - membawa tanda tangan yang membuktikan itu Anda',
       receipt: 'tanda terima - membawa tanda tangan yang membuktikan Anda sudah menerimanya',
       leave: 'alasan Anda tidak membayar - hanya membawa satu kata yang Anda ketuk (tanpa nomor pesanan)',
+      voucher: 'voucher - hanya membawa kode yang Anda ketik',
       other: 'lainnya',
     },
     foot2: 'Platform tidak akan pernah meminta kunci privat atau file cadangan Anda - pesan apa pun yang meminta kunci adalah phishing.',
@@ -656,6 +666,9 @@ const dict = {
       payPickNow: 'Pilihan pembayaran baru saja termuat (tadi Anda offline): pilih jaringan pembayaran di atas, lalu klik "Pesan" lagi.',
       payInfo2: (a, amt, c, net) => 'Kirim ' + amt + ' USDT lewat ' + net + ' ke  ' + a + '   - lalu tunggu ' + c + ' konfirmasi',
       copyAddr: 'Salin alamat',
+      vchAsk: 'Punya voucher?', vchBtn: 'Pakai',
+      vchPart: (h, c, d) => 'Voucher ' + h + ' dipakai: potongan ' + c + ' USDT, sisa bayar ' + d + ' USDT',
+      vchFull: 'Ditanggung penuh oleh voucher - tidak perlu bayar',
       pay: 'Anggap sudah bayar (prototipe)', payLive: 'Sudah kirim - mulai pantau',
       payNote: 'Setiap pesanan punya alamatnya sendiri dan dengan itulah kami mencocokkan pembayaran, jadi jangan pernah memakai alamat pesanan lain. Halaman bergerak sendiri - tidak perlu dimuat ulang. Anda juga bisa menutupnya dan kembali lewat "Pesanan saya" di bawah.',
       leaveAsk: 'Tidak jadi membayar? Ketuk satu alasan (opsional - hanya satu kata itu yang dikirim, tanpa nomor pesanan):',
@@ -1024,6 +1037,7 @@ function sentKind(method, path) {
   if (/\/pay-sim$/.test(p)) return 'paysim';
   if (/\/download$/.test(p)) return 'download';
   if (/\/receipt$/.test(p)) return 'receipt';
+  if (method === 'POST' && /\/voucher$/.test(p)) return 'voucher';   // VOUCHER0X_20261002
   if (/^\/api\/orders\/[0-9a-f]{8}$/.test(p)) return 'status';
   return 'other';
 }
@@ -1149,6 +1163,7 @@ function renderSteps() {
   orderState.orderId = null; orderState.challenge = null; orderState.A = null;
   orderState.b = null; orderState.address = null; orderState.sec = null;
   orderState.lastSeen = null; orderState.watchSince = 0;
+  orderState.pay = null; orderState.vch = null;          // VOUCHER0X_20261002：收款那一行的原始数据 / 已经显示的那张券
   mintStop();
 
   // ── [1/6] 造钥匙 ────────────────────────────────────────────────────
@@ -1189,8 +1204,13 @@ function renderSteps() {
   const li3 = stepBox(3, f.s3head, IS_LIVE ? f.s3descLive : f.s3desc, f.net3);
   li3.innerHTML +=
     '<div class="flow-ctl" id="payInfo" hidden></div>' +
+    // VOUCHER0X_20261002：金额下面一行小字「有券？」→ 一个输入框 + 「用券」；用上了就只剩一句话（一单一张券）
+    '<div id="vchBox" hidden><div class="step-desc"><button type="button" class="copy" id="vchAsk">' + esc(f.vchAsk) + '</button></div>' +
+      '<div class="flow-ctl" id="vchForm" hidden><input id="vchCode" maxlength="40" spellcheck="false" autocomplete="off" aria-label="voucher" placeholder="0x0…">' +
+      '<button class="run" id="vchGo">' + esc(f.vchBtn) + '</button></div>' +
+      '<div class="step-desc" id="vchMsg" hidden></div></div>' +
     '<div class="flow-ctl"><button class="run" id="btnPay" disabled>' + esc(IS_LIVE ? f.payLive : f.pay) + '</button></div>' +
-    note(f.payNote, 'dim') +
+    '<div class="step-desc dim" id="payNote">' + esc(f.payNote) + '</div>' +
     '<div class="step-desc leave" id="leaveBox" hidden></div>' +      // REF0X_20260928 第 8 步：「不打算付了？」一键原因
     '<pre class="step-out" id="out3" hidden></pre>';
   stepsEl.appendChild(li3);
@@ -1443,18 +1463,64 @@ function wireOrderFlow(f) {
     setStatus('share_uploaded');
     return true;
   }
-  // 显示收款地址 + 打开「我转好了」按钮
-  async function showPayment() {
+  // 显示收款地址 + 打开「我转好了」按钮。o = 续单时平台回的这张单（看它用没用过券）；新下的单没有
+  async function showPayment(o) {
     const pay = await api('/api/orders/' + orderState.orderId + '/payment');
     if (pay.code !== 200) return false;
     orderState.address = pay.body.address;
-    const pi = $('#payInfo'); pi.hidden = false;
-    pi.innerHTML = '<span class="lbl">' + esc(f.payInfo2(pay.body.address, pay.body.amountUsdt, pay.body.confirmationsRequired, pay.body.chain + ' · USDT-' + pay.body.network)) + '</span>' +
-      '<button class="copy" data-copycmd="' + esc(pay.body.address) + '">' + esc(f.copyAddr) + '</button>';
+    orderState.pay = pay.body;
+    drawPay();
     $('#btnPay').disabled = false;
     showLeave();
+    vchShow(vchSeen(o), !o || vchOpenFor(o));
     return true;
   }
+  function drawPay() {
+    const p = orderState.pay, pi = $('#payInfo'); if (!p || !pi) return;
+    pi.hidden = false;
+    pi.innerHTML = '<span class="lbl">' + esc(f.payInfo2(p.address, p.amountUsdt, p.confirmationsRequired, p.chain + ' · USDT-' + p.network)) + '</span>' +
+      '<button class="copy" data-copycmd="' + esc(p.address) + '">' + esc(f.copyAddr) + '</button>';
+  }
+  // ── VOUCHER0X_20261002：用券（现金券 / 免费券）────────────────────────────
+  //   券码真不真、抵多少、这一单还能不能用，全由平台判（POST /api/orders/:id/voucher）—— 页面只去掉空格，空的不发。
+  //   用上之后：显示的金额改成还要付的（第 4 步「还差多少」也按它算）；全额抵扣 → 收款地址那一块收起来（没有要转的钱），
+  //   照常问进度，平台记成已付之后页面自己往下走。一单一张券：用上了就只剩一句话。
+  const isZero = (x) => x != null && x !== '' && Number(x) === 0;
+  const vchSeen = (o) => (o && o.voucherHint ? { hint: o.voucherHint, credit: o.voucherCredit, due: o.amountUsdt, full: isZero(o.amountUsdt) } : null);
+  const vchOpenFor = (o) => (o.status === 'created' || o.status === 'share_uploaded') && !(Number(o.receivedUsdt) > 0);   // 平台只收没付、一分没到的单
+  function vchShow(v, payable) {
+    const box = $('#vchBox'); if (!box) return;
+    if (!v) { if (!orderState.vch) box.hidden = !payable; return; }
+    const key = v.hint + '|' + v.credit + '|' + v.due;
+    if (orderState.vch === key) return;                  // 每 2.5 秒问一次进度：没变就不重画（不打断「复制地址」）
+    orderState.vch = key;
+    box.hidden = false; $('#vchAsk').parentElement.hidden = true; $('#vchForm').hidden = true;
+    const m = $('#vchMsg'); m.hidden = false; m.className = 'step-desc ok';
+    m.textContent = v.full ? f.vchFull : f.vchPart(v.hint, v.credit, v.due);
+    MINT.want = Number(v.due) || 0;
+    if (!v.full) { if (orderState.pay) { orderState.pay.amountUsdt = v.due; drawPay(); } return; }
+    ['#payInfo', '#payNote', '#leaveBox'].forEach((s) => { const e = $(s); if (e) e.hidden = true; });
+    const pb = $('#btnPay'); if (pb) { pb.disabled = true; pb.parentElement.hidden = true; }
+    if (!orderState.poll) { orderState.watchSince = Date.now(); orderState.poll = setInterval(pollStatus, 2500); pollStatus(); }
+  }
+  async function vchGo() {
+    const inp = $('#vchCode'), btn = $('#vchGo'), code = String(inp.value || '').replace(/\s+/g, '');
+    inp.value = code;
+    if (!code) { inp.focus(); return; }
+    btn.disabled = true;
+    const r = await api('/api/orders/' + orderState.orderId + '/voucher', 'POST', { code });
+    btn.disabled = false;
+    const b = r.body || {};
+    if (r.code !== 200 || !b.ok) {
+      const m = $('#vchMsg'); m.hidden = false; m.className = 'step-desc warn'; m.textContent = L(b, 'error') || ('HTTP ' + r.code);
+      return;
+    }
+    const due = b.covered === true ? 0 : b.amountUsdt;
+    vchShow({ hint: b.hint, credit: b.creditUsdt, due, full: isZero(due) }, true);
+  }
+  $('#vchAsk').addEventListener('click', () => { $('#vchAsk').parentElement.hidden = true; $('#vchForm').hidden = false; $('#vchCode').focus(); });
+  $('#vchGo').addEventListener('click', vchGo);
+  $('#vchCode').addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); vchGo(); } });
   // REF0X_20260928 第 8 步（每一步的记录，构思 v3 第三章第 2 条「离开原因」）：付款页上一键选原因 —— 只发一个词（四选一），
   //   不带订单号、不带别的；点过就收起、不再问。他点「我转好了」就收起（他在付了）。
   function showLeave() {
@@ -1499,6 +1565,7 @@ function wireOrderFlow(f) {
       const st = r.body.status;
       // ORDERSTALE0X_20260924：状态一变，最下面「我的订单」跟着重拉 —— 原来要重新打开页面才变
       if (orderState.lastSeen !== st) { orderState.lastSeen = st; renderOrders(); }
+      if (orderState.pay) vchShow(vchSeen(r.body), vchOpenFor(r.body));   // VOUCHER0X：券在别处用上了（机器人里）也跟着变；钱到了一部分就不再给「有券？」
       if (st === 'created' || st === 'share_uploaded') {
         MINT.got = Number(r.body.receivedUsdt) || 0; MINT.want = Number(r.body.amountUsdt) || 0;   // PARTIALPAY0X：已经收到多少
         if (MINT.phase !== 'wait') mintView('wait', { since: orderState.watchSince || Date.now() }); return;
@@ -1673,12 +1740,12 @@ function wireOrderFlow(f) {
     const st = o.status;
     setStatus(st);
     if (st === 'created') {                              // 建了单还没交份额
-      if (orderState.sec) { const o2 = $('#out2'); o2.hidden = false; if (await uploadShare(o2)) await showPayment(); }
+      if (orderState.sec) { const o2 = $('#out2'); o2.hidden = false; if (await uploadShare(o2)) await showPayment(o); }
       else orderState.pendingShare = true;
     } else if (st === 'share_uploaded') {
-      await showPayment();
+      await showPayment(o);
     } else if (st === 'paid' || st === 'mining') {
-      await showPayment(); $('#btnPay').disabled = true;
+      await showPayment(o); $('#btnPay').disabled = true;
       const o3 = $('#out3'); o3.hidden = false; outLine(o3, f.watchingAgain, 'dim');
       mintView(st === 'paid' ? 'paid' : 'run', { since: o.paidAt || Date.now() });
       if (!orderState.poll) orderState.poll = setInterval(pollStatus, 2500);
@@ -1909,7 +1976,8 @@ function onHealth(h) {
   HEALTH_OK = true;
   if (IS_LIVE || !(h.body && h.body.mode === 'live')) return false;
   IS_LIVE = true;
-  liveSwap(dict.zh); liveSwap(dict.en);
+  // IDLIVE0X_20261002：原来只换 zh、en —— 印尼文页面在真收款时还挂着「原型说明」（帮手 B 10-02 查出来）。每一种语言都换，以后加语言也不会漏
+  for (const lg of Object.keys(dict)) liveSwap(dict[lg]);
   // ★ 只重绘步骤区是不够的：像 noteProto 这种靠 [data-i18n] 渲染的元素在别处，
   //   不重刷它们，字典换了页面上还是旧字（20260923 实测被浏览器抓到一次）。
   document.querySelectorAll('[data-i18n]').forEach((el) => { el.textContent = t(el.dataset.i18n); });

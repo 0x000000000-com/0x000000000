@@ -91,6 +91,10 @@
       payOnly: function (c) { return '只转 ' + c + ' 上的 USDT，金额一分不差（多付要人工退差额）。转之前核对整串地址。'; },
       payWait: '等到账……（到账后这一页自己往下走）',
       payGot: function (x, y) { return '已收到 ' + x + ' / ' + y + ' USDT，接着等'; },
+      // VOUCHER0X_20261002：付款这一步「有券？」（现金券 / 免费券，一单一张）。券真不真、抵多少，全由平台判
+      vchAsk: '有券？', vchBtn: '用券',
+      vchPart: function (h, c, d) { return '已用券 ' + h + '，抵 ' + c + ' USDT，还要付 ' + d + ' USDT'; },
+      vchFull: '已用券全额抵扣，不用付款',
       copy: '复制', copied: '已复制',
       leaveQ: '不打算付了？告诉我们为什么（只发一个词）：', leave: { price: '太贵', confusing: '看不懂', trust: '不放心', browsing: '只是看看' }, leaveThanks: '收到，谢谢',
       s4why: '这一步要联网：页面每 15 秒问一次进度。你可以关掉页面，回来用订单号 + 取货码接着取货。',
@@ -116,7 +120,7 @@
       resumeId: '订单号（c 开头 9 位）', resumeCode: '取货码（32 位）', resumeBtn: '接着来',
       myOrders: '这个浏览器下过的单：',
       sentHead: '这一页跟平台说过的每一句话', sentNone: '还没说过话。', sentTech: '懂技术的人看这里：每一次原样发了什么',
-      sentKinds: { catalog: '要价目表', quote: '报价（方式 + 图案）', order: '下单（方式、部署地址、代码指纹、图案、付款链、推荐码、取货码的指纹）', status: '问进度（订单号）', pickup: '取货（订单号 + 取货码）', leave: '「不打算付」的原因（一个词）', other: '其他' },
+      sentKinds: { catalog: '要价目表', quote: '报价（方式 + 图案）', order: '下单（方式、部署地址、代码指纹、图案、付款链、推荐码、取货码的指纹）', status: '问进度（订单号）', pickup: '取货（订单号 + 取货码）', leave: '「不打算付」的原因（一个词）', voucher: '用券（订单号 + 券码）', other: '其他' },
       offline: '连不上平台（断网了？）—— 这一步要联网',
       footNever: '零九零永远不会让你连接钱包、不会让你在钱包 App 里给我们签名或授权、不会让你转钱给我们来「验证」。凡是这样要求你的，一定是假的。',
       footOne: '官方网址只有一个：0x 000 000 000 .com（0x 后面 9 个 0）· 零九零没有发行任何代币 · 收藏官网，以后只从收藏夹进。',
@@ -198,6 +202,9 @@
       payOnly: function (c) { return 'Only USDT on ' + c + ', the exact amount (overpayments are refunded by hand). Check the whole address before sending.'; },
       payWait: 'Waiting for the payment... (this page moves on by itself once it arrives)',
       payGot: function (x, y) { return 'Received ' + x + ' / ' + y + ' USDT, still waiting'; },
+      vchAsk: 'Have a voucher?', vchBtn: 'Apply',
+      vchPart: function (h, c, d) { return 'Voucher ' + h + ' applied: ' + c + ' USDT off, ' + d + ' USDT left to pay'; },
+      vchFull: 'Fully covered by the voucher - nothing to pay',
       copy: 'Copy', copied: 'Copied',
       leaveQ: 'Not going to pay? Tell us why (sends one word only):', leave: { price: 'too expensive', confusing: 'confusing', trust: 'not sure I trust it', browsing: 'just looking' }, leaveThanks: 'Got it, thank you',
       s4why: 'Internet needed here: the page asks for progress every 15 seconds. You can close it and come back with the order number + pickup code.',
@@ -222,7 +229,7 @@
       resumeId: 'order number (c + 8 characters)', resumeCode: 'pickup code (32 characters)', resumeBtn: 'Continue',
       myOrders: 'Orders placed in this browser:',
       sentHead: 'Every word this page said to the platform', sentNone: 'Nothing said yet.', sentTech: 'For technical readers: exactly what was sent each time',
-      sentKinds: { catalog: 'asked for the price list', quote: 'asked for a price (method + pattern)', order: 'placed the order (method, deployer address, code fingerprint, pattern, payment chain, referral code, fingerprint of the pickup code)', status: 'asked for progress (order number)', pickup: 'collected (order number + pickup code)', leave: '"not going to pay" reason (one word)', other: 'other' },
+      sentKinds: { catalog: 'asked for the price list', quote: 'asked for a price (method + pattern)', order: 'placed the order (method, deployer address, code fingerprint, pattern, payment chain, referral code, fingerprint of the pickup code)', status: 'asked for progress (order number)', pickup: 'collected (order number + pickup code)', leave: '"not going to pay" reason (one word)', voucher: 'applied a voucher (order number + voucher code)', other: 'other' },
       offline: 'Cannot reach the platform (offline?) - this step needs the internet',
       footNever: '0x000000000 will never ask you to connect your wallet, to sign or approve anything for us in a wallet app, or to send us money to "verify". Anyone who asks is fake.',
       footOne: 'The only official website: 0x 000 000 000 .com (nine zeros after 0x) · 0x000000000 has not issued any token · bookmark it and always come in from the bookmark.',
@@ -305,6 +312,9 @@
       payOnly: function (c) { return 'Hanya USDT di ' + c + ', jumlahnya persis (kelebihan bayar dikembalikan secara manual). Periksa seluruh alamat sebelum mengirim.'; },
       payWait: 'Menunggu pembayaran... (halaman ini lanjut sendiri begitu dana masuk)',
       payGot: function (x, y) { return 'Diterima ' + x + ' / ' + y + ' USDT, masih menunggu'; },
+      vchAsk: 'Punya voucher?', vchBtn: 'Pakai',
+      vchPart: function (h, c, d) { return 'Voucher ' + h + ' dipakai: potongan ' + c + ' USDT, sisa bayar ' + d + ' USDT'; },
+      vchFull: 'Ditanggung penuh oleh voucher - tidak perlu bayar',
       copy: 'Salin', copied: 'Tersalin',
       leaveQ: 'Tidak jadi bayar? Beri tahu kami alasannya (hanya mengirim satu kata):', leave: { price: 'terlalu mahal', confusing: 'membingungkan', trust: 'belum yakin bisa dipercaya', browsing: 'hanya melihat-lihat' }, leaveThanks: 'Diterima, terima kasih',
       s4why: 'Di sini perlu internet: halaman menanyakan progres setiap 15 detik. Anda bisa menutupnya lalu kembali dengan nomor pesanan + kode pengambilan.',
@@ -329,7 +339,7 @@
       resumeId: 'nomor pesanan (c + 8 karakter)', resumeCode: 'kode pengambilan (32 karakter)', resumeBtn: 'Lanjutkan',
       myOrders: 'Pesanan dari browser ini:',
       sentHead: 'Setiap kata yang dikirim halaman ini ke platform', sentNone: 'Belum ada yang dikirim.', sentTech: 'Untuk pembaca teknis: persis apa yang dikirim setiap kali',
-      sentKinds: { catalog: 'meminta daftar harga', quote: 'meminta harga (metode + pola)', order: 'membuat pesanan (metode, alamat deployer, sidik jari kode, pola, jaringan pembayaran, kode referal, sidik jari kode pengambilan)', status: 'menanyakan progres (nomor pesanan)', pickup: 'mengambil pesanan (nomor pesanan + kode pengambilan)', leave: 'alasan "tidak jadi bayar" (satu kata)', other: 'lainnya' },
+      sentKinds: { catalog: 'meminta daftar harga', quote: 'meminta harga (metode + pola)', order: 'membuat pesanan (metode, alamat deployer, sidik jari kode, pola, jaringan pembayaran, kode referal, sidik jari kode pengambilan)', status: 'menanyakan progres (nomor pesanan)', pickup: 'mengambil pesanan (nomor pesanan + kode pengambilan)', leave: 'alasan "tidak jadi bayar" (satu kata)', voucher: 'memakai voucher (nomor pesanan + kode voucher)', other: 'lainnya' },
       offline: 'Tidak bisa menghubungi platform (offline?) - langkah ini perlu internet',
       footNever: '0x000000000 tidak akan pernah meminta Anda menghubungkan dompet, menandatangani atau menyetujui apa pun untuk kami di aplikasi dompet, atau mengirim uang untuk "verifikasi". Siapa pun yang meminta itu adalah palsu.',
       footOne: 'Satu-satunya situs resmi: 0x 000 000 000 .com (sembilan angka nol setelah 0x) · 0x000000000 tidak pernah menerbitkan token apa pun · simpan di bookmark dan selalu masuk dari bookmark.',
@@ -349,6 +359,7 @@
     if (method === 'POST' && path === '/api/c2/orders') return 'order';
     if (/\/pickup$/.test(path)) return 'pickup';
     if (path === '/api/fw/leave') return 'leave';
+    if (method === 'POST' && /\/voucher$/.test(path)) return 'voucher';   // VOUCHER0X_20261002
     if (/^\/api\/c2\/orders\/c[0-9a-f]{8}$/.test(path)) return 'status';
     return 'other';
   }
@@ -371,6 +382,7 @@
   }
   // 平台回的话：中文 error · 英文 errorEn · 印尼文 errorId（没有就退回英文、再退回中文）
   var errOf = function (res) { var b = (res && res.body) || {}; return (res.code ? 'HTTP ' + res.code + ' ' : '') + ((lang === 'id' ? (b.errorId || b.errorEn) : lang === 'en' ? b.errorEn : b.error) || b.error || ''); };
+  var errMsg = function (res) { var b = (res && res.body) || {}; return (lang === 'id' ? (b.errorId || b.errorEn) : lang === 'en' ? b.errorEn : b.error) || b.error || errOf(res); };
 
   // ── 本机记的单（只有订单号、取货码；不发给任何人）─────────────────────────────────────────────────────
   var MY_KEY = 'c2_orders';
@@ -451,7 +463,8 @@
   }
 
   // ── 五步 ─────────────────────────────────────────────────────────────────────────────────────────
-  var S = { step: 1, mode: 'create3', deployer: '', initHash: '', prefix: '', suffix: '', label: '', payChain: 'bsc', ref: '', quote: null, order: null, payment: null, code: null, delivery: null, poll: null };
+  var S = { step: 1, mode: 'create3', deployer: '', initHash: '', prefix: '', suffix: '', label: '', payChain: 'bsc', ref: '', quote: null, order: null, payment: null, code: null, delivery: null, poll: null,
+    vchOpen: false, vchCode: '', vchErr: null, vchKey: '' };
   var MINP = function () { return (CAT && CAT.minPinned) || 8; }, MAXP = function () { return (CAT && CAT.maxPinned) || 12; };
   function check1() {
     var t = T(), errs = [];
@@ -491,13 +504,16 @@
         + '<div class="step-desc dim">' + esc(t.pickWhy) + '</div>'
         + '<button type="button" class="run" id="c2order">' + esc(t.orderBtn) + '</button>' : '')
       + '<div class="c2errs err" id="c2err2"></div></div>';
-    var p = S.payment || {}, o = S.order || {};
+    var p = S.payment || {}, o = S.order || {}, v = vchOf(o), full = !!v && v.full;
+    if (S.order) S.vchKey = vchKey(o);
+    // VOUCHER0X_20261002：全额抵扣 = 没有要转的钱 —— 收款地址、金额、「等到账」「不打算付」都不画，只剩用券那一句
     var s3 = '<div class="c2form">' + (S.order ? '<div class="ok">' + esc(t.orderOk(o.orderId)) + '</div>'
-      + '<div>' + esc(t.payTo(p.amountUsdt, p.network || p.chain)) + '</div><div class="c2code"><code id="c2payAddr">' + esc(p.address) + '</code> <button type="button" class="copy" data-copy="' + esc(p.address) + '">' + esc(t.copy) + '</button></div>'
-      + '<div class="step-desc warn">' + esc(t.payOnly(p.network || p.chain)) + '</div>'
-      + (p.contract ? '<div class="step-desc dim">USDT: ' + esc(p.contract) + '</div>' : '')
-      + '<div class="step-desc" id="c2payState">' + esc(o.paidUsdt && o.paidUsdt !== '0' ? t.payGot(o.paidUsdt, o.amountUsdt) : t.payWait) + '</div>'
-      + '<details class="c2help"><summary>' + esc(t.leaveQ) + '</summary>' + Object.keys(t.leave).map(function (k) { return '<button type="button" class="chip" data-leave="' + k + '">' + esc(t.leave[k]) + '</button>'; }).join(' ') + '<span id="c2leaveOk"></span></details>' : '') + '</div>';
+      + (full ? '' : '<div>' + esc(t.payTo(p.amountUsdt, p.network || p.chain)) + '</div><div class="c2code"><code id="c2payAddr">' + esc(p.address) + '</code> <button type="button" class="copy" data-copy="' + esc(p.address) + '">' + esc(t.copy) + '</button></div>'
+        + '<div class="step-desc warn">' + esc(t.payOnly(p.network || p.chain)) + '</div>'
+        + (p.contract ? '<div class="step-desc dim">USDT: ' + esc(p.contract) + '</div>' : ''))
+      + vchHtml(t, o, v)
+      + (full ? '' : '<div class="step-desc" id="c2payState">' + esc(o.paidUsdt && o.paidUsdt !== '0' ? t.payGot(o.paidUsdt, o.amountUsdt) : t.payWait) + '</div>'
+        + '<details class="c2help"><summary>' + esc(t.leaveQ) + '</summary>' + Object.keys(t.leave).map(function (k) { return '<button type="button" class="chip" data-leave="' + k + '">' + esc(t.leave[k]) + '</button>'; }).join(' ') + '<span id="c2leaveOk"></span></details>') : '') + '</div>';
     var s4 = '<div class="c2form"><div class="mint-live"><span class="mint-anim"></span> <span>' + esc(t.mintNow(lang === 'id' ? (o.mintTimeTextId || o.mintTimeTextEn || o.mintTimeText || '') : lang === 'en' ? (o.mintTimeTextEn || '') : (o.mintTimeText || ''))) + '</span></div></div>';
     var s5 = '<div class="c2form"><button type="button" class="run" id="c2pickBtn">' + esc(t.pickBtn) + '</button> <button type="button" class="run" id="c2verify"' + (S.delivery ? '' : ' disabled') + '>' + esc(t.verifyBtn) + '</button>'
       + '<div id="c2deliv"></div><div class="c2errs err" id="c2err5"></div></div>';
@@ -508,6 +524,40 @@
     if (S.step === 2 && S.quote) showQuote();
     if (S.step === 5 && S.delivery) showDelivery();
   }
+  // ── VOUCHER0X_20261002：用券（现金券 / 免费券）────────────────────────────────────────────────────────
+  //   券码真不真、抵多少、这一单还能不能用，全由平台判（POST /api/c2/orders/:id/voucher）—— 页面只去掉空格，空的不发。
+  //   用上之后金额改成还要付的（「已收到 x / y」也按它算）；全额抵扣 → 收款那一块不画，那一句留在第 3 步；
+  //   平台当场记成已付，这一页本来每 10 秒问一次进度 —— 下一次问到就照常进第 4 步（不另起一套）。
+  var isZero = function (x) { return x != null && x !== '' && Number(x) === 0; };
+  var vchOf = function (o) { return o && o.voucherHint ? { hint: o.voucherHint, credit: o.voucherCredit, due: o.amountUsdt, full: isZero(o.amountUsdt) } : null; };
+  var vchPayable = function (o) { return o.status === 'created' && !(Number(o.paidUsdt) > 0); };        // 平台只收没付、一分没到的单
+  var vchKey = function (o) { return o.voucherHint ? 'v|' + o.voucherHint + '|' + o.amountUsdt : vchPayable(o) ? 'open' : 'shut'; };
+  // 平台回的单：券的那几格按约定在 order 里；万一放在外面一层也认
+  var orderOf = function (b) { var o = (b && b.order) || {}; ['listUsdt', 'voucherHint', 'voucherCredit', 'voucherKind'].forEach(function (k) { if (o[k] == null && b && b[k] != null) o[k] = b[k]; }); return o; };
+  function vchHtml(t, o, v) {
+    if (v) return '<div class="step-desc ok" id="c2vchOk">' + esc(v.full ? t.vchFull : t.vchPart(v.hint, v.credit, v.due)) + '</div>';
+    if (!vchPayable(o)) return '';
+    return '<details class="c2help" id="c2vch"' + (S.vchOpen ? ' open' : '') + '><summary>' + esc(t.vchAsk) + '</summary>'
+      + '<div class="c2pat"><input id="c2vchCode" class="c2in short" maxlength="40" spellcheck="false" autocomplete="off" aria-label="voucher" placeholder="0x0…" value="' + esc(S.vchCode) + '">'
+      + '<button type="button" class="run" id="c2vchGo">' + esc(t.vchBtn) + '</button></div>'
+      + (S.vchErr ? '<div class="step-desc warn" id="c2vchErr">' + esc(errMsg(S.vchErr)) + '</div>' : '') + '</details>';
+  }
+  function vchGo() {
+    var i = $('#c2vchCode'), b = $('#c2vchGo'), code = String(i ? i.value : '').replace(/\s+/g, '');
+    S.vchCode = code; if (i) i.value = code;
+    if (!code || !S.order) { if (i) i.focus(); return; }
+    if (b) b.disabled = true;
+    api('/api/c2/orders/' + S.order.orderId + '/voucher', 'POST', { code: code }).then(function (r) {
+      var x = r.body || {};
+      if (r.code !== 200 || !x.ok) { S.vchErr = r; S.vchOpen = true; renderSteps(); return; }
+      var due = x.covered === true ? 0 : x.amountUsdt;
+      S.vchErr = null; S.vchOpen = false; S.vchCode = '';
+      S.order.amountUsdt = due; S.order.listUsdt = x.listUsdt; S.order.voucherHint = x.hint; S.order.voucherCredit = x.creditUsdt; S.order.voucherKind = x.kind;
+      if (S.payment) S.payment.amountUsdt = due;
+      renderSteps();
+    });
+  }
+  var vchReset = function () { S.vchOpen = false; S.vchCode = ''; S.vchErr = null; };
   function prev1() {
     var t = T(), pv = $('#c2prev'); if (!pv) return;
     var p = SALT.normPat(S.prefix), s = SALT.normPat(S.suffix);
@@ -536,6 +586,11 @@
     document.querySelectorAll('[data-leave]').forEach(function (b) { b.addEventListener('click', function () { api('/api/fw/leave', 'POST', { reason: b.getAttribute('data-leave') }).then(function () { txt('c2leaveOk', ' ' + T().leaveThanks); }); }); });
     on('c2pickBtn', 'click', collect);
     on('c2verify', 'click', showDelivery);
+    var vd = $('#c2vch');
+    if (vd) vd.addEventListener('toggle', function () { S.vchOpen = vd.open; var i = $('#c2vchCode'); if (vd.open && i) i.focus(); });
+    on('c2vchGo', 'click', vchGo);
+    on('c2vchCode', 'input', function () { S.vchCode = $('#c2vchCode').value; });
+    on('c2vchCode', 'keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); vchGo(); } });
   }
   function keep1() {
     var v = function (id) { var e = document.getElementById(id); return e ? e.value : null; };
@@ -556,7 +611,7 @@
       label: S.label || undefined, payChain: S.payChain, ref: S.ref || undefined, pickupHash: codeHash(S.code), lang: lang };
     api('/api/c2/orders', 'POST', b).then(function (r) {
       if (r.code !== 200) { txt('c2err2', errOf(r)); return; }
-      S.order = r.body.order; S.payment = r.body.payment; remember(S.order.orderId, S.code);
+      S.order = r.body.order; S.payment = r.body.payment; remember(S.order.orderId, S.code); vchReset();
       S.step = 3; renderSteps(); renderMine(); pollStatus();
     });
   }
@@ -565,8 +620,10 @@
     if (!S.order) return;
     api('/api/c2/orders/' + S.order.orderId).then(function (r) {
       if (r.code === 200) {
-        S.order = r.body.order;
+        S.order = orderOf(r.body);
         var st = S.order.status, t = T();
+        // VOUCHER0X_20261002：券在别处用上了（机器人里）、或者钱到了一部分（不再给「有券？」）→ 第 3 步按新的重画
+        if (S.step === 3 && vchKey(S.order) !== S.vchKey) { if (S.payment && S.order.amountUsdt != null) S.payment.amountUsdt = S.order.amountUsdt; renderSteps(); }
         if (st === 'created' && S.step === 3) { var e = $('#c2payState'); if (e) e.textContent = S.order.paidUsdt && S.order.paidUsdt !== '0' ? t.payGot(S.order.paidUsdt, S.order.amountUsdt) : t.payWait; }
         if (st === 'minting' && S.step < 4) { S.step = 4; renderSteps(); }
         if ((st === 'found' || st === 'delivered') && S.step < 5) { S.step = 5; renderSteps(); collect(); return; }
@@ -614,7 +671,8 @@
     S.code = code; S.order = { orderId: id };
     api('/api/c2/orders/' + id).then(function (r) {
       if (r.code !== 200) { txt('resumeMsg', errOf(r)); return; }
-      S.order = r.body.order; S.payment = { address: S.order.depositAddress, amountUsdt: S.order.amountUsdt, network: S.order.payChain === 'tron' ? 'TRC-20' : 'BEP-20', chain: S.order.payChain };
+      S.order = orderOf(r.body); S.payment = { address: S.order.depositAddress, amountUsdt: S.order.amountUsdt, network: S.order.payChain === 'tron' ? 'TRC-20' : 'BEP-20', chain: S.order.payChain };
+      vchReset();
       remember(id, code);
       var st = S.order.status;
       S.step = st === 'created' ? 3 : st === 'minting' ? 4 : (st === 'found' || st === 'delivered') ? 5 : 3;
