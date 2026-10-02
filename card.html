@@ -154,7 +154,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
       vc: { brand: '认证名片', official: '零九零官方 · 黄勾', yellow: '黄勾 · 商家 / 项目方认证', blue: '蓝勾 · 个人认证', live: '生效中', days: (n) => '已认证 ' + n + ' 天',
         notice: '公示中 · 还没生效', expired: '已过期 · 别照着付钱', revoked: '已撤销 · 别照着付钱', site: '官网', bot: '官方机器人', code: '开源代码', x: 'X', tg: 'TG 频道', addrs: '收款地址',
         addrN: (n) => n + ' 个', sep: '、', chain: { evm: '以太坊类', tron: '波场' }, since: '认证于 ', until: '到期 ', scan: '扫码核对', onlyUrl: '官网只有一个：0x 000 000 000 .com（0x 后面 9 个 0）',
-        never: '零九零永远不会让你连接钱包、签名或转钱「验证」', voidNote: '这张名片现在不作数。付钱之前，找对方本人重新核对。', noticeNote: '公示 48 小时，没人举报才生效。', save: '存成图片（发给别人看）' },
+        never: '零九零永远不会让你连接钱包、签名或转钱「验证」', voidNote: '这张名片现在不作数。付钱之前，找对方本人重新核对。', noticeNote: '公示 48 小时，没人举报才生效。', save: '存成图片（发给别人看）', role: '身份', roleOwner: '零九零店主' },
     },
     en: {
       title: (n) => '@' + n + ' — 0x000000000 payment card', loading: 'Reading the card from the platform…',
@@ -200,7 +200,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
       vc: { brand: 'VERIFIED CARD', official: '0x000000000 official · gold check', yellow: 'Gold check · business / project', blue: 'Blue check · personal', live: 'LIVE', days: (n) => 'verified for ' + n + (n === 1 ? ' day' : ' days'),
         notice: 'Under notice · not live yet', expired: 'Expired · do not pay from it', revoked: 'Revoked · do not pay from it', site: 'Website', bot: 'Official bot', code: 'Open source', x: 'X', tg: 'TG channel', addrs: 'Payment addresses',
         addrN: (n) => String(n), sep: ', ', chain: { evm: 'EVM', tron: 'TRON' }, since: 'Since ', until: 'Until ', scan: 'Scan to check', onlyUrl: 'One official site: 0x 000 000 000 .com (nine zeros after 0x)',
-        never: 'We never ask you to connect a wallet, sign, or send money to "verify".', voidNote: 'This card does not count now. Check with them again before paying.', noticeNote: 'Public notice for 48 hours; it goes live only if nobody reports it.', save: 'Save as an image (to share)' },
+        never: 'We never ask you to connect a wallet, sign, or send money to "verify".', voidNote: 'This card does not count now. Check with them again before paying.', noticeNote: 'Public notice for 48 hours; it goes live only if nobody reports it.', save: 'Save as an image (to share)', role: 'Role', roleOwner: 'Owner of 0x000000000' },
     },
     // IDLANG0X_20260928：印尼文（DSJ「增加印尼文」）。键、数组长度、函数参数跟 en 一一对应。
     id: {
@@ -247,7 +247,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
       vc: { brand: 'KARTU TERVERIFIKASI', official: 'Resmi 0x000000000 · centang kuning', yellow: 'Centang kuning · bisnis / proyek', blue: 'Centang biru · pribadi', live: 'AKTIF', days: (n) => 'terverifikasi ' + n + ' hari',
         notice: 'Masa pengumuman · belum aktif', expired: 'Kedaluwarsa · jangan bayar', revoked: 'Dicabut · jangan bayar', site: 'Situs', bot: 'Bot resmi', code: 'Kode terbuka', x: 'X', tg: 'Kanal TG', addrs: 'Alamat pembayaran',
         addrN: (n) => String(n), sep: ', ', chain: { evm: 'EVM', tron: 'TRON' }, since: 'Sejak ', until: 'Sampai ', scan: 'Pindai untuk cek', onlyUrl: 'Satu situs resmi: 0x 000 000 000 .com (sembilan nol setelah 0x)',
-        never: 'Kami tidak pernah minta Anda hubungkan dompet, tanda tangan, atau kirim uang.', voidNote: 'Kartu ini tidak berlaku. Cek lagi dengan pemiliknya sebelum bayar.', noticeNote: 'Diumumkan 48 jam; aktif hanya jika tidak ada laporan.', save: 'Simpan sebagai gambar (untuk dibagikan)' },
+        never: 'Kami tidak pernah minta Anda hubungkan dompet, tanda tangan, atau kirim uang.', voidNote: 'Kartu ini tidak berlaku. Cek lagi dengan pemiliknya sebelum bayar.', noticeNote: 'Diumumkan 48 jam; aktif hanya jika tidak ada laporan.', save: 'Simpan sebagai gambar (untuk dibagikan)', role: 'Peran', roleOwner: 'Pemilik 0x000000000' },
     },
   };
   // VFMULTISIG0X_20260929：多签核对过的链（平台回的 on：链的代号 → 名字；认不出的代号不显示）
@@ -256,6 +256,8 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
   const LBL = { zh: { pay: '收款', contract: '合约', multisig: '多签', team: '团队', other: '其他' }, en: { pay: 'payments', contract: 'contract', multisig: 'multisig', team: 'team', other: 'other' },
     id: { pay: 'pembayaran', contract: 'kontrak', multisig: 'multisig', team: 'tim', other: 'lainnya' } };
   const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  // OWNERCARD0X_20261002：名字照打的大小写显示（@DSJ）—— 只认「小写之后就是 name」的那一种；网址、二维码、存图照旧用小写的 name
+  const shownOf = (c) => (typeof c.shown === 'string' && /^[A-Za-z][A-Za-z0-9_]{2,19}$/.test(c.shown) && c.shown.toLowerCase() === c.name ? c.shown : c.name);
   const utc = (ts) => (ts ? new Date(ts).toISOString().slice(0, 16).replace('T', ' ') + ' UTC' : '—');
   const grp = (n) => String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
   const dur = (days, l) => days >= 730 ? (l === 'zh' ? '约 ' + grp(days / 365) + ' 年' : l === 'id' ? 'sekitar ' + grp(days / 365) + ' tahun' : 'about ' + grp(days / 365) + ' years') : days >= 2 ? (l === 'zh' ? '约 ' + grp(days) + ' 天' : l === 'id' ? 'sekitar ' + grp(days) + ' hari' : 'about ' + grp(days) + ' days') : (l === 'zh' ? '约 ' + grp(days * 24) + ' 小时' : l === 'id' ? 'sekitar ' + grp(days * 24) + ' jam' : 'about ' + grp(days * 24) + ' hours');
@@ -290,7 +292,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     return { h, t, sum: h + t };
   }
   function verdict(input) {
-    const L = T[lang], s = String(input || '').trim(), n = data.name;
+    const L = T[lang], s = String(input || '').trim(), n = shownOf(data);
     const chain = /^T[1-9A-HJ-NP-Za-km-z]{33}$/.test(s) ? 'tron' : /^0x[0-9a-fA-F]{40}$/.test(s) ? 'evm' : null;
     if (!chain) return ['bad', L.vfBad];
     const same = (data.addresses || []).find((a) => a.chain === chain && norm(a.address, chain) === norm(s, chain));
@@ -319,18 +321,19 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
   function vcardEl(c) {
     const V = T[lang].vc, off = c.status === 'revoked' || c.status === 'expired', notice = c.status === 'notice';
     const kind = off ? 'void' : notice ? 'notice' : c.tier === 'blue' ? 'blue' : 'gold', card = el('section', 'vcard ' + kind);
-    card.setAttribute('aria-label', '@' + c.name + ' · ' + (off ? V[c.status] : c.official ? V.official : V[c.tier === 'blue' ? 'blue' : 'yellow']));
+    card.setAttribute('aria-label', '@' + shownOf(c) + ' · ' + (off ? V[c.status] : c.official ? V.official : V[c.tier === 'blue' ? 'blue' : 'yellow']));
     const top = el('div', 'vc-top'), brand = el('div', 'vc-brand'), bt = el('div');
     bt.append(document.createTextNode('0x000000000'), el('small', null, V.brand));
     brand.append(el('span', 'logo-mark'), bt);
     top.append(brand); top.insertAdjacentHTML('beforeend', sealSvg(kind));
-    card.append(top, el('div', 'vc-name', '@' + c.name), el('div', 'vc-tier', off ? V[c.status] : c.official ? V.official : V[c.tier === 'blue' ? 'blue' : 'yellow']));
+    card.append(top, el('div', 'vc-name', '@' + shownOf(c)), el('div', 'vc-tier', off ? V[c.status] : c.official ? V.official : V[c.tier === 'blue' ? 'blue' : 'yellow']));
     if (!off) { const p = el('div', 'vc-pill' + (notice ? ' notice' : '')); p.append(el('i'), document.createTextNode(notice ? V.notice : c.official ? V.live : V.live + ' · ' + V.days(c.days || 0))); card.append(p); }
     const body = el('div', 'vc-body'), rows = el('div', 'vc-rows');
     const row = (k, v) => { const r = el('div', 'vc-row'); r.append(el('span', 'ck', '✓'), el('span', 'k', k), el('span', 'v', v)); rows.append(r); };
     if (off) rows.append(el('div', 'vc-row', V.voidNote));
     else if (c.official) { row(V.site, String(c.site || 'https://0x000000000.com').replace(/^https?:\/\//, '')); if (c.bot) row(V.bot, c.bot); if (c.github) row(V.code, String(c.github).replace(/^https?:\/\//, '')); }
     else {
+      if (c.owner) row(V.role, V.roleOwner);   // OWNERCARD0X_20261002：店主名片第一行「身份 零九零店主」（跟名片图同一行）
       if (c.domain) row(V.site, c.domain); if (c.x) row(V.x, '@' + c.x.handle); if (c.tg) row(V.tg, 't.me/' + c.tg.channel);
       const live = (c.addresses || []).filter((a) => a.state !== 'adding'), ch = [...new Set(live.map((a) => a.chain))].map((k) => V.chain[k] || k);
       if (live.length) row(V.addrs, V.addrN(live.length) + (ch.length ? ' · ' + ch.join(V.sep) : ''));
@@ -395,15 +398,15 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
       app.append(b, el('div', 'box warn', L.oPay), el('p', 'sub', L.oToken));
     }
     else if (data) {
-      const c = data, n = c.name;
-      document.title = L.title(n);
-      $('#ttl').textContent = '0x000000000 — @' + n;
+      const c = data, n = c.name, sn = shownOf(c);   // OWNERCARD0X_20261002：n 拼网址，sn 给人看
+      document.title = L.title(sn);
+      $('#ttl').textContent = '0x000000000 — @' + sn;
       // 撤销的、过期的：只说状态，不列地址、不给核对框（平台也不再给地址 —— 我们不替它担保了）
       if (c.status === 'revoked' || c.status === 'expired') app.append(vcardEl(c), el('div', 'box bad', c.status === 'revoked' ? L.revokedNote : L.expiredNote));   // CARDPNG0X_20261001：灰色带红叉的卡
       else {
         app.append(vcardEl(c), saveLink(c));   // CARDPNG0X_20261001：原来是一行「✅ @名字 · 黄勾 …」
         if (c.status === 'notice') app.append(el('div', 'box warn', L.noticeNote));
-        app.append(el('p', 'sub', L.what.replace('{n}', n)));
+        app.append(el('p', 'sub', L.what.replace('{n}', sn)));
         app.append(el('div', 'box warn', L.copyFromHere));
         for (const a of (c.addresses || []).filter((x) => x.state !== 'adding')) app.append(addrBox(a));
         const adds = (c.addresses || []).filter((x) => x.state === 'adding');
@@ -429,9 +432,9 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
         if (c.since) info.append(kv(L.since, utc(c.since).slice(0, 10)));
         if (c.expiresAt) info.append(kv(L.until, utc(c.expiresAt).slice(0, 10)));
         app.append(info);
-        if (c.ref && /^https:\/\/0x000000000\.com\/\?ref=[2-9A-HJ-NP-Z]{6}$/.test(c.ref)) { const rb = el('div', 'box'); rb.append(el('div', 'row-h', L.refHead)); const a = el('a', null, L.refLink.replace('{n}', n)); a.href = c.ref; rb.append(a); app.append(rb); }
+        if (c.ref && /^https:\/\/0x000000000\.com\/\?ref=[2-9A-HJ-NP-Z]{6}$/.test(c.ref)) { const rb = el('div', 'box'); rb.append(el('div', 'row-h', L.refHead)); const a = el('a', null, L.refLink.replace('{n}', sn)); a.href = c.ref; rb.append(a); app.append(rb); }
         if (c.tier === 'yellow' && c.status === 'live') {
-          const snip = '<a href="https://0x000000000.com/@' + n + '"><img src="https://0x000000000.com/api/badge/' + n + '.svg" alt="@' + n + ' verified by 0x000000000"></a>';
+          const snip = '<a href="https://0x000000000.com/@' + n + '"><img src="https://0x000000000.com/api/badge/' + n + '.svg" alt="@' + sn + ' verified by 0x000000000"></a>';
           const bb = el('div', 'box'); bb.append(el('div', 'row-h', L.badgeHead), el('code', 'snip', snip));
           const sb = el('button', 'btn', L.copySnip); sb.type = 'button'; sb.addEventListener('click', () => copy(snip, sb)); bb.append(el('div', 'btns')); bb.lastChild.append(sb); app.append(bb);
         }
