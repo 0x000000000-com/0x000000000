@@ -60,7 +60,7 @@ const dict = {
     //   说「拿不到」没用，要让用户自己能核对。每一条都是能验的事实，不是口号。
     proof1: '你的那一半钥匙在你自己的电脑上生成，也只存在你自己的电脑上。平台收到的只有公钥（公开的，像银行卡号）和签名（证明你手里有那一半，但不暴露它）—— 铸造页最下面「这一页跟平台说过的每一句话」逐条列着，你自己看。',
     proof2: '「造钥匙」这一步不需要联网：你可以先关掉 Wi-Fi 再点，照样做完。',
-    proof3: '这个页面就是一个文件，跟 GitHub 上公开的那份逐字节相同。GitHub 的机器每小时自动下载一次网站上的页面核对指纹，还会在每个新版本上用真浏览器走完全程、查私钥有没有被发出去 —— 这两项检查我们插不上手。',
+    proof3: '这个页面就是一个文件，跟 GitHub 上公开的那份逐字节相同。GitHub 的机器按计划每小时下载一次网站上的页面核对指纹（不保证准点），还会在每个新版本上用真浏览器走完全程、查私钥有没有被发出去，结果谁都看得见。检查脚本是我们写的 —— 最硬的核对是你自己算这个文件的 SHA-256，跟 GitHub 上的比。',
     proofVer: '页面版本',
     proofGh: '到 GitHub 核对',
     // DLONLY0X_20260924：DSJ「直接改成全下载到电脑模式，网站上的6个步骤也直接撤掉，6个步骤只显示在下载到电脑页面」
@@ -83,9 +83,9 @@ const dict = {
     sentTimes: (n) => '（' + n + ' 次，每隔几秒问一次）',
     sentFailed: '（没发出去：当时没联网）',
     sentTech: '懂技术的人看这里：每一次发了什么，原样列出',
-    sentGhHead: '不信这一页自己说的？GitHub 上有两项检查，是 GitHub 的机器在跑，我们碰不到：',
+    sentGhHead: '不信这一页自己说的？GitHub 上有两项检查，在 GitHub 的机器上跑，结果谁都看得见（检查脚本是我们写的，改动都公开留在历史里）：',
     sentGh1: '① 私钥外发检查：每次改这个页面，GitHub 的机器都用真浏览器把 6 步走一遍，逐个核对页面发出去的每一句话。绿色 ✓ = 没有把钥匙发出去。',
-    sentGh2: '② 防篡改巡检：GitHub 的机器每小时下载一次网站上的页面，跟公开的那份逐字节比。绿色 ✓ = 网站上的就是公开的那份，没被偷偷改过。',
+    sentGh2: '② 防篡改巡检：GitHub 的机器按计划每小时下载一次网站上的页面（不保证准点），跟公开的那份逐字节比。绿色 ✓ = 最近那一次对得上：网站上的就是公开的那份，没被偷偷改过。',
     sentGhRuns: '看 GitHub 的检查记录 ↗',
     sentGhRepo: '看公开的页面代码 ↗',
     sent: {
@@ -139,7 +139,7 @@ const dict = {
       s1desc: '这一步全部在你自己的电脑上算完，平台一个字节都收不到。它会把一把钥匙劈成两半：一半留在你这儿（下面叫「你的那一半」），另一半的「影子」交给平台。平台拿着影子推不回你的那一半 —— 所以从头到尾，完整私钥只可能出现在你的电脑上。',
       net1: '🔌 建议断网做：先拔网线或关掉 Wi-Fi，再点「造钥匙」。为什么：这一步会生成你的那一半钥匙，断网的时候这一页就算想往外发东西也发不出去。做完再连上网，接着做第 2 步。',
       genBtn: '造钥匙',
-      genOk: '钥匙造好了，备份文件 my-secret-s.json 已经存到你的下载文件夹。现在可以连上网，做第 2 步。',
+      genOk: '钥匙造好了，备份文件 my-secret-s.json 已经存到你的下载文件夹。⚠ 这个文件没有加密：谁拿到它和你的订单号，铸好后 30 天内就能取走另一半、拼出整把钥匙 —— 当私钥一样保管，别发给任何人（包括我们）。现在可以连上网，做第 2 步。',
       genKeep: '这个文件一定要留好。丢了这个靓号就永久没了，我们也找不回来 —— 建议再存一份到 U 盘或另一台电脑。',
       reloadLbl: '刷新过页面？选回你的 my-secret-s.json',
       fileOk: (pat, ch) => '读到了你之前的备份：' + pat + '（' + ch + '），可以接着下单。',
@@ -217,6 +217,8 @@ const dict = {
       evmTwin: (a) => '同一把钥匙在以太坊 / BSC 上的写法是 ' + a + '。MetaMask 只认这种 0x 写法；要看到 T 开头的地址，请导进 TronLink 这类 TRON 钱包。',
       hitWord: '命中',
       addrMatch: '跟你买的那个地址一致 ✓',
+      addrStop: '先停在这里：钱包文件不做、收条不签，这一单也不算交货。my-secret-s.json 和取货拿到的那一半都留好，把这一屏截给官方机器人 @OxOOOOOOOOObot。',
+      payBad: '平台给的收款信息样子不对（地址或金额的格式不对）—— 这一单先别付钱。刷新页面再试；还是这样，把这一屏截给官方机器人 @OxOOOOOOOOObot。',
       addrDiff: (a) => '★ 对不上！我们给的是 ' + a + ' —— 先别导出，把这一屏截给我们。',
       mergeBad: (want, ch) => '⛔ 合出来的地址没有一个是你要的 ' + want + '（' + ch + '）—— 我们给的 b 有问题。先别导出，把这一屏截给我们。',
       // KSONLY0X_20260924：DSJ「拿掉明文文件，专注做好钱包文件就好！」—— 只剩钱包文件一种导出。
@@ -252,6 +254,7 @@ const dict = {
       perkOk: '送你一个月实时防投毒提醒（个人档，最多盯 5 个波场地址）：点下面这个链接，在官方机器人里领（一单一次）。',
       perkLink: '领首月实时提醒 ↗',
       receiptBad: '签不出来 —— 手上的 b 跟这张收条对不上。',
+      receiptOdd: '平台发来的收条原文不是固定的那种格式（或者单号、地址、图案对不上）—— 没签。你的钥匙不受影响；把这一屏截给官方机器人 @OxOOOOOOOOObot。',
       noReceipt: '还没有收条可签，先完成上一步。',
       copied: '已复制 ✓',
       keepId: (id) => '记下订单号 ' + id + '：关了页面也能在下面「我的订单」里接着做，换电脑就输这个号。',
@@ -315,7 +318,7 @@ const dict = {
     foot1: 'page code published on GitHub, verifiable byte for byte · custom zone non-custodial · USDT on BSC (BEP20) only',
     proof1: 'Your half of the key is created on your own computer and only ever stored there. The platform only receives a public key (public, like a bank account number) and signatures (proof that you hold your half, without revealing it). Everything the minting page says to the platform is listed at its bottom under "Every word this page said to the platform" - check it yourself.',
     proof2: '"Make key" needs no network: switch off Wi-Fi before clicking and it still works.',
-    proof3: 'This page is a single file, byte-for-byte identical to the copy published on GitHub. GitHub\'s machines download the live page every hour and compare fingerprints, and run the whole flow in a real browser on every new version to check that no private key is sent - we cannot touch either check.',
+    proof3: 'This page is a single file, byte-for-byte identical to the copy published on GitHub. GitHub\'s machines download the live page on an hourly schedule (not guaranteed to be on time) and compare fingerprints, and run the whole flow in a real browser on every new version to check that no private key is sent; anyone can see the results. We wrote those checks - the strongest check is to compute this file\'s SHA-256 yourself and compare it with the one on GitHub.',
     proofVer: 'page version',
     proofGh: 'Verify on GitHub',
     dlHead: 'Mint on your own computer',
@@ -336,9 +339,9 @@ const dict = {
     sentTimes: (n) => ' (' + n + ' times, once every few seconds)',
     sentFailed: ' (not sent: you were offline)',
     sentTech: 'For technical readers: exactly what was sent each time',
-    sentGhHead: 'Rather not take this page at its word? GitHub runs two checks on its own machines - we cannot touch them:',
+    sentGhHead: 'Rather not take this page at its word? GitHub runs two checks on its own machines and anyone can see the results (we wrote the check scripts; every change to them stays public in the history):',
     sentGh1: '1. Private-key leak check: every time this page changes, machines at GitHub walk through all 6 steps in a real browser and check every single thing the page sends. Green ✓ = no key was sent.',
-    sentGh2: '2. Tamper patrol: every hour, machines at GitHub download the live page and compare it byte by byte with the published copy. Green ✓ = the live page is the published one, unchanged.',
+    sentGh2: '2. Tamper patrol: on an hourly schedule (not guaranteed to be on time), machines at GitHub download the live page and compare it byte by byte with the published copy. Green ✓ = the latest run matched: the live page is the published one, unchanged.',
     sentGhRuns: 'See the check history on GitHub ↗',
     sentGhRepo: 'See the published page code ↗',
     sent: {
@@ -388,7 +391,7 @@ const dict = {
       s1desc: 'This runs entirely on your own computer; the platform receives none of it. It splits one key in two: one half stays with you (below: "your half"), and the "shadow" of the other half goes to the platform. The shadow cannot be turned back into your half - so the complete private key can only ever appear on your computer.',
       net1: '🔌 Best done offline: unplug the network cable or turn off Wi-Fi first, then click "Make key". Why: this step creates your half of the key; while offline, this page could not send anything out even if it tried. Reconnect afterwards for step 2.',
       genBtn: 'Make my key',
-      genOk: 'Key created. The backup file my-secret-s.json is in your downloads folder. You can go back online now for step 2.',
+      genOk: 'Key created. The backup file my-secret-s.json is in your downloads folder. ⚠ This file is not encrypted: anyone who has it and your order number can collect the other half within 30 days of minting and rebuild the whole key - guard it like a private key and never send it to anyone (us included). You can go back online now for step 2.',
       genKeep: 'Keep that file. Lose it and this address is gone for good - we cannot recover it either. Put a second copy on a USB stick or another machine.',
       reloadLbl: 'Reloaded the page? Pick your my-secret-s.json back',
       fileOk: (pat, ch) => 'Loaded your backup: ' + pat + ' (' + ch + '). You can order now.',
@@ -460,6 +463,8 @@ const dict = {
       evmTwin: (a) => 'The same key written the Ethereum / BSC way is ' + a + '. MetaMask only shows this 0x form; to see the T address, import it into a TRON wallet such as TronLink.',
       hitWord: 'matched',
       addrMatch: 'Matches the address you bought.',
+      addrStop: 'Stopped here: no wallet file, no receipt, and this order is not marked delivered. Keep my-secret-s.json and the half you collected, and send a screenshot of this to the official bot @OxOOOOOOOOObot.',
+      payBad: 'The payment details from the platform look wrong (address or amount format) - do not pay this order yet. Reload and try again; if it stays like this, send a screenshot to the official bot @OxOOOOOOOOObot.',
       addrDiff: (a) => 'Mismatch. We delivered ' + a + ' - do not export; send us a screenshot of this.',
       mergeBad: (want, ch) => 'None of the candidates match your ' + want + ' (' + ch + ') - the b we sent is wrong. Do not export; send us a screenshot of this.',
       pwLbl: 'Set a password for the wallet file (at least 8 characters)', pwPh: 'password', pw2Ph: 'type it again',
@@ -492,6 +497,7 @@ const dict = {
       perkOk: 'A free month of real-time poisoning alerts (Personal plan, up to 5 TRON addresses): open the link below and claim it in the official bot (once per order).',
       perkLink: 'Claim the free month ↗',
       receiptBad: 'Cannot sign - the b on hand does not match this receipt.',
+      receiptOdd: 'The receipt text from the platform is not in the fixed format (or the order, address or pattern does not match) - not signed. Your key is not affected; send a screenshot of this to the official bot @OxOOOOOOOOObot.',
       noReceipt: 'No receipt to sign yet - finish the step above.',
       copied: 'Copied',
       keepId: (id) => 'Keep your order number ' + id + ': you can close this page and continue from "My orders" below, or enter this number on another computer.',
@@ -557,7 +563,7 @@ const dict = {
     foot1: 'kode halaman dipublikasikan di GitHub, bisa dicek byte demi byte · zona kustom non-kustodial · pembayaran hanya USDT di BSC',
     proof1: 'Separuh kunci Anda dibuat di komputer Anda sendiri dan hanya pernah disimpan di sana. Platform hanya menerima kunci publik (terbuka, seperti nomor rekening bank) dan tanda tangan (bukti bahwa Anda memegang separuh itu, tanpa membukanya). Semua yang dikatakan halaman cetak kepada platform tercantum di bagian bawahnya, di "Setiap kata yang dikirim halaman ini ke platform" - periksa sendiri.',
     proof2: '"Buat kunci" tidak butuh internet: matikan Wi-Fi sebelum mengklik, dan tetap berhasil.',
-    proof3: 'Halaman ini adalah satu file, identik byte demi byte dengan salinan yang dipublikasikan di GitHub. Mesin GitHub mengunduh halaman live setiap jam dan membandingkan sidik jarinya, serta menjalankan seluruh alur di browser sungguhan pada setiap versi baru untuk memastikan tidak ada kunci privat yang dikirim - kami tidak bisa menyentuh kedua pemeriksaan itu.',
+    proof3: 'Halaman ini adalah satu file, identik byte demi byte dengan salinan yang dipublikasikan di GitHub. Mesin GitHub mengunduh halaman live sesuai jadwal setiap jam (tidak dijamin tepat waktu) dan membandingkan sidik jarinya, serta menjalankan seluruh alur di browser sungguhan pada setiap versi baru untuk memastikan tidak ada kunci privat yang dikirim; siapa pun bisa melihat hasilnya. Pemeriksaan itu kami yang menulis - pemeriksaan terkuat adalah menghitung sendiri SHA-256 file ini dan membandingkannya dengan yang ada di GitHub.',
     proofVer: 'versi halaman',
     proofGh: 'Periksa di GitHub',
     dlHead: 'Cetak di komputer Anda sendiri',
@@ -578,9 +584,9 @@ const dict = {
     sentTimes: (n) => ' (' + n + ' kali, setiap beberapa detik)',
     sentFailed: ' (tidak terkirim: Anda sedang offline)',
     sentTech: 'Untuk pembaca teknis: persis apa yang dikirim setiap kali',
-    sentGhHead: 'Tidak mau percaya begitu saja pada halaman ini? GitHub menjalankan dua pemeriksaan di mesinnya sendiri - kami tidak bisa menyentuhnya:',
+    sentGhHead: 'Tidak mau percaya begitu saja pada halaman ini? GitHub menjalankan dua pemeriksaan di mesinnya sendiri dan siapa pun bisa melihat hasilnya (skrip pemeriksaannya kami yang menulis; setiap perubahannya tetap publik di riwayat):',
     sentGh1: '1. Pemeriksaan kebocoran kunci privat: setiap kali halaman ini berubah, mesin GitHub menjalankan keenam langkah di browser sungguhan dan memeriksa setiap hal yang dikirim halaman. Hijau ✓ = tidak ada kunci yang dikirim.',
-    sentGh2: '2. Patroli anti-ubah: setiap jam, mesin GitHub mengunduh halaman live dan membandingkannya byte demi byte dengan salinan yang dipublikasikan. Hijau ✓ = halaman live adalah yang dipublikasikan, tanpa perubahan.',
+    sentGh2: '2. Patroli anti-ubah: sesuai jadwal setiap jam (tidak dijamin tepat waktu), mesin GitHub mengunduh halaman live dan membandingkannya byte demi byte dengan salinan yang dipublikasikan. Hijau ✓ = pemeriksaan terakhir cocok: halaman live adalah yang dipublikasikan, tanpa perubahan.',
     sentGhRuns: 'Lihat riwayat pemeriksaan di GitHub ↗',
     sentGhRepo: 'Lihat kode halaman yang dipublikasikan ↗',
     sent: {
@@ -630,7 +636,7 @@ const dict = {
       s1desc: 'Langkah ini berjalan sepenuhnya di komputer Anda sendiri; platform tidak menerima apa pun darinya. Satu kunci dibelah dua: separuh tetap pada Anda (di bawah: "separuh Anda"), dan "bayangan" dari separuh lainnya dikirim ke platform. Bayangan itu tidak bisa diubah kembali menjadi separuh Anda - jadi kunci privat lengkap hanya bisa muncul di komputer Anda.',
       net1: '🔌 Sebaiknya offline: cabut kabel jaringan atau matikan Wi-Fi dulu, lalu klik "Buat kunci saya". Alasannya: langkah ini membuat separuh kunci Anda; saat offline, halaman ini tidak bisa mengirim apa pun keluar walaupun mencoba. Sambungkan lagi sesudahnya untuk langkah 2.',
       genBtn: 'Buat kunci saya',
-      genOk: 'Kunci dibuat. File cadangan my-secret-s.json ada di folder unduhan Anda. Sekarang Anda boleh online lagi untuk langkah 2.',
+      genOk: 'Kunci dibuat. File cadangan my-secret-s.json ada di folder unduhan Anda. ⚠ File ini tidak dienkripsi: siapa pun yang memilikinya dan nomor pesanan Anda bisa mengambil separuh lainnya dalam 30 hari setelah pencetakan dan menyusun kunci lengkap - jaga seperti kunci privat dan jangan pernah kirimkan ke siapa pun (termasuk kami). Sekarang Anda boleh online lagi untuk langkah 2.',
       genKeep: 'Simpan file itu. Kalau hilang, alamat ini hilang untuk selamanya - kami juga tidak bisa memulihkannya. Simpan salinan kedua di USB atau komputer lain.',
       reloadLbl: 'Memuat ulang halaman? Pilih kembali my-secret-s.json Anda',
       fileOk: (pat, ch) => 'Cadangan Anda dimuat: ' + pat + ' (' + ch + '). Sekarang Anda bisa memesan.',
@@ -702,6 +708,8 @@ const dict = {
       evmTwin: (a) => 'Kunci yang sama ditulis dengan cara Ethereum / BSC adalah ' + a + '. MetaMask hanya menampilkan bentuk 0x ini; untuk melihat alamat T, impor ke dompet TRON seperti TronLink.',
       hitWord: 'cocok',
       addrMatch: 'Cocok dengan alamat yang Anda beli.',
+      addrStop: 'Berhenti di sini: tidak ada file dompet, tidak ada tanda terima, dan pesanan ini tidak ditandai terkirim. Simpan my-secret-s.json dan separuh yang Anda ambil, lalu kirim tangkapan layar ini ke bot resmi @OxOOOOOOOOObot.',
+      payBad: 'Detail pembayaran dari platform terlihat salah (format alamat atau jumlah) - jangan bayar pesanan ini dulu. Muat ulang dan coba lagi; jika tetap begini, kirim tangkapan layar ke bot resmi @OxOOOOOOOOObot.',
       addrDiff: (a) => 'Tidak cocok. Kami mengirim ' + a + ' - jangan diekspor; kirimkan tangkapan layar ini kepada kami.',
       mergeBad: (want, ch) => 'Tidak ada kandidat yang cocok dengan ' + want + ' (' + ch + ') Anda - b yang kami kirim salah. Jangan diekspor; kirimkan tangkapan layar ini kepada kami.',
       pwLbl: 'Buat kata sandi untuk file dompet (minimal 8 karakter)', pwPh: 'kata sandi', pw2Ph: 'ketik sekali lagi',
@@ -734,6 +742,7 @@ const dict = {
       perkOk: 'Satu bulan gratis peringatan real-time peracunan alamat (paket Personal, hingga 5 alamat TRON): buka tautan di bawah dan klaim di bot resmi (sekali per pesanan).',
       perkLink: 'Klaim bulan gratis ↗',
       receiptBad: 'Tidak bisa menandatangani - b yang ada tidak cocok dengan tanda terima ini.',
+      receiptOdd: 'Teks tanda terima dari platform tidak dalam format tetap (atau pesanan, alamat, atau pola tidak cocok) - tidak ditandatangani. Kunci Anda tidak terpengaruh; kirim tangkapan layar ini ke bot resmi @OxOOOOOOOOObot.',
       noReceipt: 'Belum ada tanda terima untuk ditandatangani - selesaikan langkah di atas.',
       copied: 'Tersalin',
       keepId: (id) => 'Simpan nomor pesanan Anda ' + id + ': Anda bisa menutup halaman ini dan melanjutkan dari "Pesanan saya" di bawah, atau memasukkan nomor ini di komputer lain.',
@@ -904,7 +913,10 @@ function renderBoot(instant) {
 // 后果不是少显示一格，是【renderCatalog 整个挂掉，价目表一行都画不出来】——
 // 线上就这么坏着，页面写「价目表暂时取不到」，看起来像后端的锅，其实是前端一个字段没接上。
 // 少一个字段就该少显示一格，不该连累整张表。
-function esc(s) { return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+// SECFIX0X_20261117 ①：原来只换 & < > 三个，引号原样留着 —— 服务器回的字段只要带一个 "，就能跳出 data-copycmd="…"、value="…" 这类属性，
+//   自己加一个 onclick（Codex 安全检查用原样的 drawPay 实测，HTML 解析器确实解析出多出来的 onclick）。
+//   根子在这一个函数：c2app.js、freeapp.js 早就五个都换；fcheck.js 用的也是这一个。补齐同一套，所有属性位置一起堵上。
+function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
 
 /* ---- 目录表 ---- */
 // 唯一价目来源是后端 /api/catalog。前端【不留表】—— 留了就会分叉（PRICECONTRA0X_20260921）。
@@ -1469,17 +1481,28 @@ function wireOrderFlow(f) {
     if (pay.code !== 200) return false;
     orderState.address = pay.body.address;
     orderState.pay = pay.body;
-    drawPay();
-    $('#btnPay').disabled = false;
+    $('#btnPay').disabled = !drawPay();   // SECFIX0X_20261117 ①：样子不对就不让点「我转好了」
     showLeave();
     vchShow(vchSeen(o), !o || vchOpenFor(o));
     return true;
   }
+  // SECFIX0X_20261117 ①：收款地址、金额、确认数都是服务器给的 —— 先过一遍样子再画。样子不对：不画、不让付，停在一句话上。
+  //   只核格式（0x + 40 位十六进制，或 T + 33 位 base58；金额是数字）：地址是平台用收款主钥推出来的，真假这里核不了。
+  //   ★ 不按付款链分开判：平台没注 xpub 的演示 / 测试模式（ALLOW_LOCAL_MASTER）里，BSC 单拿到的也是 T 开头的地址（deriveDepositAddress 只出波场格式）——
+  //     私钥外发检查就跑在这个模式上（SECFIX0X 第一版按链判，真浏览器在「我转好了」那一步卡住，就是这个原因）。挡注入只要求「是一个干净的地址」。
+  function payShapeOk(p) {
+    return /^(0x[0-9a-fA-F]{40}|T[1-9A-HJ-NP-Za-km-z]{33})$/.test(String(p.address))
+      && /^\d{1,12}(\.\d{1,18})?$/.test(String(p.amountUsdt))
+      && (p.confirmationsRequired == null || /^\d{1,4}$/.test(String(p.confirmationsRequired)))
+      && /^[A-Za-z0-9 ._-]{1,24}$/.test(String(p.chain)) && /^[A-Za-z0-9._-]{1,16}$/.test(String(p.network));
+  }
   function drawPay() {
-    const p = orderState.pay, pi = $('#payInfo'); if (!p || !pi) return;
+    const p = orderState.pay, pi = $('#payInfo'); if (!p || !pi) return false;
     pi.hidden = false;
+    if (!payShapeOk(p)) { pi.textContent = f.payBad; const pb = $('#btnPay'); if (pb) pb.disabled = true; return false; }
     pi.innerHTML = '<span class="lbl">' + esc(f.payInfo2(p.address, p.amountUsdt, p.confirmationsRequired, p.chain + ' · USDT-' + p.network)) + '</span>' +
       '<button class="copy" data-copycmd="' + esc(p.address) + '">' + esc(f.copyAddr) + '</button>';
+    return true;
   }
   // ── VOUCHER0X_20261002：用券（现金券 / 免费券）────────────────────────────
   //   券码真不真、抵多少、这一单还能不能用，全由平台判（POST /api/orders/:id/voucher）—— 页面只去掉空格，空的不发。
@@ -1635,11 +1658,23 @@ function wireOrderFlow(f) {
       KC().candList(r.cands).split('\n').forEach((l) => outLine(out, l, 'dim'));
       return;
     }
+    const exp = orderState.deliveredAddr;
+    // SECFIX0X_20261117 ④：原来对不上只印一行红字，接着照样打开钱包文件、标「已交货」、放出「交收条」——
+    //   红字自己写着「先别导出」，按钮却开着（Codex 安全检查：mismatchShown / exportWalletVisible / receiptEnabled 三个都是 true）。
+    //   现在对不上就停在这一步：不做钱包文件、不签收条、不标已交货。以太坊类地址不分大小写比（校验大小写不改变地址），波场逐字比。
+    const same = typeof exp === 'string' && (r.chain === 'tron' ? r.addr === exp : r.addr.toLowerCase() === exp.toLowerCase());
+    if (!same) {
+      MERGED = null; MERGED_K = null;
+      outLine(out, r.addr + (r.want ? '   ← ' + r.want + ' ' + f.hitWord : ''), 'err');
+      outLine(out, f.addrDiff(exp), 'err');
+      outLine(out, f.addrStop, 'err');
+      $('#btnMerge').disabled = true;
+      return;
+    }
     MERGED = r; MERGED_K = r.k; try { renderSent(); } catch (e) {}
     outLine(out, f.mergeOk, 'ok');
     outLine(out, r.addr + (r.want ? '   ← ' + r.want + ' ' + f.hitWord : ''), 'ok');
-    const exp = orderState.deliveredAddr;
-    outLine(out, r.addr === exp ? f.addrMatch : f.addrDiff(exp), r.addr === exp ? 'ok' : 'err');
+    outLine(out, f.addrMatch, 'ok');
     // KEYTXT0X_20260924：TRON 地址的买家在 MetaMask 里只看得见 0x 写法 —— 当场把那一行印出来，免得以为钥匙错了
     if (r.chain === 'tron') outLine(out, f.evmTwin(KC().addrOf('evm', r.k)), 'dim');
     $('#btnMerge').disabled = true;
@@ -1673,9 +1708,10 @@ function wireOrderFlow(f) {
     const out = $('#out6'); out.hidden = false; out.innerHTML = '';
     if (!orderState.receiptChallenge) return outLine(out, f.noReceipt, 'err');
     let r;
-    try { r = KC().signReceipt(orderState.sec, KC().parseB(orderState.b), orderState.receiptChallenge); }
+    // SECFIX0X_20261117 ②：收条原文是服务器给的 —— 交给 signReceipt 按平台那一种固定格式逐行核（单号、地址、图案都要对得上），不对就不签
+    try { r = KC().signReceipt(orderState.sec, KC().parseB(orderState.b), orderState.receiptChallenge, { orderId: orderState.orderId }); }
     catch (e) { return outLine(out, e.message, 'err'); }
-    if (!r.ok) return outLine(out, f.receiptBad, 'err');
+    if (!r.ok) return outLine(out, r.why === 'form' ? f.receiptOdd : f.receiptBad, 'err');
     const res = await api('/api/orders/' + orderState.orderId + '/receipt', 'POST', { sig: r.sig });
     if (res.code !== 200) { showApiError(out, res); return; }
     outLine(out, f.receiptOk, 'ok');
@@ -1809,7 +1845,7 @@ async function renderOrders() {
   body.innerHTML = live.map((o) =>
     '<tr><td>' + esc(o.id) + '</td><td>' + esc(o.patternText || o.pattern) + '</td>'
     + '<td><span class="' + (STATUS_CLASS[o.status] || '') + '">' + esc(statusLabel(o.status)) + '</span></td>'
-    + '<td class="num">' + (o.amountUsdt != null ? o.amountUsdt : '-') + '</td>'
+    + '<td class="num">' + esc(o.amountUsdt != null ? o.amountUsdt : '-') + '</td>'   // SECFIX0X_20261117 ①：原来原样拼进 HTML
     + '<td>' + (['expired', 'refunded'].includes(o.status) ? ''
         : '<button class="copy" data-resume="' + esc(o.id) + '">' + esc(t('ordersResume')) + '</button>') + '</td></tr>'
   ).join('');
