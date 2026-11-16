@@ -72,7 +72,7 @@
       <details class="fc-sub"><summary id="fcSub">This is exactly how 0x000000000 protects its own money.</summary><p id="fcSubWhy"></p></details>
       <details class="fc-own">
         <summary id="fcMineSum">Paying someone? Add your own address</summary>
-        <input id="fcMine" class="fc-input small" type="text" spellcheck="false" autocapitalize="off" autocorrect="off" aria-labelledby="fcMineSum" placeholder="Your own address (stays on this page only)">
+        <input id="fcMine" class="fc-input small" type="text" spellcheck="false" autocapitalize="off" autocorrect="off" aria-labelledby="fcMineSum" placeholder="Your own address (sent to us for one check, not stored)">
         <div class="fc-note" id="fcMineNote"></div>
       </details>
       <div class="fc-result" id="fcResult" aria-live="polite" hidden></div>
@@ -199,7 +199,7 @@
           <ul class="proof">
             <li data-i18n="proof1">Your half of the key is created on your own computer and only ever stored there. The platform only receives a public key (public, like a bank account number) and signatures (proof that you hold your half, without revealing it). Everything the minting page says to the platform is listed at its bottom under "Every word this page said to the platform" - check it yourself.</li>
             <li data-i18n="proof2">"Make key" needs no network: switch off Wi-Fi before clicking and it still works.</li>
-            <li><span data-i18n="proof3">This page is a single file, byte-for-byte identical to the copy published on GitHub. GitHub's machines download the live page every hour and compare fingerprints, and run the whole flow in a real browser on every new version to check that no private key is sent - we cannot touch either check.</span> <span class="dim"><span data-i18n="proofVer">page version</span> <span id="buildId"><!--BUILD_ID--></span></span></li>
+            <li><span data-i18n="proof3">This page is a single file, byte-for-byte identical to the copy published on GitHub. GitHub's machines download the live page on an hourly schedule (not guaranteed to be on time) and compare fingerprints, and run the whole flow in a real browser on every new version to check that no private key is sent; anyone can see the results. We wrote those checks - the strongest check is to compute this file's SHA-256 yourself and compare it with the one on GitHub.</span> <span class="dim"><span data-i18n="proofVer">page version</span> <span id="buildId"><!--BUILD_ID--></span></span></li>
           </ul></details>
           <!-- LESSMORE0X_20260929：原来这里还有一个「下载铸造页面到自己电脑上」—— 网站上它跟下面那个大「下载」按钮重复，下载下来的那份又一直把它藏着（藏了还留下一个孤零零的「·」）。拿掉，只留「到 GitHub 核对」。 -->
           <div class="proof-links"><a href="https://github.com/0x000000000-com/0x000000000" target="_blank" rel="noopener" data-i18n="proofGh">Verify on GitHub</a></div>
@@ -235,10 +235,10 @@
             <div class="step-desc" id="sentVerdict"></div>
             <ol id="sentList"></ol>
             <div class="sentgh">
-              <div data-i18n="sentGhHead">Rather not take this page at its word? GitHub runs two checks on its own machines - we cannot touch them:</div>
+              <div data-i18n="sentGhHead">Rather not take this page at its word? GitHub runs two checks on its own machines and anyone can see the results (we wrote the check scripts; every change to them stays public in the history):</div>
               <ul>
                 <li data-i18n="sentGh1">1. Private-key leak check: every time this page changes, machines at GitHub walk through all 6 steps in a real browser and check every single thing the page sends. Green ✓ = no key was sent.</li>
-                <li data-i18n="sentGh2">2. Tamper patrol: every hour, machines at GitHub download the live page and compare it byte by byte with the published copy. Green ✓ = the live page is the published one, unchanged.</li>
+                <li data-i18n="sentGh2">2. Tamper patrol: on an hourly schedule (not guaranteed to be on time), machines at GitHub download the live page and compare it byte by byte with the published copy. Green ✓ = the latest run matched: the live page is the published one, unchanged.</li>
               </ul>
               <div class="proof-links"><a href="https://github.com/0x000000000-com/0x000000000/actions" target="_blank" rel="noopener" data-i18n="sentGhRuns">See the check history on GitHub ↗</a> · <a href="https://github.com/0x000000000-com/0x000000000" target="_blank" rel="noopener" data-i18n="sentGhRepo">See the published page code ↗</a> · <span class="dim"><span data-i18n="proofVer">page version</span> <span class="buildIdCopy"></span></span></div>
             </div>
