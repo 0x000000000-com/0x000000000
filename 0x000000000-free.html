@@ -651,7 +651,7 @@ details.netline[open]>summary{margin-bottom:4px}
         <div class="zt" id="dlHead">Want to be even surer: download this page</div>
         <div id="dlWhy"></div>
         <a class="dlbtn" id="dlPage" href="0x000000000-free.html" download="0x000000000-free.html"><span id="dlBtn">Download this page</span></a>
-        <div class="proof-links"><a href="https://github.com/0x000000000-com/0x000000000" target="_blank" rel="noopener" id="dlGh">Verify on GitHub</a> · <span class="dim">build <span id="buildId">6dffc9529dd4</span></span></div>
+        <div class="proof-links"><a href="https://github.com/0x000000000-com/0x000000000" target="_blank" rel="noopener" id="dlGh">Verify on GitHub</a> · <span class="dim">build <span id="buildId">241e212858db</span></span></div>
       </div>
     </section>
     <footer class="foot">
@@ -1135,9 +1135,10 @@ var NOBLE=(()=>{var Tt=Object.defineProperty;var Be=Object.getOwnPropertyDescrip
     return {
       s: s, A: A, chain: chain, prefix: pre, suffix: suf,
       secret: JSON.stringify({
-        warning: 'Your secret half of the key. Lose it and this address is gone forever - nobody can recover it. Never share it; keep an offline backup.',
-        warning_zh: '这是你的秘密份额(第一半)。丢了=靓号永久死亡, 平台无法找回。绝不外传, 离线备份。',
-        warning_id: 'Separuh rahasia kunci Anda. Jika hilang, alamat ini hilang untuk selamanya - tidak ada yang bisa memulihkannya. Jangan pernah membagikannya; simpan cadangan offline.',
+        // SECFIX0X_20261117 ⑤：这个文件不加密 —— 拿到它 + 订单号，铸好后 30 天内就能取走另一半、拼出整把钥匙。提醒里写明这一点（键名不变）
+        warning: 'Your secret half of the key. Lose it and this address is gone forever - nobody can recover it. This file is NOT encrypted: anyone who has it and your order number can collect the other half within 30 days of minting and take the whole key. Guard it like a private key; never share it (not even with us); keep an offline backup.',
+        warning_zh: '这是你的秘密份额(第一半)。丢了=靓号永久死亡, 平台无法找回。这个文件没有加密: 谁拿到它和你的订单号, 铸好后 30 天内就能取走另一半、拼出整把钥匙。当私钥一样保管, 绝不外传(包括我们), 离线备份。',
+        warning_id: 'Separuh rahasia kunci Anda. Jika hilang, alamat ini hilang untuk selamanya - tidak ada yang bisa memulihkannya. File ini TIDAK dienkripsi: siapa pun yang memilikinya dan nomor pesanan Anda bisa mengambil separuh lainnya dalam 30 hari setelah pencetakan dan mengambil kunci lengkap. Jaga seperti kunci privat; jangan pernah membagikannya (termasuk kepada kami); simpan cadangan offline.',
         chain: chain, prefix: pre, suffix: suf,
         pattern: pre,
         s: pad64(s)
@@ -1186,11 +1187,29 @@ var NOBLE=(()=>{var Tt=Object.defineProperty;var Be=Object.getOwnPropertyDescrip
   }
 
   // ④ 签回执：用合出来的完整 k 给回执原文签名。平台没有 s，造不出这个签名。
-  function signReceipt(sec, b, message) {
+  // SECFIX0X_20261117 ②：只签平台那一种固定格式（跟 platform-server.mjs 的 receiptMessage()、test/mock-platform.mjs 一行一行对上）：
+  //     0x000000000 delivery receipt / order: 单号 / pattern: 图案 / address: 地址 / nonce: 32 位十六进制
+  //   并且单号 = 这张单（want.orderId）、地址 = 本机合出来的那个、图案 = 你那半把钥匙文件里写的。
+  //   原来只看「原文里有没有这个地址」—— 服务器（或冒充它的人）给一段别家网站的登录原文（EIP-191 包装的 Sign-In with Ethereum，
+  //   里面本来就带地址），这里照签：等于拿你的完整私钥替别人签了名（Codex 安全检查用合成钥匙实测：签名能验证、能恢复出这个地址）。
+  //   第一行写死 → 原文不可能是 \x19 开头的 EIP-191 包装，也不可能是别家的登录原文。对不上回 { ok:false, why:'form' }，一个字都不签。
+  var RCPT_RE = /^0x000000000 delivery receipt\norder: ([0-9A-Za-z_-]{1,64})\npattern: ([ -~\u2026]{0,160})\naddress: (0x[0-9a-fA-F]{40}|T[1-9A-HJ-NP-Za-km-z]{33})\nnonce: ([0-9a-f]{32})$/;
+  function receiptPatternOk(sh, pat) {
+    var txt = ((sh.prefix || '') + '\u2026' + (sh.suffix || '')).replace(/^\u2026$/, '');
+    if (sh.chain === 'tron') {
+      if (pat === txt) return true;
+      var rep = /^(?:(\S+)\u2026 \+ )?last \d{1,2} characters all the same$/.exec(pat);   // 豹子号：后端写「最后 N 个字一样」
+      return !!rep && (rep[1] || '') === (sh.prefix || '');
+    }
+    return pat.toLowerCase() === ('0x' + txt).toLowerCase();
+  }
+  function signReceipt(sec, b, message, want) {
     var msg = String(message || '').replace(/\r\n/g, '\n').replace(/\s+$/, '');
     if (!msg) throw new Error(M('回执原文是空的。', 'The receipt text is empty.', 'Teks tanda terima kosong.'));
-    var cands = mergeCandidates(sec.s, b, secShape(sec).chain);
-    var hit = pickByOracle(cands, function (a) { return msg.indexOf(a) >= 0; });
+    var sh = secShape(sec), cands = mergeCandidates(sec.s, b, sh.chain), m = RCPT_RE.exec(msg);
+    if (!m || !want || m[1] !== String(want.orderId) || !receiptPatternOk(sh, m[2])) return { ok: false, why: 'form', cands: cands };
+    var tron = sh.chain === 'tron';
+    var hit = pickByOracle(cands, function (a) { return tron ? a === m[3] : a.toLowerCase() === m[3].toLowerCase(); });
     if (!hit) return { ok: false, cands: cands };
     return { ok: true, addr: hit.addr,
              sig: hex(N.sign(N.keccak_256(enc.encode(msg)), u8(pad64(hit.k))).toCompactRawBytes()) };

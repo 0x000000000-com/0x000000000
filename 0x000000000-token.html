@@ -619,7 +619,7 @@ details.netline[open]>summary{margin-bottom:4px}
         <div id="dlWhy"></div>
         <ol id="dlSteps"></ol>
         <a class="dlbtn" id="dlPage" href="0x000000000-token.html" download="0x000000000-token.html"><span id="dlBtn">Download this page</span></a>
-        <div class="proof-links"><a href="https://github.com/0x000000000-com/0x000000000" target="_blank" rel="noopener" id="dlGh">Verify on GitHub</a> · <span class="dim">build <span id="buildId">afc753dbd83b</span></span></div>
+        <div class="proof-links"><a href="https://github.com/0x000000000-com/0x000000000" target="_blank" rel="noopener" id="dlGh">Verify on GitHub</a> · <span class="dim">build <span id="buildId">60f0e067bcc7</span></span></div>
       </div>
       <div id="flowWrap" hidden>
         <div class="netguide" id="netGuide"></div>
@@ -955,6 +955,12 @@ var SALT = (function () {
           '每条链都这样发一次，地址都一样。'];
       },
       deployWarn: '⚠ 必须由这个部署地址本人直接调用 CreateX。用别的地址发、或者经过别的合约转一道调用，CreateX 会把这个盐当成别人的 —— 部署会成功，但地址就不是这一个了。所以一定先模拟。',
+      // SECFIX0X_20261117 ③：交货跟你下单时填的对不对得上（部署地址、模式、图案、create2 的代码哈希）
+      reqSame: '跟你下单时填的一样（部署地址、模式、图案）',
+      reqDiff: '跟你下单时填的不一样（部署地址、模式、图案里至少一样不对）',
+      reqNone: '这台电脑上没有你下单时的记录，没法替你对照 —— 请自己核对：部署地址、模式、图案是不是你要的',
+      reqStop: '⛔ 这份交货跟你的订单对不上 —— 别部署。把这一屏截给官方机器人 @OxOOOOOOOOObot。',
+      reqShow: function (d) { return '部署地址 ' + d.deployer + ' · 模式 ' + d.mode + ' · 图案 ' + ((d.prefix || '') + '…' + (d.suffix || '')); },
       // CONTRACT0X_20260928：合约自己转不了账 —— 登记用 /contract（部署地址先认证过，盐就是上面这个），不用转零头
       regAfter: { contract: '部署之后：在官方机器人里发「/contract 合约地址 盐」，把它登记到你的认证下（部署地址要先认证过）—— 谁在零九零查这个地址，都看到「这是 @你 登记的官方合约」。',
         token: '发币之后：在官方机器人里发「/contract 合约地址 盐」，把代币地址登记到你的黄勾认证下（部署地址要先认证过）—— 谁在零九零查这个地址，都看到「这是 @你 登记的官方合约」；名字一样、地址不一样的币，就不是你登记的那一个。' },
@@ -1065,6 +1071,12 @@ var SALT = (function () {
           'Do this once on each chain - the address is the same everywhere.'];
       },
       deployWarn: '⚠ The deployer address itself must call CreateX directly. Sending from another address, or routing the call through another contract, makes CreateX treat the salt as someone else\'s - the deployment succeeds, but at a different address. So always simulate first.',
+      // SECFIX0X_20261117 ③
+      reqSame: 'Matches what you ordered (deployer, mode, pattern)',
+      reqDiff: 'Does not match what you ordered (at least one of deployer, mode, pattern is different)',
+      reqNone: 'This computer has no record of your order, so it cannot compare - check yourself that the deployer, mode and pattern are what you want',
+      reqStop: '⛔ This delivery does not match your order - do not deploy. Send a screenshot of this to the official bot @OxOOOOOOOOObot.',
+      reqShow: function (d) { return 'Deployer ' + d.deployer + ' · mode ' + d.mode + ' · pattern ' + ((d.prefix || '') + '…' + (d.suffix || '')); },
       regAfter: { contract: 'After deploying: send "/contract <contract address> <salt>" to the official bot to register it under your verification (the deployer must be verified first) - anyone who looks the address up on 0x000000000 then sees "the official contract registered by @you".',
         token: 'After launch: send "/contract <token address> <salt>" to the official bot to register it under your gold check (the deployer must be verified first) - anyone who looks the address up on 0x000000000 then sees "the official contract registered by @you"; a token with the same name at a different address is not the one you registered.' },
       regAfterLink: 'How verification works ->',
@@ -1175,6 +1187,12 @@ var SALT = (function () {
           'Lakukan ini sekali di setiap jaringan - alamatnya sama di mana pun.'];
       },
       deployWarn: '⚠ Alamat deployer itu sendiri harus memanggil CreateX secara langsung. Mengirim dari alamat lain, atau meneruskan panggilan lewat kontrak lain, membuat CreateX menganggap salt itu milik orang lain - deployment berhasil, tetapi di alamat yang berbeda. Jadi selalu simulasikan dulu.',
+      // SECFIX0X_20261117 ③
+      reqSame: 'Cocok dengan pesanan Anda (deployer, mode, pola)',
+      reqDiff: 'Tidak cocok dengan pesanan Anda (setidaknya satu dari deployer, mode, pola berbeda)',
+      reqNone: 'Komputer ini tidak punya catatan pesanan Anda, jadi tidak bisa membandingkan - periksa sendiri bahwa deployer, mode, dan pola sesuai keinginan Anda',
+      reqStop: '⛔ Pengiriman ini tidak cocok dengan pesanan Anda - jangan deploy. Kirim tangkapan layar ini ke bot resmi @OxOOOOOOOOObot.',
+      reqShow: function (d) { return 'Deployer ' + d.deployer + ' · mode ' + d.mode + ' · pola ' + ((d.prefix || '') + '…' + (d.suffix || '')); },
       regAfter: { contract: 'Setelah deploy: kirim "/contract <alamat kontrak> <salt>" ke bot resmi untuk mendaftarkannya di bawah verifikasi Anda (deployer harus terverifikasi lebih dulu) - siapa pun yang mencari alamat itu di 0x000000000 akan melihat "kontrak resmi yang didaftarkan oleh @Anda".',
         token: 'Setelah peluncuran: kirim "/contract <alamat token> <salt>" ke bot resmi untuk mendaftarkannya di bawah centang kuning Anda (deployer harus terverifikasi lebih dulu) - siapa pun yang mencari alamat itu di 0x000000000 akan melihat "kontrak resmi yang didaftarkan oleh @Anda"; token dengan nama sama di alamat berbeda bukanlah yang Anda daftarkan.' },
       regAfterLink: 'Cara kerja verifikasi ->',
@@ -1230,7 +1248,14 @@ var SALT = (function () {
   // ── 本机记的单（只有订单号、取货码；不发给任何人）─────────────────────────────────────────────────────
   var MY_KEY = 'c2_orders';
   function myOrders() { try { var v = JSON.parse(localStorage.getItem(MY_KEY) || '[]'); return Array.isArray(v) ? v.filter(function (x) { return x && /^c[0-9a-f]{8}$/.test(x.id) && /^[0-9a-f]{32}$/.test(x.code); }) : []; } catch (e) { return []; } }
-  function remember(id, code) { try { var l = myOrders().filter(function (x) { return x.id !== id; }); l.unshift({ id: id, code: code, p: PRODUCT }); localStorage.setItem(MY_KEY, JSON.stringify(l.slice(0, 50))); } catch (e) { /* 存不了：取货码印在页面上，他自己抄 */ } }
+  // SECFIX0X_20261117 ③：本机记录里多存一份「下单时填的」（部署地址、模式、代码哈希、图案）—— 交货时拿它对照，不拿交货单自己对自己
+  function reqOk(q) {
+    return !!q && (q.mode === 'create2' || q.mode === 'create3') && /^0x[0-9a-fA-F]{40}$/.test(String(q.deployer))
+      && (q.mode !== 'create2' || /^0x[0-9a-fA-F]{64}$/.test(String(q.initHash)))
+      && /^[0-9a-f]{0,40}$/.test(String(q.prefix == null ? '' : q.prefix)) && /^[0-9a-f]{0,40}$/.test(String(q.suffix == null ? '' : q.suffix));
+  }
+  function reqOf(id) { var x = myOrders().filter(function (y) { return y.id === id; })[0]; return x && reqOk(x.req) ? x.req : null; }
+  function remember(id, code, req) { try { var keep = reqOk(req) ? req : reqOf(id); var l = myOrders().filter(function (x) { return x.id !== id; }); var rec = { id: id, code: code, p: PRODUCT }; if (keep) rec.req = keep; l.unshift(rec); localStorage.setItem(MY_KEY, JSON.stringify(l.slice(0, 50))); } catch (e) { /* 存不了：取货码印在页面上，他自己抄 */ } }
   function newCode() { var b = new Uint8Array(16); crypto.getRandomValues(b); return SALT.bytesToHex(b); }
   function codeHash(c) { return SALT.bytesToHex(SALT.keccak256(new TextEncoder().encode(c))); }
 
@@ -1450,11 +1475,12 @@ var SALT = (function () {
     });
   }
   function placeOrder() {
+    S.req = { mode: S.mode, deployer: S.deployer, initHash: S.mode === 'create2' ? S.initHash : undefined, prefix: SALT.normPat(S.prefix), suffix: SALT.normPat(S.suffix) };   // SECFIX0X_20261117 ③
     var b = { product: PRODUCT, mode: S.mode, deployer: S.deployer, initHash: S.mode === 'create2' ? S.initHash : undefined, prefix: SALT.normPat(S.prefix), suffix: SALT.normPat(S.suffix),
       label: S.label || undefined, payChain: S.payChain, ref: S.ref || undefined, pickupHash: codeHash(S.code), lang: lang };
     api('/api/c2/orders', 'POST', b).then(function (r) {
       if (r.code !== 200) { txt('c2err2', errOf(r)); return; }
-      S.order = r.body.order; S.payment = r.body.payment; remember(S.order.orderId, S.code); vchReset();
+      S.order = r.body.order; S.payment = r.body.payment; remember(S.order.orderId, S.code, S.req); vchReset();
       S.step = 3; renderSteps(); renderMine(); pollStatus();
     });
   }
@@ -1486,18 +1512,29 @@ var SALT = (function () {
   function showDelivery() {
     var d = S.delivery, box = $('#c2deliv'); if (!d || !box) return;
     var t = T(), salt = String(d.salt).replace(/^0x/i, '');
+    // SECFIX0X_20261117 ③：原来四项核对用的部署地址、模式、代码哈希、图案【全是交货单自己给的】—— 自己对自己，换一套自洽的回包照样四个 ✓；
+    //   部署命令里的 CreateX 地址、调用也直接用交货单的 d.factory / d.call（核对用的却是本地写死的 CreateX）。Codex 安全检查两种都实测全绿。
+    //   现在：拿你下单时填的（本机记录 S.req）去核；对不上 → 不给部署命令。CreateX 地址和函数一律用 salt.js 里写死的。
+    var q = reqOk(S.req) ? S.req : null;
+    var hx = function (a) { return String(a == null ? '' : a).replace(/^0x/i, '').toLowerCase(); };
+    var c0 = !!q && q.mode === d.mode && hx(q.deployer) === hx(d.deployer) && (q.mode !== 'create2' || hx(q.initHash) === hx(d.initHash))
+      && SALT.normPat(q.prefix || '') === SALT.normPat(d.prefix || '') && SALT.normPat(q.suffix || '') === SALT.normPat(d.suffix || '');
+    var w = q || { mode: d.mode, deployer: d.deployer, initHash: d.initHash, prefix: d.prefix, suffix: d.suffix };   // 没有本机记录：只能用交货单的（c0 如实写「没法对照」）
     var parts = (function () { try { return SALT.saltParts(salt); } catch (e) { return null; } })();
-    var v = SALT.verify({ mode: d.mode, deployer: d.deployer, initHash: d.initHash ? d.initHash.replace(/^0x/i, '') : undefined, salt: salt, prefix: d.prefix, suffix: d.suffix });
-    var c1 = !!parts && parts.owner.toLowerCase() === String(d.deployer).toLowerCase(), c2 = !!parts && parts.flag === 0, c3 = !!v.address && v.address === d.address, c4 = v.ok;
+    var v = SALT.verify({ mode: w.mode, deployer: w.deployer, initHash: w.initHash ? String(w.initHash).replace(/^0x/i, '') : undefined, salt: salt, prefix: w.prefix, suffix: w.suffix });
+    var c1 = !!parts && parts.owner.toLowerCase() === String(w.deployer).toLowerCase(), c2 = !!parts && parts.flag === 0, c3 = !!v.address && v.address === d.address, c4 = v.ok;
+    var go = (c0 || !q) && c1 && c2 && c3 && c4;   // 有本机记录就必须对得上；四项必须全过 —— 不过就不给部署命令
+    var dep = { deployer: w.deployer, factory: SALT.CREATEX, call: SALT.SELECTOR[w.mode], mode: w.mode, initHash: w.initHash, address: d.address };
     var mark = function (x) { return x ? '<b class="up">✓</b> ' : '<b class="down">✗</b> '; };
     var h = '<div class="c2addr"><code>' + esc(d.address) + '</code></div>'
-      + '<ol class="c2checks"><li>' + mark(c1) + esc(t.checks[0]) + '</li><li>' + mark(c2) + esc(t.checks[1]) + '</li><li>' + mark(c3) + esc(t.checks[2]) + (lang === 'zh' ? '：' : ': ') + '<code>' + esc(v.address || '—') + '</code></li><li>' + mark(c4) + esc(t.checks[3]) + (lang === 'zh' ? '：' : ': ') + '0x' + esc(d.prefix) + '…' + esc(d.suffix) + '</li></ol>'
+      + '<ol class="c2checks"><li>' + (q ? mark(c0) + esc(c0 ? t.reqSame : t.reqDiff) : '<b class="down">?</b> ' + esc(t.reqNone) + '<br><code>' + esc(t.reqShow(w)) + '</code>') + '</li><li>' + mark(c1) + esc(t.checks[0]) + '</li><li>' + mark(c2) + esc(t.checks[1]) + '</li><li>' + mark(c3) + esc(t.checks[2]) + (lang === 'zh' ? '：' : ': ') + '<code>' + esc(v.address || '—') + '</code></li><li>' + mark(c4) + esc(t.checks[3]) + (lang === 'zh' ? '：' : ': ') + '0x' + esc(w.prefix) + '…' + esc(w.suffix) + '</li></ol>'
       + '<div class="lbl">salt</div><div class="c2code"><code>' + esc(d.salt) + '</code> <button type="button" class="copy" data-copy="' + esc(d.salt) + '">' + esc(t.copy) + '</button></div>'
       + '<div class="lbl">' + esc(t.ocH) + '</div>'
       + (d.onchain && d.onchain.rows ? '<div class="chips">' + d.onchain.rows.map(function (r) { return '<span class="chip ' + (r.ok ? 'on' : 'off') + '">' + (r.ok ? '✓ ' : '✗ ') + esc(r.chain) + '</span>'; }).join('') + '</div>' : '<div class="step-desc dim">' + esc(t.ocPending) + '</div>')
-      + '<div class="lbl">' + esc(t.deployH) + '</div><ol class="c2deploy">' + t.deploy({ deployer: d.deployer, factory: d.factory, call: d.call, mode: d.mode, initHash: d.initHash, address: d.address }).map(function (x) { return '<li>' + esc(x) + '</li>'; }).join('') + '</ol>'
-      + '<pre class="c2cmd">cast call ' + esc(d.factory) + ' "' + esc(SALT.SELECTOR[d.mode]) + '" ' + esc(d.salt) + ' &lt;initCode&gt; --from ' + esc(d.deployer) + ' --rpc-url &lt;RPC&gt;\ncast send ' + esc(d.factory) + ' "' + esc(SALT.SELECTOR[d.mode]) + '" ' + esc(d.salt) + ' &lt;initCode&gt; --from ' + esc(d.deployer) + ' --rpc-url &lt;RPC&gt;</pre>'
-      + '<div class="step-desc warn">' + esc(t.deployWarn) + '</div>'
+      + (!go ? '<div class="step-desc warn">' + esc(t.reqStop) + '</div>'
+        : '<div class="lbl">' + esc(t.deployH) + '</div><ol class="c2deploy">' + t.deploy(dep).map(function (x) { return '<li>' + esc(x) + '</li>'; }).join('') + '</ol>'
+        + '<pre class="c2cmd">cast call ' + esc(dep.factory) + ' "' + esc(dep.call) + '" ' + esc(d.salt) + ' &lt;initCode&gt; --from ' + esc(dep.deployer) + ' --rpc-url &lt;RPC&gt;\ncast send ' + esc(dep.factory) + ' "' + esc(dep.call) + '" ' + esc(d.salt) + ' &lt;initCode&gt; --from ' + esc(dep.deployer) + ' --rpc-url &lt;RPC&gt;</pre>'
+        + '<div class="step-desc warn">' + esc(t.deployWarn) + '</div>')
       + '<div class="step-desc">' + esc(pick(t.regAfter)) + ' <a href="verify.html" data-site="verify.html">' + esc(t.regAfterLink) + '</a></div>';
     box.innerHTML = h;
     fixLinks(box);
@@ -1511,7 +1548,7 @@ var SALT = (function () {
   function resume(id, code) {
     id = String(id || '').trim().toLowerCase(); code = String(code || '').trim().toLowerCase().replace(/[^0-9a-f]/g, '');
     if (!/^c[0-9a-f]{8}$/.test(id) || !/^[0-9a-f]{32}$/.test(code)) return;
-    S.code = code; S.order = { orderId: id };
+    S.code = code; S.order = { orderId: id }; S.req = reqOf(id);   // SECFIX0X_20261117 ③：别的电脑下的单，这里找不到 → null（交货时如实说「没法对照」）
     api('/api/c2/orders/' + id).then(function (r) {
       if (r.code !== 200) { txt('resumeMsg', errOf(r)); return; }
       S.order = orderOf(r.body); S.payment = { address: S.order.depositAddress, amountUsdt: S.order.amountUsdt, network: S.order.payChain === 'tron' ? 'TRC-20' : 'BEP-20', chain: S.order.payChain };

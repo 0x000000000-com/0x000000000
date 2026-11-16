@@ -460,11 +460,11 @@ svg text{font-family:var(--mono);fill:var(--text)}
     <!-- ═════ 10 证据 ② ═════ -->
     <section class="slide" data-t="p2">
       <div class="inner">
-        <h2><span class="L-en">Proof ② — checks we can't touch</span><span class="L-zh">证据 ② —— 我们碰不到的检查</span><span class="L-id">Bukti ② — pemeriksaan yang tidak bisa kami sentuh</span></h2>
+        <h2><span class="L-en">Proof ② — checks anyone can watch</span><span class="L-zh">证据 ② —— 谁都看得见的检查</span><span class="L-id">Bukti ② — pemeriksaan yang bisa dilihat siapa pun</span></h2>
         <div class="term"><div class="tb"><i></i><i></i><i></i><span class="t">github.com/0x000000000-com/0x000000000/actions</span><button type="button" class="rp" data-replay>↻</button></div>
           <div class="log" id="plog2"></div>
         </div>
-        <p class="cap"><span class="L-en">GitHub's own machines rebuild the page from public source, walk all 6 steps in a real browser looking for leaks, and compare the live site every hour.</span><span class="L-zh">GitHub 自己的机器用公开源码重新构建页面、用真浏览器走完 6 步查泄露，还每小时拿线上网站来逐字节比对。</span><span class="L-id">Mesin GitHub sendiri membangun ulang halaman dari kode sumber publik, menjalankan semua 6 langkah di browser sungguhan untuk mencari kebocoran, dan membandingkan situs live setiap jam.</span></p>
+        <p class="cap"><span class="L-en">GitHub's own machines rebuild the page from public source, walk all 6 steps in a real browser looking for leaks, and compare the live site on an hourly schedule.</span><span class="L-zh">GitHub 自己的机器用公开源码重新构建页面、用真浏览器走完 6 步查泄露，还按计划每小时拿线上网站来逐字节比对。</span><span class="L-id">Mesin GitHub sendiri membangun ulang halaman dari kode sumber publik, menjalankan semua 6 langkah di browser sungguhan untuk mencari kebocoran, dan membandingkan situs live sesuai jadwal setiap jam.</span></p>
       </div>
     </section>
 
@@ -693,21 +693,21 @@ svg text{font-family:var(--mono);fill:var(--text)}
     p2: function (sl, final) {
       var zh = lang === 'zh', h = rnd(HEX, 4) + '…' + rnd(HEX, 4);
       typeLog($('#plog2', sl), zh ? [
-        ['# 这些检查都在 GitHub 的机器上跑，我们插不上手', 'c-d'],
+        ['# 这些检查在 GitHub 的机器上跑，结果谁都看得见', 'c-d'],
         ['✓ 用公开源码重新构建 → 指纹 ' + h, 'c-ok'],
         ['✓ 公开的 0x000000000.html → 指纹 ' + h + '   一模一样', 'c-ok'],
         ['✓ 私钥外发检查：真浏览器走完 6 步，逐个核对发出去的每一个请求 → 0 处泄露', 'c-ok'],
         ['✓ 每小时巡检：下载 0x000000000.com → 指纹 ' + h + '   一模一样', 'c-ok'],
         ['# 哪一项变红，全世界都看得见', 'c-g']
       ] : lang === 'id' ? [
-        ['# semua ini berjalan di mesin GitHub — kami tidak bisa menyentuhnya', 'c-d'],
+        ['# semua ini berjalan di mesin GitHub — hasilnya bisa dilihat siapa pun', 'c-d'],
         ['✓ bangun ulang dari kode publik  → sidik jari ' + h, 'c-ok'],
         ['✓ 0x000000000.html publik        → sidik jari ' + h + '   identik', 'c-ok'],
         ['✓ pemeriksaan kebocoran: browser sungguhan, semua 6 langkah, setiap permintaan diperiksa → 0 kebocoran', 'c-ok'],
         ['✓ patroli per jam: unduh 0x000000000.com → sidik jari ' + h + '   identik', 'c-ok'],
         ['# kalau salah satunya berubah merah, semua orang bisa melihatnya', 'c-g']
       ] : [
-        ['# these run on GitHub\'s machines — we cannot touch them', 'c-d'],
+        ['# these run on GitHub\'s machines — anyone can see the results', 'c-d'],
         ['✓ rebuild from public source      → fingerprint ' + h, 'c-ok'],
         ['✓ published 0x000000000.html      → fingerprint ' + h + '   identical', 'c-ok'],
         ['✓ leak check: real browser, all 6 steps, every request checked → 0 leaks', 'c-ok'],
