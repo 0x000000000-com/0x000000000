@@ -321,7 +321,8 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
   }
   // SECFIX4_20261118（Codex 第四轮 A5）：复制地址、打开二维码、核对、复制徽章代码，四个出口共用这一道 ——
   //   动作那一刻判到期；名片读了超过 5 分钟就先重读（在路上的那一次合并，不另发）；撤销了、过期了、地址拿掉了、读不到 → 不给，
-  //   页面按最新的样子重画。允许的旧数据窗口写死在这里：显示的名片最多旧 5 分钟多一点（开着的时候每分钟看一次，超过 5 分钟就重读）。
+  //   页面按最新的样子重画。旧数据窗口写死在这里：复制、二维码、核对用的那一刻，名片不会旧过 5 分钟；画在屏幕上的那一份，
+  //   开在前台时大约每分钟看一次、旧过 5 分钟就重读 —— 浏览器放慢计时器、网络慢的时候会更晚（SECFIX5_20261118：原来写成「最多旧 5 分钟多一点」，说过头了）。
   function usableNow(addr) {
     if (state !== 'ok' || !data) return false;
     const was = data.status; tidy(data);
@@ -526,7 +527,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
   document.addEventListener('visibilitychange', () => { if (!document.hidden && stale()) loadCard(); });
   window.addEventListener('focus', () => { if (stale()) loadCard(); });
   setInterval(() => { if (data && data.status === 'live' && tidy(data).status === 'expired') render(); }, 30e3);
-  setInterval(() => { if (!document.hidden && stale()) loadCard(); }, 60e3);   // SECFIX4_20261118 A5：一直开在前台也每分钟看一次，超过 5 分钟就重读（撤销、拿掉地址这种只有平台知道的事，最多晚 6 分钟看到）
+  setInterval(() => { if (!document.hidden && stale()) loadCard(); }, 60e3);   // SECFIX4_20261118 A5：一直开在前台也每分钟看一次，超过 5 分钟就重读（撤销、拿掉地址这种只有平台知道的事，一般 6 分钟左右画出来；浏览器放慢计时器、网络慢会更晚 —— 真要用的那一刻另外先核，见 usable）
   if (NAME) loadCard();
 })();
 </script>
