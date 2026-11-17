@@ -619,7 +619,7 @@ details.netline[open]>summary{margin-bottom:4px}
         <div id="dlWhy"></div>
         <ol id="dlSteps"></ol>
         <a class="dlbtn" id="dlPage" href="0x000000000-token.html" download="0x000000000-token.html"><span id="dlBtn">Download this page</span></a>
-        <div class="proof-links"><a href="https://github.com/0x000000000-com/0x000000000" target="_blank" rel="noopener" id="dlGh">Verify on GitHub</a> · <span class="dim">build <span id="buildId">160b61643213</span></span></div>
+        <div class="proof-links"><a href="https://github.com/0x000000000-com/0x000000000" target="_blank" rel="noopener" id="dlGh">Verify on GitHub</a> · <span class="dim">build <span id="buildId">f484dddc45a9</span></span></div>
       </div>
       <div id="flowWrap" hidden>
         <div class="netguide" id="netGuide"></div>
@@ -1498,16 +1498,25 @@ var SALT = (function () {
     var q = S.req || { deployer: S.deployer, initHash: S.initHash };   // 统一不了（格式不对）就原样发，后端会拒
     var b = { product: PRODUCT, mode: S.mode, deployer: q.deployer, initHash: S.mode === 'create2' ? q.initHash : undefined, prefix: SALT.normPat(S.prefix), suffix: SALT.normPat(S.suffix),
       label: S.label || undefined, payChain: S.payChain, ref: S.ref || undefined, pickupHash: codeHash(S.code), lang: lang };
+    var gen = switchOrder(), code = S.code, req = S.req;
     api('/api/c2/orders', 'POST', b).then(function (r) {
+      if (r.code === 200) remember(r.body.order.orderId, code, req);   // 下好的单先记下 —— 就算等回包时换了单，也能在「我的订单」里找回
+      if (gen !== ORDER_GEN) return;   // SECFIX3_20261118 U1：等回包时换了单（续了别的单），不把界面切回来
       if (r.code !== 200) { txt('c2err2', errOf(r)); return; }
-      S.order = r.body.order; S.payment = r.body.payment; remember(S.order.orderId, S.code, S.req); vchReset();
+      S.order = r.body.order; S.payment = r.body.payment; vchReset();
       S.step = 3; renderSteps(); renderMine(); pollStatus();
     });
   }
+  // SECFIX3_20261118（Codex 第三轮 U1）：每换一次单（下新单 / 续单）ORDER_GEN 加一，并清掉上一单的交货、计时器、没回来的取货；
+  //   进度、续单、下单、取货的回包写共享状态之前都核「还是这一单、这一代」（原来只有取货自己核）
+  var ORDER_GEN = 0;
+  function switchOrder() { ORDER_GEN++; PICK_GEN++; clearTimeout(S.poll); S.poll = null; S.delivery = null; return ORDER_GEN; }
   function pollStatus() {
     clearTimeout(S.poll);
     if (!S.order) return;
-    api('/api/c2/orders/' + S.order.orderId).then(function (r) {
+    var gen = ORDER_GEN, oid = S.order.orderId;
+    api('/api/c2/orders/' + oid).then(function (r) {
+      if (gen !== ORDER_GEN || !S.order || S.order.orderId !== oid) return;   // 旧单的进度回包不写进现在这张单
       if (r.code === 200) {
         S.order = orderOf(r.body);
         var st = S.order.status, t = T();
@@ -1595,8 +1604,10 @@ var SALT = (function () {
   function resume(id, code) {
     id = String(id || '').trim().toLowerCase(); code = String(code || '').trim().toLowerCase().replace(/[^0-9a-f]/g, '');
     if (!/^c[0-9a-f]{8}$/.test(id) || !/^[0-9a-f]{32}$/.test(code)) return;
-    S.code = code; S.order = { orderId: id }; S.req = reqOf(id);   // SECFIX0X_20261117 ③：别的电脑下的单，这里找不到 → null（交货时如实说「没法对照」）
+    var gen = switchOrder();
+    S.code = code; S.order = { orderId: id }; S.req = reqOf(id); S.payment = null;   // SECFIX0X_20261117 ③：别的电脑下的单，这里找不到 → null（交货时如实说「没法对照」）
     api('/api/c2/orders/' + id).then(function (r) {
+      if (gen !== ORDER_GEN) return;   // SECFIX3_20261118 U1：连着续两张单，只认最后一次
       if (r.code !== 200) { txt('resumeMsg', errOf(r)); return; }
       S.order = orderOf(r.body); S.payment = { address: S.order.depositAddress, amountUsdt: S.order.amountUsdt, network: S.order.payChain === 'tron' ? 'TRC-20' : 'BEP-20', chain: S.order.payChain };
       vchReset();

@@ -124,8 +124,8 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
       removing: (a) => '⏳ ' + utc(a.effectiveAt) + ' 起从名片上去掉',
       check2: (h, t) => '付钱前对这两段：开头 <b>' + esc(h) + '</b> · 结尾 <b>' + esc(t) + '</b>',
       copy: '复制地址', copied: '✓ 复制好了', copyFail: '复制不了：请长按 / 选中上面的地址自己复制', qr: '二维码', qrHide: '收起二维码',
-      hard: (i) => '骗子要做一个「' + i.pattern + '」开头' + (i.end === 'tail' ? '、结尾 ' + i.checkText : '') + ' 都一样的假地址：一张 5090 要算<b>' + dur(i.days, 'zh') + '</b>、花<b>' + usd(i.usd, 'zh') + '</b>。',
-      hardSuf: (i) => '骗子要做一个「开头 ' + i.checkText + '、结尾 ' + i.pattern + '」都一样的假地址：一张 5090 要算<b>' + dur(i.days, 'zh') + '</b>、花<b>' + usd(i.usd, 'zh') + '</b>。',
+      hard: (i) => '骗子要做一个「' + esc(i.pattern) + '」开头' + (i.end === 'tail' ? '、结尾 ' + esc(i.checkText) : '') + ' 都一样的假地址：一张 5090 要算<b>' + esc(dur(i.days, 'zh')) + '</b>、花<b>' + esc(usd(i.usd, 'zh')) + '</b>。',
+      hardSuf: (i) => '骗子要做一个「开头 ' + esc(i.checkText) + '、结尾 ' + esc(i.pattern) + '」都一样的假地址：一张 5090 要算<b>' + esc(dur(i.days, 'zh')) + '</b>、花<b>' + esc(usd(i.usd, 'zh')) + '</b>。',
       whyBtn: '为什么？', whyHide: '收起',
       why: ['能用我们的同一套办法：显卡谁都租得到，这类软件网上也有公开的。', '难的是位数：做靓号只要对上图案，另一头随便；骗子还要对上这里的另一头 6 位。',
         '每多对 1 个字要多试好多倍（以太坊类 16 倍、波场 58 倍）；多对 6 个字，以太坊类就是 1,677 万倍。', '地址只能从钥匙往前算，不能从想要的地址倒推钥匙 —— 谁都只能一个一个试。',
@@ -170,8 +170,8 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
       removing: (a) => '⏳ leaves this card at ' + utc(a.effectiveAt),
       check2: (h, t) => 'Before paying, compare both ends: starts <b>' + esc(h) + '</b> · ends <b>' + esc(t) + '</b>',
       copy: 'Copy address', copied: '✓ Copied', copyFail: 'Could not copy: long-press / select the address above', qr: 'QR code', qrHide: 'Hide QR code',
-      hard: (i) => 'To fake an address that starts "' + i.pattern + '"' + (i.end === 'tail' ? ' and also ends ' + i.checkText : '') + ', a scammer needs <b>' + dur(i.days, 'en') + '</b> on an RTX 5090 and about <b>' + usd(i.usd, 'en') + '</b>.',
-      hardSuf: (i) => 'To fake an address that starts ' + i.checkText + ' and ends "' + i.pattern + '", a scammer needs <b>' + dur(i.days, 'en') + '</b> on an RTX 5090 and about <b>' + usd(i.usd, 'en') + '</b>.',
+      hard: (i) => 'To fake an address that starts "' + esc(i.pattern) + '"' + (i.end === 'tail' ? ' and also ends ' + esc(i.checkText) : '') + ', a scammer needs <b>' + esc(dur(i.days, 'en')) + '</b> on an RTX 5090 and about <b>' + esc(usd(i.usd, 'en')) + '</b>.',
+      hardSuf: (i) => 'To fake an address that starts ' + esc(i.checkText) + ' and ends "' + esc(i.pattern) + '", a scammer needs <b>' + esc(dur(i.days, 'en')) + '</b> on an RTX 5090 and about <b>' + esc(usd(i.usd, 'en')) + '</b>.',
       whyBtn: 'Why?', whyHide: 'Hide',
       why: ['They can use the same method we do: anyone can rent a GPU, and such software is public.', 'The hard part is the number of characters: a vanity address only has to match the pattern; a fake one must also match the other end - 6 more characters.',
         'Every extra character multiplies the tries (16x for EVM, 58x for TRON); 6 more characters on EVM is 16.7 million times harder.', 'An address can only be computed forwards from a key, never backwards from the address you want - everyone has to try keys one by one.',
@@ -217,8 +217,8 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
       removing: (a) => '⏳ keluar dari kartu ini pada ' + utc(a.effectiveAt),
       check2: (h, t) => 'Sebelum membayar, bandingkan kedua ujung: awal <b>' + esc(h) + '</b> · akhir <b>' + esc(t) + '</b>',
       copy: 'Salin alamat', copied: '✓ Tersalin', copyFail: 'Tidak bisa menyalin: tekan lama / pilih alamat di atas', qr: 'Kode QR', qrHide: 'Sembunyikan kode QR',
-      hard: (i) => 'Untuk memalsukan alamat yang diawali "' + i.pattern + '"' + (i.end === 'tail' ? ' dan juga diakhiri ' + i.checkText : '') + ', penipu butuh <b>' + dur(i.days, 'id') + '</b> di RTX 5090 dan sekitar <b>' + usd(i.usd, 'id') + '</b>.',
-      hardSuf: (i) => 'Untuk memalsukan alamat yang diawali ' + i.checkText + ' dan diakhiri "' + i.pattern + '", penipu butuh <b>' + dur(i.days, 'id') + '</b> di RTX 5090 dan sekitar <b>' + usd(i.usd, 'id') + '</b>.',
+      hard: (i) => 'Untuk memalsukan alamat yang diawali "' + esc(i.pattern) + '"' + (i.end === 'tail' ? ' dan juga diakhiri ' + esc(i.checkText) : '') + ', penipu butuh <b>' + esc(dur(i.days, 'id')) + '</b> di RTX 5090 dan sekitar <b>' + esc(usd(i.usd, 'id')) + '</b>.',
+      hardSuf: (i) => 'Untuk memalsukan alamat yang diawali ' + esc(i.checkText) + ' dan diakhiri "' + esc(i.pattern) + '", penipu butuh <b>' + esc(dur(i.days, 'id')) + '</b> di RTX 5090 dan sekitar <b>' + esc(usd(i.usd, 'id')) + '</b>.',
       whyBtn: 'Mengapa?', whyHide: 'Sembunyikan',
       why: ['Mereka bisa memakai metode yang sama dengan kami: siapa pun bisa menyewa GPU, dan perangkat lunak semacam ini tersedia untuk umum.', 'Bagian sulitnya adalah jumlah karakter: alamat cantik hanya perlu cocok dengan polanya; alamat palsu juga harus cocok dengan ujung yang lain - 6 karakter lagi.',
         'Setiap karakter tambahan melipatgandakan jumlah percobaan (16x untuk EVM, 58x untuk TRON); 6 karakter tambahan di EVM berarti 16.7 juta kali lebih sulit.', 'Alamat hanya bisa dihitung maju dari kunci, tidak pernah mundur dari alamat yang Anda inginkan - semua orang harus mencoba kunci satu per satu.',
@@ -257,6 +257,21 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
   const LBL = { zh: { pay: '收款', contract: '合约', multisig: '多签', team: '团队', other: '其他' }, en: { pay: 'payments', contract: 'contract', multisig: 'multisig', team: 'team', other: 'other' },
     id: { pay: 'pembayaran', contract: 'kontrak', multisig: 'multisig', team: 'tim', other: 'lainnya' } };
   const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  // SECFIX3_20261118（Codex 第三轮）：接口给的字只走 textContent / esc；能点的链接只认这几种样子 —— 样子不对就只显示字、不做成链接
+  const httpsUrl = (u) => (/^https:\/\/[A-Za-z0-9.\/_-]+$/.test(String(u || '')) ? String(u) : null);
+  const hostOk = (h) => /^(?=.{3,253}$)[A-Za-z0-9-]+(\.[A-Za-z0-9-]+)+$/.test(String(h || ''));
+  const handleOk = (h, max) => new RegExp('^[A-Za-z0-9_]{1,' + max + '}$').test(String(h || ''));
+  // 「骗子要仿多久」那一块的字段先核样子：图案、另一头都只能是地址里的字（以太坊类不分大小写），而且真的在这个地址的头 / 尾；天数、金额是数字。不对就不画那一块
+  const imitateOk = (a) => {
+    const i = a && a.imitate, lo = (x) => (a.chain === 'evm' ? String(x).toLowerCase() : String(x)), s = lo(a && a.address || '');
+    if (!i || (i.end !== 'tail' && i.end !== 'head') || !/^[0-9A-Za-z]{1,42}$/.test(String(i.pattern)) || !/^[0-9A-Za-z]{1,42}$/.test(String(i.checkText))) return false;
+    if (!Number.isFinite(i.days) || !Number.isFinite(i.usd) || i.days < 0 || i.usd < 0) return false;
+    const p = lo(i.pattern), c = lo(i.checkText);
+    return i.end === 'tail' ? s.startsWith(p) && s.endsWith(c) : s.endsWith(p) && s.startsWith(c);
+  };
+  // U3：认证到期时间一过，这一页自己就按「已过期」显示（不等重新打开）；店主名片不会到期
+  const tidy = (j) => { if (Array.isArray(j.addresses)) j.addresses.forEach((a) => { if (a && a.imitate && !imitateOk(a)) a.imitate = null; });
+    if (j.status === 'live' && !j.owner && !j.official && j.expiresAt && Date.now() > j.expiresAt) j.status = 'expired'; return j; };
   // OWNERCARD0X_20261002：名字照打的大小写显示（@DSJ）—— 只认「小写之后就是 name」的那一种；网址、二维码、存图照旧用小写的 name
   const shownOf = (c) => (typeof c.shown === 'string' && /^[A-Za-z][A-Za-z0-9_]{2,19}$/.test(c.shown) && c.shown.toLowerCase() === c.name ? c.shown : c.name);
   const utc = (ts) => (ts ? new Date(ts).toISOString().slice(0, 16).replace('T', ' ') + ' UTC' : '—');
@@ -275,7 +290,8 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     return q && /^@?[A-Za-z0-9_]{3,40}$/.test(q) ? q.replace(/^@/, '').toLowerCase() : null;
   };
   const NAME = nameFromUrl();
-  let state = NAME ? 'loading' : 'empty', data = null, openQr = new Set(), openWhy = new Set(), lastCheck = '';
+  let state = NAME ? 'loading' : 'empty', data = null, openQr = new Set(), openWhy = new Set(), lastCheck = '', fetchedAt = 0;
+  const FRESH_MS = 5 * 60e3;
 
   // 地址分三段：图案 / 中间 / 另一头 6 位（15 好：付钱的人对结尾 6 位）
   function parts(a) {
@@ -303,8 +319,14 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     if (top && top.m.sum >= (chain === 'evm' ? 4 : 3)) return ['bad', L.vfLike(top.a, top.m.h, top.m.t).replace(/\{n\}/g, n)];
     return ['bad', L.vfNone.replace(/\{n\}/g, n)];
   }
-  async function copy(text, btn) {
+  async function copy(text, btn, isAddr) {
     const L = T[lang];
+    // SECFIX3_20261118（Codex 第三轮 U3/S5）：名片读了超过 5 分钟，复制地址之前先重新核一次 —— 撤销了、过期了、地址拿掉了，就不复制（页面跟着变成最新的样子）
+    if (isAddr && NAME && Date.now() - fetchedAt > FRESH_MS) {
+      await loadCard();
+      const c = data, ok = c && c.status !== 'revoked' && c.status !== 'expired' && (c.addresses || []).some((a) => a.address === text && a.state !== 'adding');
+      if (!ok) return;
+    }
     try { await navigator.clipboard.writeText(text); btn.textContent = L.copied; setTimeout(() => { btn.textContent = L.copy; }, 1800); }
     catch (e) { btn.textContent = L.copyFail; }
   }
@@ -355,7 +377,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     foot.append(el('div', 'n', V.never)); card.append(foot);
     return card;
   }
-  function saveLink(c) { const p = el('p', 'vc-save'), a = el('a', null, T[lang].vc.save); a.href = '/api/card/' + c.name + '.png?lang=' + lang; a.download = '0x000000000-' + c.name + '.png'; p.append(a); return p; }
+  function saveLink(c) { const p = el('p', 'vc-save'), a = el('a', null, T[lang].vc.save); a.href = '/api/card/' + encodeURIComponent(c.name) + '.png?lang=' + lang; a.download = '0x000000000-' + c.name + '.png'; p.append(a); return p; }
   function addrBox(a) {
     const L = T[lang], box = el('div', 'box' + (a.state === 'removing' ? ' warn' : ''));
     const head = el('div', 'row-h');
@@ -368,7 +390,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     box.append(line, html('div', 'check', L.check2(c1, c2)));
     const btns = el('div', 'btns'), cb = el('button', 'btn main', L.copy), qb = el('button', 'btn', openQr.has(a.address) ? L.qrHide : L.qr);
     cb.type = qb.type = 'button';
-    cb.addEventListener('click', () => copy(a.address, cb));
+    cb.addEventListener('click', () => copy(a.address, cb, true));
     qb.addEventListener('click', () => { openQr.has(a.address) ? openQr.delete(a.address) : openQr.add(a.address); render(); });
     btns.append(cb, qb); box.append(btns);
     if (openQr.has(a.address)) { const q = el('div', 'qr'); q.innerHTML = qrSvg(a.address); q.setAttribute('role', 'img'); q.setAttribute('aria-label', 'QR ' + a.address); box.append(q); }
@@ -401,9 +423,10 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
       app.append(vcardEl(data), saveLink(data), el('p', 'sub', L.officialSub));   // CARDPNG0X_20261001：原来这里只有一行绿色 ✅
       const b = el('div', 'box');
       const kv = (k, v, href) => { const d = el('div', 'kv'); d.append(el('span', 'k', k + (lang === 'zh' ? '：' : ': '))); if (href) { const a = el('a', null, v); a.href = href; a.target = '_blank'; a.rel = 'noopener'; d.append(a); } else d.append(el('span', null, v)); return d; };
-      b.append(kv(L.oSite, data.site, data.site));
-      if (data.bot) b.append(kv(L.oBot, data.bot, 'https://t.me/' + data.bot.replace(/^@/, '')));
-      if (data.github) b.append(kv(L.oGit, data.github, data.github));
+      const site = httpsUrl(data.site) || 'https://0x000000000.com', bot = /^@?[A-Za-z0-9_]{5,32}$/.test(String(data.bot || '')) ? String(data.bot).replace(/^@/, '') : null;   // SECFIX3_20261118：原来接口给什么就拿什么当链接（javascript: 也照用）
+      b.append(kv(L.oSite, site, site));
+      if (bot) b.append(kv(L.oBot, '@' + bot, 'https://t.me/' + bot));
+      if (httpsUrl(data.github)) b.append(kv(L.oGit, data.github, data.github));
       app.append(b, el('div', 'box warn', L.oPay), el('p', 'sub', L.oToken));
     }
     else if (data) {
@@ -435,14 +458,14 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
         if (lastCheck) run();
         const info = el('div', 'box');
         const kv = (k, v, href) => { const d = el('div', 'kv'); d.append(el('span', 'k', k + (lang === 'zh' ? '：' : ': '))); if (href) { const a = el('a', null, v); a.href = href; a.target = '_blank'; a.rel = 'noopener nofollow'; d.append(a); } else d.append(el('span', null, v)); return d; };
-        if (c.domain) info.append(kv(L.site, c.domain, 'https://' + c.domain));
-        if (c.x) info.append(kv(L.x, '@' + c.x.handle, 'https://x.com/' + c.x.handle));
-        if (c.tg) info.append(kv(L.tg, 't.me/' + c.tg.channel, 'https://t.me/' + c.tg.channel));
+        if (c.domain) info.append(kv(L.site, c.domain, hostOk(c.domain) ? 'https://' + c.domain : null));   // SECFIX3_20261118：样子不对的只显示字
+        if (c.x) info.append(kv(L.x, '@' + c.x.handle, handleOk(c.x.handle, 15) ? 'https://x.com/' + c.x.handle : null));
+        if (c.tg) info.append(kv(L.tg, 't.me/' + c.tg.channel, handleOk(c.tg.channel, 32) ? 'https://t.me/' + c.tg.channel : null));
         if (c.since) info.append(kv(L.since, utc(c.since).slice(0, 10)));
         if (c.expiresAt && !c.owner) info.append(kv(L.until, utc(c.expiresAt).slice(0, 10)));   // OWNERCARD2X_20261002：店主名片跟着店主号走，不会到期
         app.append(info);
         if (c.ref && /^https:\/\/0x000000000\.com\/\?ref=[2-9A-HJ-NP-Z]{6}$/.test(c.ref)) { const rb = el('div', 'box'); rb.append(el('div', 'row-h', L.refHead)); const a = el('a', null, L.refLink.replace('{n}', sn)); a.href = c.ref; rb.append(a); app.append(rb); }
-        if (c.tier === 'yellow' && c.status === 'live') {
+        if (c.tier === 'yellow' && c.status === 'live' && /^[a-z0-9_]{3,40}$/.test(n)) {   // SECFIX3_20261118：这段是他要贴进自己网站的 HTML —— 名字样子不对就不给
           const snip = '<a href="https://0x000000000.com/@' + n + '"><img src="https://0x000000000.com/api/badge/' + n + '.svg" alt="@' + sn + ' verified by 0x000000000"></a>';
           const bb = el('div', 'box'); bb.append(el('div', 'row-h', L.badgeHead), el('code', 'snip', snip));
           const sb = el('button', 'btn', L.copySnip); sb.type = 'button'; sb.addEventListener('click', () => copy(snip, sb)); bb.append(el('div', 'btns')); bb.lastChild.append(sb); app.append(bb);
@@ -463,15 +486,23 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
   const tickUtc = () => { const d = new Date(), p = (x) => String(x).padStart(2, '0'); utcEl.textContent = d.getUTCFullYear() + '-' + p(d.getUTCMonth() + 1) + '-' + p(d.getUTCDate()) + ' ' + p(d.getUTCHours()) + ':' + p(d.getUTCMinutes()) + ':' + p(d.getUTCSeconds()) + ' UTC'; };
   tickUtc(); setInterval(tickUtc, 1000);
   render();
-  if (NAME) (async () => {
+  // SECFIX3_20261118（Codex 第三轮 U3/S5）：原来名片只在打开时读一次 —— 开着放几个小时，撤销 / 过期 / 地址变了都看不到。
+  //   现在：离开这一页超过 5 分钟再回来就重新读；复制地址前名片超过 5 分钟也先重新读；到期时间一过自己变「已过期」。读不到算「读不到」，不沿用旧的
+  async function loadCard() {
     try {
       const r = await fetch('/api/card/' + encodeURIComponent(NAME), { cache: 'no-store' });
-      if (r.status === 404) state = 'none';
-      else if (r.ok) { const j = await r.json(); if (j && typeof j.name === 'string' && (j.official || Array.isArray(j.addresses) || j.status === 'revoked' || j.status === 'expired')) { data = j; state = 'ok'; } else state = 'down'; }
-      else state = 'down';
-    } catch (e) { state = 'down'; }
+      if (r.status === 404) { state = 'none'; data = null; }
+      else if (r.ok) { const j = await r.json(); if (j && typeof j.name === 'string' && (j.official || Array.isArray(j.addresses) || j.status === 'revoked' || j.status === 'expired')) { data = tidy(j); state = 'ok'; } else { state = 'down'; data = null; } }
+      else { state = 'down'; data = null; }
+    } catch (e) { state = 'down'; data = null; }
+    fetchedAt = Date.now();
     render();
-  })();
+  }
+  const stale = () => NAME && Date.now() - fetchedAt > FRESH_MS;
+  document.addEventListener('visibilitychange', () => { if (!document.hidden && stale()) loadCard(); });
+  window.addEventListener('focus', () => { if (stale()) loadCard(); });
+  setInterval(() => { if (data && data.status === 'live' && tidy(data).status === 'expired') render(); }, 30e3);
+  if (NAME) loadCard();
 })();
 </script>
 </body>
