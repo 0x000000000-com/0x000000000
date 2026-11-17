@@ -651,7 +651,7 @@ details.netline[open]>summary{margin-bottom:4px}
         <div class="zt" id="dlHead">Want to be even surer: download this page</div>
         <div id="dlWhy"></div>
         <a class="dlbtn" id="dlPage" href="0x000000000-free.html" download="0x000000000-free.html"><span id="dlBtn">Download this page</span></a>
-        <div class="proof-links"><a href="https://github.com/0x000000000-com/0x000000000" target="_blank" rel="noopener" id="dlGh">Verify on GitHub</a> · <span class="dim">build <span id="buildId">241e212858db</span></span></div>
+        <div class="proof-links"><a href="https://github.com/0x000000000-com/0x000000000" target="_blank" rel="noopener" id="dlGh">Verify on GitHub</a> · <span class="dim">build <span id="buildId">b8f8b4d06491</span></span></div>
       </div>
     </section>
     <footer class="foot">
@@ -1203,16 +1203,30 @@ var NOBLE=(()=>{var Tt=Object.defineProperty;var Be=Object.getOwnPropertyDescrip
     }
     return pat.toLowerCase() === ('0x' + txt).toLowerCase();
   }
+  // SECFIX2_20261117 R1（Codex 复查）：格式对了还不够 —— 原来按收条里写的地址，在六个 GLV 候选里【重新挑一把钥匙】来签：
+  //   服务器给一张「单号、图案都对，地址是另一个候选」的收条，就会用一把根本不满足图案、也不是你核对过的钥匙签出一个有效签名。
+  //   现在：只认第 5 步合出来、跟交货地址核对过的那一份（want.merged）。这里用同一套确定的合成（merge）再算一遍：
+  //   必须是同一把钥匙、同一个地址，收条里的地址也必须就是它；豹子号再核地址末尾真的是 N 个一样的字。
+  //   任何一样对不上 → { ok:false, why:'addr' }，一个字都不签。不再按服务器给的地址去挑候选。
+  function repeatTailOk(addr, pat) {
+    var rep = /last (\d{1,2}) characters all the same$/.exec(pat), k, i;
+    if (!rep) return true;
+    k = +rep[1];
+    if (k < 2 || k > addr.length) return false;
+    for (i = addr.length - k + 1; i < addr.length; i++) if (addr[i] !== addr[addr.length - k]) return false;
+    return true;
+  }
   function signReceipt(sec, b, message, want) {
     var msg = String(message || '').replace(/\r\n/g, '\n').replace(/\s+$/, '');
     if (!msg) throw new Error(M('回执原文是空的。', 'The receipt text is empty.', 'Teks tanda terima kosong.'));
-    var sh = secShape(sec), cands = mergeCandidates(sec.s, b, sh.chain), m = RCPT_RE.exec(msg);
-    if (!m || !want || m[1] !== String(want.orderId) || !receiptPatternOk(sh, m[2])) return { ok: false, why: 'form', cands: cands };
-    var tron = sh.chain === 'tron';
-    var hit = pickByOracle(cands, function (a) { return tron ? a === m[3] : a.toLowerCase() === m[3].toLowerCase(); });
-    if (!hit) return { ok: false, cands: cands };
-    return { ok: true, addr: hit.addr,
-             sig: hex(N.sign(N.keccak_256(enc.encode(msg)), u8(pad64(hit.k))).toCompactRawBytes()) };
+    var sh = secShape(sec), r = merge(sec, b), m = RCPT_RE.exec(msg);
+    if (!m || !want || m[1] !== String(want.orderId) || !receiptPatternOk(sh, m[2])) return { ok: false, why: 'form', cands: r.cands };
+    var eq = function (x, y) { return sh.chain === 'tron' ? String(x) === String(y) : String(x).toLowerCase() === String(y).toLowerCase(); };
+    var g = want.merged;
+    if (!r.ok || !g || typeof g.k !== 'bigint' || g.k !== r.k || !eq(g.addr, r.addr) || !eq(m[3], r.addr) || !repeatTailOk(r.addr, m[2]))
+      return { ok: false, why: 'addr', cands: r.cands };
+    return { ok: true, addr: r.addr,
+             sig: hex(N.sign(N.keccak_256(enc.encode(msg)), u8(pad64(r.k))).toCompactRawBytes()) };
   }
 
   // keystore v3（web3 secret storage）。故意算得慢：暴力猜密码也得这么慢。
@@ -1699,7 +1713,7 @@ var NOBLE=(()=>{var Tt=Object.defineProperty;var Be=Object.getOwnPropertyDescrip
         ['价格', '免费', '100 USDT 起']],
       moreH: '为什么要用、不用的风险、照实说',
       whyH: '为什么要用这个',
-      why: ['想要一个好看点的地址，但不想花钱、也不敢信陌生网站', '「私钥不经过我们」不是嘴上说：断网也能算，你亲眼看得到', '页面代码公开在 GitHub，线上这一份每小时自动核对'],
+      why: ['想要一个好看点的地址，但不想花钱、也不敢信陌生网站', '「私钥不经过我们」不是嘴上说：断网也能算，你亲眼看得到', '页面代码公开在 GitHub，线上这一份按计划每小时自动核对（不保证准点）'],
       riskH: '不用会有什么风险（真实例子）',
       risk: ['2022-09 做市商 Wintermute 被盗 1.6 亿美元：它的靓号地址用 Profanity 生成，那个工具随机数太少，私钥能被反推出来',
         '2024-07 imToken 安全月报第 28 期：有人卖「66666」这类靓号但自己留着私钥，买家转钱进去几天后被转走',
@@ -1777,7 +1791,7 @@ var NOBLE=(()=>{var Tt=Object.defineProperty;var Be=Object.getOwnPropertyDescrip
         ['Price', 'free', 'from 100 USDT']],
       moreH: 'Why use it, the risks without it, honestly',
       whyH: 'Why use it',
-      why: ['You want a nicer-looking address, but do not want to pay or trust a strange website', '"The private key never passes through us" is not just words: it works offline, and you can watch it', 'The page code is public on GitHub, and the live copy is checked against it every hour'],
+      why: ['You want a nicer-looking address, but do not want to pay or trust a strange website', '"The private key never passes through us" is not just words: it works offline, and you can watch it', 'The page code is public on GitHub, and the live copy is checked against it on an hourly schedule (not guaranteed on time)'],
       riskH: 'What can go wrong without it (real cases)',
       risk: ['2022-09: the market maker Wintermute lost 160 million dollars. Its vanity address was made with Profanity, which used too little randomness, so the private key could be worked out',
         '2024-07, imToken security report no. 28: someone sold "66666"-style vanity addresses but kept the private keys; buyers\' money was taken days later',
@@ -1856,7 +1870,7 @@ var NOBLE=(()=>{var Tt=Object.defineProperty;var Be=Object.getOwnPropertyDescrip
         ['Harga', 'gratis', 'mulai 100 USDT']],
       moreH: 'Mengapa memakai ini, risikonya tanpa ini, jujur saja',
       whyH: 'Mengapa memakai ini',
-      why: ['Anda ingin alamat yang lebih enak dilihat, tetapi tidak mau membayar atau memercayai situs asing', '"Kunci privat tidak pernah melewati kami" bukan sekadar kata-kata: ini berfungsi offline, dan Anda bisa menyaksikannya', 'Kode halaman ini publik di GitHub, dan salinan live dicocokkan dengannya setiap jam'],
+      why: ['Anda ingin alamat yang lebih enak dilihat, tetapi tidak mau membayar atau memercayai situs asing', '"Kunci privat tidak pernah melewati kami" bukan sekadar kata-kata: ini berfungsi offline, dan Anda bisa menyaksikannya', 'Kode halaman ini publik di GitHub, dan salinan live dicocokkan dengannya sesuai jadwal setiap jam (tidak dijamin tepat waktu)'],
       riskH: 'Apa yang bisa salah tanpa ini (kasus nyata)',
       risk: ['2022-09: market maker Wintermute kehilangan 160 juta dolar. Alamat cantiknya dibuat dengan Profanity, yang memakai terlalu sedikit keacakan, sehingga kunci privatnya bisa dihitung balik',
         '2024-07, laporan keamanan imToken no. 28: seseorang menjual alamat cantik gaya "66666" tetapi menyimpan kunci privatnya; uang pembeli diambil beberapa hari kemudian',
