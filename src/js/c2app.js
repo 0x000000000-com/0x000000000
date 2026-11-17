@@ -591,7 +591,11 @@
     S.vchCode = code; if (i) i.value = code;
     if (!code || !S.order) { if (i) i.focus(); return; }
     if (b) b.disabled = true;
-    api('/api/c2/orders/' + S.order.orderId + '/voucher', 'POST', { code: code }).then(function (r) {
+    // SECFIX4_20261118（Codex 第四轮 A1）：券记在「点的时候那张单」上；回包回来时已经换了单（续了别的单 / 下了新单）→
+    //   不改现在这张单的金额、券、收款金额（平台那边券已经算在原来那张单上）
+    var gen = ORDER_GEN, oid = S.order.orderId;
+    api('/api/c2/orders/' + oid + '/voucher', 'POST', { code: code }).then(function (r) {
+      if (gen !== ORDER_GEN || !S.order || S.order.orderId !== oid) return;
       var x = r.body || {};
       if (r.code !== 200 || !x.ok) { S.vchErr = r; S.vchOpen = true; renderSteps(); return; }
       var due = x.covered === true ? 0 : x.amountUsdt;
@@ -627,7 +631,7 @@
     document.querySelectorAll('input[name=c2pay]').forEach(function (r) { r.addEventListener('change', function () { S.payChain = r.value; }); });
     on('c2ref', 'input', function () { S.ref = String($('#c2ref').value || '').trim().toUpperCase(); });
     on('c2order', 'click', placeOrder);
-    document.querySelectorAll('[data-leave]').forEach(function (b) { b.addEventListener('click', function () { api('/api/fw/leave', 'POST', { reason: b.getAttribute('data-leave') }).then(function () { txt('c2leaveOk', ' ' + T().leaveThanks); }); }); });
+    document.querySelectorAll('[data-leave]').forEach(function (b) { b.addEventListener('click', function () { var gen = ORDER_GEN; api('/api/fw/leave', 'POST', { reason: b.getAttribute('data-leave') }).then(function () { if (gen === ORDER_GEN) txt('c2leaveOk', ' ' + T().leaveThanks); }); }); });
     on('c2pickBtn', 'click', collect);
     on('c2verify', 'click', showDelivery);
     var vd = $('#c2vch');
@@ -644,8 +648,11 @@
     if (v('c2suf') != null) S.suffix = v('c2suf').trim();
     if (v('c2label') != null) S.label = v('c2label');
   }
+  var QUOTE_GEN = 0;
   function getQuote() {
+    var q = ++QUOTE_GEN, gen = ORDER_GEN;   // SECFIX4_20261118：报价只认最后问的那一次；问的时候换了单（续了别的单）就不认
     api('/api/c2/quote', 'POST', { mode: S.mode, prefix: SALT.normPat(S.prefix), suffix: SALT.normPat(S.suffix) }).then(function (r) {
+      if (q !== QUOTE_GEN || gen !== ORDER_GEN) return;
       if (r.code !== 200) { txt('c2err2', errOf(r)); return; }
       S.quote = r.body; renderSteps();
     });

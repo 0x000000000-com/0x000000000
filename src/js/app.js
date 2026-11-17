@@ -1037,6 +1037,9 @@ const REF_FROM = (() => {
 let RESUME = null;   // 由 wireOrderFlow 挂上（它要用向导里的闭包）
 // SECFIX3_20261118（Codex 第三轮 U1）：每换一次单（新单 / 续单都会重画六步）ORDER_GEN 加一；付款信息、进度、续单的回包
 //   写共享状态之前都核「还是这一单、这一代」—— 晚回来的旧单回包整个丢掉（原来只有取货那一处核）。
+// SECFIX4_20261118（Codex 第四轮 A1 / A2 / A3）：六步里【每一个】要等的地方都照这一条 —— 点下去那一刻记下「第几代、哪张单」，
+//   等回来先核，不是这一代、这张单就什么都不写（用券、下单、交份额、模拟付款、取货、导出钱包文件、签收、读备份文件）。
+//   测试 test/secfix.cjs 第 4c 节逐个处理器验，第 4d 节扫源码：六步里每一处 await 后面紧跟着这一核。
 let ORDER_GEN = 0, RESUME_GEN = 0;
 let KEEPKEY = null;  // 同上：切语言重画之后把内存里的钥匙装回第 1 步（LANGKEEP0X_20260924）
 
@@ -1448,9 +1451,11 @@ function wireOrderFlow(f) {
   $('#secFile').addEventListener('change', (e) => {
     const file = e.target.files && e.target.files[0]; if (!file) return;
     const out = $('#out1'); out.hidden = false; out.innerHTML = '';
+    const g = ORDER_GEN, oid = orderState.orderId;   // SECFIX4_20261118 A2：读文件的时候换了单 / 重画了 → 这把钥匙不装进别的单
     const r = new FileReader();
     r.onerror = () => outLine(out, f.fileBad, 'err');
     r.onload = () => {
+      if (g !== ORDER_GEN || oid !== orderState.orderId) return;
       let sec;
       try { sec = KC().readSecretJson(r.result); }
       catch (err) { return outLine(out, err.message, 'err'); }
@@ -1471,13 +1476,16 @@ function wireOrderFlow(f) {
   // ── [2/6] 下单 + 自动签挑战 + 自动上传 ──────────────────────────────
   // 上传份额：用 s 签这张单的挑战串，连同影子 A 交上去。续单（建了单但还没交份额）也走这里。
   async function uploadShare(out) {
-    const sec = orderState.sec;
+    // SECFIX4_20261118（Codex 第四轮 A2）：份额交给「开始交的那一张单」—— 单号一开始就固定；
+    //   回来时已经换了单 / 重画了，就什么都不写（不标「已交份额」，原来这一句在外面那一核之前就写了）
+    const g = ORDER_GEN, oid = orderState.orderId, sec = orderState.sec;
     outLine(out, f.signing, 'dim');
     let sig;
     try { sig = KC().signChallenge(sec.s, orderState.challenge).sig; }
     catch (e) { outLine(out, e.message, 'err'); return false; }
     const A = KC().signChallenge(sec.s, 'x').A;          // A 由 s 当场算出,不信任何缓存
-    const up = await api('/api/orders/' + orderState.orderId + '/share', 'POST', { A, sig });
+    const up = await api('/api/orders/' + oid + '/share', 'POST', { A, sig });
+    if (g !== ORDER_GEN || oid !== orderState.orderId) return false;
     if (up.code !== 200) { showApiError(out, up); return false; }
     outLine(out, f.shareOk, 'ok');
     setStatus('share_uploaded');
@@ -1540,8 +1548,13 @@ function wireOrderFlow(f) {
     const inp = $('#vchCode'), btn = $('#vchGo'), code = String(inp.value || '').replace(/\s+/g, '');
     inp.value = code;
     if (!code) { inp.focus(); return; }
+    // SECFIX4_20261118（Codex 第四轮 A1）：券记在「点的时候那张单」上；回包回来时已经换了单 / 重画了 →
+    //   不改现在这张单的金额、不收起它的收款地址、不写它的提示（平台那边券已经算在原来那张单上）
+    const g = ORDER_GEN, oid = orderState.orderId;
+    if (!oid) return;
     btn.disabled = true;
-    const r = await api('/api/orders/' + orderState.orderId + '/voucher', 'POST', { code });
+    const r = await api('/api/orders/' + oid + '/voucher', 'POST', { code });
+    if (g !== ORDER_GEN || oid !== orderState.orderId) return;
     btn.disabled = false;
     const b = r.body || {};
     if (r.code !== 200 || !b.ok) {
@@ -1570,14 +1583,21 @@ function wireOrderFlow(f) {
     const out = $('#out2'); out.hidden = false; out.innerHTML = '';
     const sec = orderState.sec;
     if (!sec) return outLine(out, f.needGen, 'err');
-    // NETSYNC0X_20260924：目录还没拿到（断网打开的页面）→ 当场补拿；付款链表是刚补到、他还没看过 → 先让他选，再点一次
-    if (!CATALOG || !HEALTH_OK) await sync();
-    if (payNeedsLook) { payNeedsLook = false; return outLine(out, f.payPickNow, 'warn'); }
-    const ref = refNorm(($('#refCode') || {}).value);                  // REF0X：空着 = 不带；填了就必须长得像推荐码（真假由平台查）
-    if (ref && !REF_RE.test(ref)) return outLine(out, f.refBad, 'err');
+    // SECFIX4_20261118（Codex 第四轮 A2）：一按就锁（等目录的时候连点两下不会下两张单）；记下「第几代、哪把钥匙、还没有单」，
+    //   每次 await 回来先核 —— 等的时候续开了别的单 / 切了语言 / 换了钥匙文件，这一次下单的回包不改现在的单号、挑战串
     const btn = $('#btnCreate'); btn.disabled = true;
+    const g = ORDER_GEN, same = () => g === ORDER_GEN && orderState.sec === sec && !orderState.orderId;
+    // NETSYNC0X_20260924：目录还没拿到（断网打开的页面）→ 当场补拿；付款链表是刚补到、他还没看过 → 先让他选，再点一次
+    if (!CATALOG || !HEALTH_OK) { await sync(); if (!same()) return; }
+    if (payNeedsLook) { payNeedsLook = false; btn.disabled = false; return outLine(out, f.payPickNow, 'warn'); }
+    const ref = refNorm(($('#refCode') || {}).value);                  // REF0X：空着 = 不带；填了就必须长得像推荐码（真假由平台查）
+    if (ref && !REF_RE.test(ref)) { btn.disabled = false; return outLine(out, f.refBad, 'err'); }
     const payChain = ($('#payChain') || {}).value || 'tron';
     const res = await api('/api/orders', 'POST', { chain: sec.chain, prefix: sec.prefix, suffix: sec.suffix, payChain, ...(ref ? { ref } : {}) });
+    if (!same()) {                                       // 单已经在平台上建好了：记进「我的订单」能找回来，但不碰现在这张单
+      if (res.code === 200 && res.body && /^[0-9a-f]{8}$/.test(String(res.body.orderId))) { rememberOrder(res.body.orderId); renderOrders(); }
+      return;
+    }
     if (res.code !== 200) { showApiError(out, res); btn.disabled = false; return; }
     orderState.orderId = res.body.orderId;
     orderState.challenge = res.body.challenge;
@@ -1637,7 +1657,9 @@ function wireOrderFlow(f) {
       return;
     }
     outLine(out, f.paying, 'dim');
-    const res = await api('/api/orders/' + orderState.orderId + '/pay-sim', 'POST');
+    const g = ORDER_GEN, oid = orderState.orderId;   // SECFIX4_20261118：模拟付款回来时换了单 → 不给别的单开轮询
+    const res = await api('/api/orders/' + oid + '/pay-sim', 'POST');
+    if (g !== ORDER_GEN || oid !== orderState.orderId) return;
     if (res.code !== 200) { showApiError(out, res); return; }
     outLine(out, f.watching, 'dim');
     $('#btnPay').disabled = true;
@@ -1667,11 +1689,11 @@ function wireOrderFlow(f) {
     let dsig;
     try { dsig = KC().signChallenge(orderState.sec.s, orderState.challenge).sig; }
     catch (e) { return outLine(out, e.message, 'err'); }
-    const gen = ++DL_GEN, oid = orderState.orderId;
+    const gen = ++DL_GEN, g = ORDER_GEN, oid = orderState.orderId;
     $('#btnDownload').disabled = true; $('#btnMerge').disabled = true;
     revokeTake();
     const res = await api('/api/orders/' + oid + '/download?sig=' + dsig);
-    if (gen !== DL_GEN || oid !== orderState.orderId) return;   // 过期的回包（后面又点过一次，或者已经换了单）：不认
+    if (gen !== DL_GEN || g !== ORDER_GEN || oid !== orderState.orderId) return;   // 过期的回包（后面又点过一次、已经换了单、或者重画过）：不认
     if (res.code !== 200) { $('#btnDownload').disabled = false; showApiError(out, res); return; }
     orderState.b = res.body.b; orderState.deliveredAddr = res.body.address;
     outLine(out, f.gotB, 'ok');
@@ -1726,17 +1748,18 @@ function wireOrderFlow(f) {
     const btn = this; btn.disabled = true;
     msg.className = 'step-desc';
     // SECFIX3_20261118（Codex 第三轮 U2）：开始上锁时就固定这一份合成结果；锁完它已经被收回 / 换掉（新交货、合成失败）就不下载
-    const mg = MERGED;
+    // SECFIX4_20261118（Codex 第四轮 A3）：锁的时候换了单、切了语言（六步重画了）→ 这一份也作废：不下载、不去动新画出来的那一页
+    const mg = MERGED, g = ORDER_GEN, oid = orderState.orderId, mine = () => MERGED === mg && g === ORDER_GEN && oid === orderState.orderId;
     KC().keystore(mg.k, mg.addr, mg.chain, pw, (p) => {
-      if (MERGED === mg) msg.textContent = f.ksWork + Math.round(p * 100) + '%';
+      if (mine()) msg.textContent = f.ksWork + Math.round(p * 100) + '%';
     }).then((ks) => {
       btn.disabled = false;
-      if (MERGED !== mg) { msg.className = 'step-desc'; msg.textContent = ''; return; }
+      if (!mine()) { msg.className = 'step-desc'; msg.textContent = ''; return; }
       const name = KC().keystoreName(mg.chain);
       dl(name, JSON.stringify(ks, null, 2));
       msg.className = 'step-desc ok'; msg.textContent = f.ksOk(name, mg.chain === 'tron');
       const g = $('#ksGuide'); if (g) g.open = true;
-    }, (e) => { btn.disabled = false; if (MERGED !== mg) return; msg.className = 'step-desc warn'; msg.textContent = f.ksFail + e.message; });
+    }, (e) => { btn.disabled = false; if (!mine()) return; msg.className = 'step-desc warn'; msg.textContent = f.ksFail + e.message; });
   });
 
   // ── [6/6] 回执：一键签 + 提交 ───────────────────────────────────────
@@ -1751,7 +1774,10 @@ function wireOrderFlow(f) {
     try { r = KC().signReceipt(orderState.sec, KC().parseB(orderState.b), orderState.receiptChallenge, { orderId: orderState.orderId, merged: mg }); }
     catch (e) { return outLine(out, e.message, 'err'); }
     if (!r.ok) return outLine(out, r.why === 'form' ? f.receiptOdd : f.receiptBad, 'err');
-    const res = await api('/api/orders/' + orderState.orderId + '/receipt', 'POST', { sig: r.sig });
+    // SECFIX4_20261118（Codex 第四轮 A2）：签好的收条发给「签的那张单」；回包回来时已经换了单 / 重画了 → 不关现在这张单的按钮、不标「已签收」
+    const g = ORDER_GEN, oid = orderState.orderId;
+    const res = await api('/api/orders/' + oid + '/receipt', 'POST', { sig: r.sig });
+    if (g !== ORDER_GEN || oid !== orderState.orderId) return;
     if (res.code !== 200) { showApiError(out, res); return; }
     outLine(out, f.receiptOk, 'ok');
     // VERIFY0X_20260928（构思 v3 第九章 13「好」）：买靓号的送首月实时提醒 —— 平台回一个一单一次的领取链接，先过一遍样子再放
@@ -1865,11 +1891,13 @@ window.addEventListener('online', ordersRetry);
 window.addEventListener('focus', ordersRetry);
 document.addEventListener('visibilitychange', () => { if (!document.hidden) ordersRetry(); });
 { const so = document.getElementById('secOrders'); if (so) { so.addEventListener('pointerdown', ordersRetry, true); so.addEventListener('focusin', ordersRetry, true); } }
+let ORDERS_SEQ = 0;
 async function renderOrders() {
   // NOMOCK0X / MYORDERS0X_20260923：只列这个浏览器下过的单,逐张按订单号查；
   //   取不到就如实说,不编假单。每一行都能「接着做」—— 关了页面回来就从这里续。
   const body = $('#ordersBody'); if (!body) return;
   const ids = myOrders();
+  const seq = ++ORDERS_SEQ;   // SECFIX4_20261118：两次重拉一前一后在路上，只认后发的那一次（旧的晚回来不盖新的）
   if (!ids.length) { body.innerHTML = '<tr><td colspan="5">' + esc(t('ordersEmpty')) + '</td></tr>'; return; }
   let rows;
   try {
@@ -1877,6 +1905,7 @@ async function renderOrders() {
       .then((r) => (r.code === 200 ? r.body : (r.code === 404 ? (forgetOrder(id), null) : undefined)))
       .catch(() => undefined)));
   } catch (e) { rows = []; }
+  if (seq !== ORDERS_SEQ) return;
   if (rows.some((x) => x === undefined) && !rows.some((x) => x)) {
     ORDERS_DOWN = true;
     body.innerHTML = '<tr><td colspan="5">' + esc(t('ordersDown')) + '</td></tr>'; return;
@@ -1898,7 +1927,9 @@ async function renderOrders() {
 /* ---- 续单入口（RESUME0X_20260923）---- */
 async function resumeFrom(id, msgEl) {
   if (!RESUME) return;
+  const n = RESUME_GEN;
   const why = await RESUME(id);
+  if (RESUME_GEN > n + 1) return;   // SECFIX4_20261118：这期间又续了别的单 —— 这一次的结果不写（不盖掉后来那一次的话）
   if (msgEl) { msgEl.textContent = why || ''; msgEl.className = 'step-desc' + (why ? ' warn' : ''); }
 }
 document.addEventListener('click', (e) => {
