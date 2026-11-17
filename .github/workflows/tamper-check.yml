@@ -1,19 +1,19 @@
 name: Live page tamper patrol
 # The name is English only: GitHub badges size the label for Latin letters and cover the last Chinese characters with "passing".
 # 名字只用英文：GitHub 徽章按英文字母算宽度，中文最后一两个字会被「passing」盖住（20260924 实测，原来的中文徽章也是这样）。中文名写在 README.zh-CN.md 徽章旁边。
-# Every hour: download the home page, the "download the minting page" copy, the /ppt explainer, the /wp white paper, the payment card page (/@name), the /contract and /token pages, the /free Free Generator and the /zero Zero board from 0x000000000.com and compare them
+# On an hourly schedule (not guaranteed to be on time): download the home page, the "download the minting page" copy, the /ppt explainer, the /wp white paper, the payment card page (/@name), the /contract and /token pages, the /free Free Generator and the /zero Zero board from 0x000000000.com and compare them
 # with the fingerprints published here. Any mismatch turns red - the site is not serving what is published here.
-# This check runs on GitHub machines; the platform cannot touch it.
-# 每小时一次：到 0x000000000.com 下载网站首页、「下载铸造页面」那一份、说明书 /ppt、白皮书 /wp、收款名片页（/@名字）、合约靓号页 /contract、发币地址定制页 /token、免费生成页 /free、零之榜 /zero，跟这个仓库里公开的指纹比。
-# 不一致就变红 —— 说明网站上跑的不是这里公开的这一份。这个检查在 GitHub 的机器上跑，平台插不上手。
+# This check runs on GitHub machines and anyone can see the result. We (the repository owner) wrote this script and can change it, change the branch rules or delete run records - see README.
+# 按计划每小时一次（不保证准点）：到 0x000000000.com 下载网站首页、「下载铸造页面」那一份、说明书 /ppt、白皮书 /wp、收款名片页（/@名字）、合约靓号页 /contract、发币地址定制页 /token、免费生成页 /free、零之榜 /zero，跟这个仓库里公开的指纹比。
+# 不一致就变红 —— 说明网站上跑的不是这里公开的这一份。这个检查在 GitHub 的机器上跑，结果谁都看得见；脚本是我们（仓库所有者）写的，我们改得了它、改得了分支规则、删得了运行记录 —— 见 README。
 # PATROLGRACE0X_20260928 (the owner chose this): right after a new version is published here, the site keeps serving the previous
 # published version for the few minutes until the deploy finishes - that used to turn this check red for no reason.
 # Now, for 3 hours after SHA256SUMS changes, the previous published fingerprint also passes (as a notice, not an error).
 # The site can still never serve bytes that were not published here: only the current or the previous published version passes,
-# and the previous one only inside those 3 hours. The time comes from this repository's own history, which the platform cannot write.
+# and the previous one only inside those 3 hours. The time comes from this repository's own commit history (which we, the repository owner, also write - see README).
 # 公开新版本之后、上线之前那几分钟，网站上还是上一个公开版本 —— 原来这里会无缘无故变红。
 # 现在：SHA256SUMS 换版之后 3 小时内，上一个公开版本的指纹也算过（记一条提示，不算错）。
-# 网站上照样不可能出现没在这里公开过的字节：只有当前版本、或者（3 小时内）上一个公开版本能过。时间取自这个仓库自己的提交记录，平台写不进来。
+# 网站上照样不可能出现没在这里公开过的字节：只有当前版本、或者（3 小时内）上一个公开版本能过。时间取自这个仓库自己的提交记录（提交记录也是我们这个仓库所有者写的 —— 见 README）。
 on:
   schedule:
     - cron: '7 * * * *'
@@ -25,7 +25,7 @@ jobs:
     # Pinned to Ubuntu 24.04: from 2026-10-19 GitHub moves ubuntu-latest to Ubuntu 26.04, and a new system must not turn this check red by itself. · 钉在 Ubuntu 24.04：GitHub 从 2026-10-19 起把 ubuntu-latest 换成 Ubuntu 26.04，换系统不能自己把这个检查弄红。
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4 - pinned to the full commit, a tag can move · 钉在完整提交号上，标签可以被挪走
         with:
           fetch-depth: 0
       - name: Download the live pages and compare fingerprints with the published ones · 下载线上页面，跟公开版本比指纹

@@ -15,8 +15,8 @@ jobs:
     # Pinned to Ubuntu 24.04: from 2026-10-19 GitHub moves ubuntu-latest to Ubuntu 26.04, and a new system must not turn this check red by itself. · 钉在 Ubuntu 24.04：GitHub 从 2026-10-19 起把 ubuntu-latest 换成 Ubuntu 26.04，换系统不能自己把这个检查弄红。
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4 - pinned to the full commit, a tag can move · 钉在完整提交号上，标签可以被挪走
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: 22
       - name: Rebuild from src/ - must equal the published file byte for byte · 用 src/ 里的源码重新构建一遍，必须跟公开的文件逐字节相同
@@ -36,12 +36,12 @@ jobs:
           node src/build-free.mjs src /tmp/fg
           cmp /tmp/fg/0x000000000-free.html 0x000000000-free.html
           echo "Rebuilt from source: identical to the published file · 从源码重新拼出来的免费生成页，跟公开的一模一样"
-      - name: Security regression - every attack reproduced by two outside reviews (2026-11-17) must stay blocked, every normal case must still pass · 安全回归：两轮外部安全检查（2026-11-17）复现过的每一招都必须拦得住，正常的都必须照样能过
+      - name: Security regression - the attacks three outside reviews (2026-11-17/18) reproduced on the listed entry points must stay blocked, normal cases must still pass (see test/secfix.cjs for the exact list) · 安全回归：三轮外部安全检查（2026-11-17/18）在列出的入口上复现过的招数必须拦得住，正常的照样能过（具体哪些见 test/secfix.cjs）
         run: node test/secfix.cjs src wp.html ppt.html README.md README.zh-CN.md
       - name: Install a real browser · 装真浏览器
         working-directory: test
         run: |
-          npm install --no-audit --no-fund
+          npm ci --no-audit --no-fund   # exact versions and hashes from package-lock.json · 版本和哈希都按 package-lock.json
           npx playwright install --with-deps chromium
       - name: Walk all 6 steps in a real browser and check every request the page sends · 用真浏览器走完 6 步，逐个核对页面发出去的每一个请求
         working-directory: test
