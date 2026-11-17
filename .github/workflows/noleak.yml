@@ -36,6 +36,8 @@ jobs:
           node src/build-free.mjs src /tmp/fg
           cmp /tmp/fg/0x000000000-free.html 0x000000000-free.html
           echo "Rebuilt from source: identical to the published file · 从源码重新拼出来的免费生成页，跟公开的一模一样"
+      - name: Security regression - every attack reproduced by two outside reviews (2026-11-17) must stay blocked, every normal case must still pass · 安全回归：两轮外部安全检查（2026-11-17）复现过的每一招都必须拦得住，正常的都必须照样能过
+        run: node test/secfix.cjs src wp.html ppt.html README.md README.zh-CN.md
       - name: Install a real browser · 装真浏览器
         working-directory: test
         run: |
