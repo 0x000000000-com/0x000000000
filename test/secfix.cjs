@@ -1,7 +1,7 @@
 // secfix.cjs — security regression for the page code (outside reviews 2026-11-17 and 2026-11-18)
-// 安全回归：外部安全检查（2026-11-17 两轮、2026-11-18 两轮）在这些入口上复现过的招数，原样再打一次 —— 必须拦得住：
+// 安全回归：外部安全检查（2026-11-17 两轮、2026-11-18 三轮）在这些入口上复现过的招数，原样再打一次 —— 必须拦得住：
 //   付款框和订单列表（HTML 转义）· 收条签名 · 合约交货核对、重填，下单 / 续单 / 查进度 / 用券 / 报价只认这一张单 · 取货 → 合成 → 收条、导出钱包文件 ·
-//   个人靓号的付款信息 / 进度 / 续单 / 用券 / 下单 / 交份额 / 模拟付款 / 签收只认这一张单 · 收款名片页（复制、二维码、核对之前先核名片，真跑）·
+//   个人靓号的付款信息 / 进度 / 续单 / 用券 / 下单 / 交份额 / 模拟付款 / 签收只认这一张单，交份额没成再点下单是接着做、不另建 · 收款名片页（复制、二维码、核对之前先核名片，真跑）·
 //   免费生成页「存好了」· 页面和文档的说法。
 // 每一招都配一条正常的情况 —— 必须照样能过（只验「拦住了」不验「好的还能过」，一刀切成全拒也是全绿）。
 // 每个修复都拿改之前的写法放回去试过：这份测试必须变红（变异对照）。它只管上面这些入口，不是所有可能的攻击。
@@ -743,6 +743,115 @@ const APP = rd('js/app.js');
     const C2 = rd('js/c2app.js');
     const c = scan(C2, '  function api(path, method, body) {', '  // ── 开页', (l) => /\bapi\('[^\n]*\.then\(function/.test(l));
     ok(c.waits.length >= 6 && c.bad.length === 0, '4d contract orders: ' + c.waits.length + ' replies, ' + c.bad.length + ' without the order check' + (c.bad.length ? ': ' + c.bad.join(' | ') : '') + ' · 合约单 ' + c.waits.length + ' 处回包，没核的 ' + c.bad.length + ' 处');
+  });
+
+  // ── 4e · A step that did not go through leaves "place order" usable, and pressing it continues the same order ──
+  //   Review 5: after the order was created but the share upload failed, pressing "place order" again created a second, unfinished order and left the button grey.
+  //   第五轮：单建好了、交份额没成，再点「下单」会多建一张没做完的单、按钮一直灰着。现在：这一页已经有单时再点 = 接着做这一张（走续单那条路），绝不另建
+  console.log('== 4e · retry continues the same order · 没成再点 = 接着做这一张');
+  await section('4e', async () => {
+    const tick = () => new Promise((r) => setTimeout(r, 0));
+    const mk = () => {
+      const el = {}, on = {}, calls = [], rec = { lines: [], resume: [], upload: 0, pay: 0, errs: [] };
+      const $ = (id) => el[id] || (el[id] = { id, hidden: true, disabled: false, value: '', textContent: '', innerHTML: '', dataset: {}, isConnected: true, focus: () => {}, addEventListener: (e, fn) => { on[id] = fn; } });
+      const ctx = { $, ORDER_GEN: 1, RESUME_GEN: 0, orderState: { orderId: null, challenge: null, sec: null, poll: null }, IS_LIVE: false, CATALOG: {}, HEALTH_OK: true, payNeedsLook: false,
+        REF_RE: /^[2-9A-HJ-NP-Z]{6}$/, REF_KEY: 'ref', refNorm: (x) => String(x || '').trim().toUpperCase(), localStorage: { setItem: () => {} },
+        api: (url, method, body) => new Promise((resolve) => calls.push({ url, method, body, resolve })),
+        sync: async () => {}, rememberOrder: () => {}, renderOrders: () => {},
+        uploadShareOk: true, showPaymentOk: true,
+        uploadShare: async () => { rec.upload++; return ctx.uploadShareOk; }, showPayment: async () => { rec.pay++; return ctx.showPaymentOk; },
+        RESUME: async (id, quiet) => { rec.resume.push(id + '/' + quiet); return ctx.resumeWhy || null; },
+        outLine: (o, t) => rec.lines.push(t), showApiError: (o, r) => rec.errs.push(r.code), setStatus: () => {},
+        f: { needGen: 'NEEDGEN', payPickNow: 'PICK', refBad: 'REFBAD', created: 'CREATED', keepId: () => 'KEEP' } };
+      vm.createContext(ctx);
+      return { ctx, $, on, calls, rec, click: (id) => (!$(id).disabled && on[id] ? on[id]() : null) };
+    };
+    const code = slice(APP, "  $('#btnCreate').addEventListener('click', async () => {", '  // ── [3/6] 付款');
+    const SEC = { chain: 'evm', prefix: '0000', suffix: '', s: 1n };
+    const orders = (w) => w.calls.filter((c) => c.url === '/api/orders').length;
+    // review 5: created, share upload failed, press again · 第五轮：单建好了、份额没交上，再点
+    {
+      const w = mk(); vm.runInContext(code, w.ctx); w.ctx.orderState.sec = SEC; w.ctx.uploadShareOk = false;
+      const p1 = w.click('#btnCreate'); await tick();
+      w.calls[0].resolve({ code: 200, body: { orderId: 'aaaaaaaa', challenge: 'CH-A' } }); await p1;
+      const freed = w.$('#btnCreate').disabled === false;
+      w.click('#btnCreate'); await tick(); await tick();   // not awaited: the old code waits here on a second order that never comes back · 不等它：旧代码会卡在第二张单的回包上
+      const settle = () => w.calls.slice(1).forEach((c) => c.resolve({ code: 200, body: { orderId: 'bbbbbbbb', challenge: 'CH-B' } }));
+      ok(freed && orders(w) === 1 && w.rec.resume.join() === 'aaaaaaaa/true' && w.ctx.orderState.orderId === 'aaaaaaaa', '4e attack (review 5): the order was created but the share upload failed → pressing "place order" again continues that order (same number, through the resume path) and creates no second order · 单建好了、份额没交上 → 再点「下单」接着做这一张（同一个单号、走续单那条路），不另建第二张');
+      settle(); await tick();
+    }
+    {
+      const w = mk(); vm.runInContext(code, w.ctx); w.ctx.orderState.sec = SEC; w.ctx.showPaymentOk = false;
+      const p1 = w.click('#btnCreate'); await tick();
+      w.calls[0].resolve({ code: 200, body: { orderId: 'aaaaaaaa', challenge: 'CH-A' } }); await p1;
+      const freed = w.$('#btnCreate').disabled === false;
+      w.click('#btnCreate'); await tick(); await tick();   // not awaited: the old code waits here on a second order that never comes back · 不等它：旧代码会卡在第二张单的回包上
+      const settle = () => w.calls.slice(1).forEach((c) => c.resolve({ code: 200, body: { orderId: 'bbbbbbbb', challenge: 'CH-B' } }));
+      ok(freed && orders(w) === 1 && w.rec.resume.join() === 'aaaaaaaa/true', '4e (review 5): the share went in but the payment details did not come → "place order" is usable again (it used to stay grey) and pressing it continues the same order · 份额交上了、收款信息没拿到 →「下单」能再点（原来一直灰着），再点接着做这一张');
+      settle(); await tick();
+    }
+    {
+      const w = mk(); vm.runInContext(code, w.ctx); w.ctx.orderState = { orderId: 'aaaaaaaa', challenge: 'CH-A', sec: SEC, poll: null }; w.ctx.resumeWhy = 'OFFLINE';
+      w.click('#btnCreate'); await tick(); await tick();
+      const made = orders(w); w.calls.forEach((c) => c.resolve({ code: 200, body: { orderId: 'bbbbbbbb', challenge: 'CH-B' } })); await tick();
+      ok(made === 0 && w.rec.lines.includes('OFFLINE') && w.$('#btnCreate').disabled === false, '4e (review 5): continuing fails before anything changes (no network) → it says why and the button can be pressed again · 接着做的时候连不上（页面还没动）→ 说清楚原因，按钮还能再点');
+    }
+    {
+      const w = mk(); vm.runInContext(code, w.ctx); w.ctx.orderState.sec = SEC;
+      const p = w.click('#btnCreate'); await tick();
+      w.calls[0].resolve({ code: 200, body: { orderId: 'aaaaaaaa', challenge: 'CH-A' } }); await p;
+      ok(orders(w) === 1 && w.rec.upload === 1 && w.rec.pay === 1 && w.rec.resume.length === 0 && w.$('#btnCreate').disabled === true, '4e normal: a new order → created once, share uploaded, payment shown, the button stays off · 正常下单 → 只建一次、交份额、出收款信息，按钮保持灰');
+    }
+    // the resume path: a failed share upload / payment fetch leaves "place order" usable · 续单那条路：交份额 / 拿收款信息没成也放开「下单」
+    {
+      const rcode = slice(APP, '  RESUME = async (id, quiet) => {', '  // 通用复制');
+      const el = {};
+      const g$ = (id) => el[id] || (el[id] = { id, hidden: true, disabled: true, textContent: '', innerHTML: '', value: '', classList: { toggle: () => {} }, scrollIntoView: () => {}, addEventListener: () => {} });
+      const run = async (status, up, pay, withKey) => {
+        for (const k of Object.keys(el)) delete el[k];
+        const calls = [], keep = withKey ? { s: 1n, chain: 'evm' } : null;
+        const ctx = { $: g$, ORDER_GEN: 1, RESUME_GEN: 0, RESUME: null, PICKED: 'evm', reducedMotion: true, api: (url) => new Promise((resolve) => calls.push({ url, resolve })),
+          f: { badId: 'BADID', noSuchOrder: 'NOSUCH', resumeHint: () => '', resuming: () => '', pickSecForResume: 'PICKSEC', watchingAgain: '', mineHit: 'HIT ', readyToTake: 'READY', orderClosed: () => 'CLOSED' },
+          L: (o, k) => o[k], mintView: () => {}, setStatus: () => {}, outLine: () => {}, statusLabel: (x) => x, rememberOrder: () => {},
+          uploadShare: async () => up, showPayment: async () => pay, stepsEl: { querySelectorAll: () => [] }, setInterval: () => 0 };
+        ctx.renderSteps = () => { ctx.ORDER_GEN++; ctx.orderState = { orderId: null, challenge: null, sec: keep }; };
+        ctx.orderState = { orderId: null, challenge: null, sec: keep };
+        vm.createContext(ctx); vm.runInContext(rcode, ctx);
+        const p = vm.runInContext("RESUME('aaaaaaaa', true)", ctx); await tick();
+        calls[0].resolve({ code: 200, body: { id: 'aaaaaaaa', status, chain: 'evm', prefix: '0000', challenge: 'CH-A', pattern: '0x0000' } }); await p;
+        return g$('#btnCreate').disabled === false;
+      };
+      ok(await run('created', false, true, true) && await run('created', true, false, true) && await run('share_uploaded', true, false, false), '4e (review 5): resuming an order — the share upload or the payment details fail → "place order" is usable again to continue it (it used to stay grey; the only way was "my orders" again) · 续单时交份额 / 拿收款信息没成 →「下单」能再点、接着做（原来一直灰着，只能回「我的订单」重新续）');
+      ok(!(await run('created', true, true, true)) && !(await run('share_uploaded', true, true, false)) && !(await run('created', true, true, false)), '4e normal: resuming goes through (or still needs the key file) → "place order" stays off · 续单顺利（或者还要选回钥匙文件）→「下单」保持灰');
+    }
+    // the key-file path: picked the file back, the share upload fails · 选回钥匙文件那条路：交份额没成
+    {
+      const fcode = slice(APP, "  $('#secFile').addEventListener('change', (e) => {", '  // ── [2/6]');
+      for (const up of [false, true]) {
+        const w = mk(), readers = [];
+        Object.assign(w.ctx, { PICKED: 'evm', FileReader: function () { readers.push(this); this.readAsText = () => {}; }, KC: () => ({ readSecretJson: () => SEC, signChallenge: () => ({ A: 'A' }) }) });
+        Object.assign(w.ctx.f, { fileOk: () => 'FILEOK', secBack: 'SECBACK', fileBad: 'FILEBAD' });
+        w.ctx.uploadShareOk = up; vm.runInContext(fcode, w.ctx);
+        w.ctx.orderState = { orderId: 'aaaaaaaa', challenge: 'CH-A', sec: null, poll: null, pendingShare: true };
+        w.$('#btnCreate').disabled = true;
+        w.on['#secFile']({ target: { files: [{}] } });
+        if (readers[0]) { readers[0].result = '{}'; readers[0].onload(); } await tick(); await tick();
+        if (!up) ok(w.rec.upload === 1 && w.$('#btnCreate').disabled === false, '4e (review 5): the key file was picked back but the share upload failed → "place order" is usable again to continue the order · 选回钥匙文件以后交份额没成 →「下单」能再点、接着做');
+        else ok(w.rec.upload === 1 && w.rec.pay === 1 && w.$('#btnCreate').disabled === true, '4e normal: the key file was picked back and the share went in → payment shown, "place order" stays off · 选回文件、份额交上 → 出收款信息，「下单」保持灰');
+      }
+    }
+    // the payment details cannot be fetched → it says why (it used to say nothing) · 收款信息拿不到 → 说原因（原来一句话都不说）
+    {
+      const escDecl = APP.split('\n').find((l) => l.startsWith('function esc(s)'));
+      const pcode = escDecl + '\nvar ORDER_GEN = 1;\n' + slice(APP, '  async function showPayment(o) {', '  function payShapeOk(p) {');
+      const el = {}, errs = [], calls = [];
+      const $ = (id) => el[id] || (el[id] = { id, hidden: true, disabled: false, textContent: '', innerHTML: '' });
+      const ctx = { $, orderState: { orderId: 'ab12cd34' }, f: {}, api: (url) => new Promise((resolve) => calls.push({ url, resolve })), showApiError: (o, r) => errs.push([o.id, r.code]), showLeave: () => {}, vchShow: () => {}, vchSeen: () => null, vchOpenFor: () => false, drawPay: () => true };
+      vm.createContext(ctx); vm.runInContext(pcode, ctx);
+      const p = vm.runInContext('showPayment()', ctx); await tick();
+      calls[0].resolve({ code: 0, body: { error: 'offline' } }); const r = await p;
+      ok(r === false && errs.length === 1 && errs[0][0] === '#out2' && el['#out2'].hidden === false, '4e (review 5): the payment details cannot be fetched → the reason is shown under step 2 (it used to say nothing) · 收款信息拿不到 → 第 2 步下面写出原因（原来一句话都不说）');
+    }
   });
 
   // ── 5 · Wording matches what the code does · 说法跟代码一致 ─────────────────────────────────────────
