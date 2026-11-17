@@ -1,7 +1,8 @@
 // secfix.cjs — security regression for the page code (outside reviews 2026-11-17 and 2026-11-18)
-// 安全回归：外部安全检查（2026-11-17 两轮、2026-11-18 一轮）在这些入口上复现过的招数，原样再打一次 —— 必须拦得住：
-//   付款框和订单列表（HTML 转义）· 收条签名 · 合约交货核对、重填，下单 / 续单 / 查进度只认这一张单 · 取货 → 合成 → 收条、导出钱包文件 ·
-//   个人靓号的付款信息 / 进度 / 续单只认这一张单 · 收款名片页 · 免费生成页「存好了」· 页面和文档的说法。
+// 安全回归：外部安全检查（2026-11-17 两轮、2026-11-18 两轮）在这些入口上复现过的招数，原样再打一次 —— 必须拦得住：
+//   付款框和订单列表（HTML 转义）· 收条签名 · 合约交货核对、重填，下单 / 续单 / 查进度 / 用券 / 报价只认这一张单 · 取货 → 合成 → 收条、导出钱包文件 ·
+//   个人靓号的付款信息 / 进度 / 续单 / 用券 / 下单 / 交份额 / 模拟付款 / 签收只认这一张单 · 收款名片页（复制、二维码、核对之前先核名片，真跑）·
+//   免费生成页「存好了」· 页面和文档的说法。
 // 每一招都配一条正常的情况 —— 必须照样能过（只验「拦住了」不验「好的还能过」，一刀切成全拒也是全绿）。
 // 每个修复都拿改之前的写法放回去试过：这份测试必须变红（变异对照）。它只管上面这些入口，不是所有可能的攻击。
 // Attacks the outside reviews reproduced on the entry points listed above are replayed and must stay blocked; each comes with a normal case
@@ -68,7 +69,7 @@ const APP = rd('js/app.js');
   console.log('== 1b · order list · 订单列表');
   await section('1b', async () => {
     const escDecl = APP.split('\n').find((l) => l.startsWith('function esc(s)'));
-    const code = escDecl + '\nvar ORDERS_DOWN = false;\n' + slice(APP, 'async function renderOrders() {', '\n/* ---- ');
+    const code = escDecl + '\nvar ORDERS_DOWN = false;\n' + slice(APP, ['let ORDERS_SEQ = 0;\nasync function renderOrders() {', 'async function renderOrders() {'], '\n/* ---- ');
     const run = async (o) => {
       const body = { html: '', set innerHTML(x) { this.html = x; }, get innerHTML() { return this.html; } };
       const ctx = { $: (s) => (s === '#ordersBody' ? body : null), myOrders: () => [String(o.id)], forgetOrder: () => {}, api: async () => ({ code: 200, body: o }),
@@ -229,7 +230,9 @@ const APP = rd('js/app.js');
     const SALT = box.SALT;
     const decl = slice(C2, '  var MY_KEY = ', '  function newCode()')
       + slice(C2, '  function placeOrder() {', '  function pollStatus() {') + slice(C2, '  function pollStatus() {', '  // 核对：只用 salt.js')
-      + slice(C2, '  function resume(id, code) {', '\n  // ');
+      + slice(C2, '  function resume(id, code) {', '\n  // ')
+      + slice(C2, '  var isZero = ', '\n') + '\n' + slice(C2, '  function vchGo() {', '  var vchReset = ')
+      + slice(C2, ['  var QUOTE_GEN = 0;', '  function getQuote() {'], '  function placeOrder() {');
     const make = () => {
       const store = {}, calls = [], seen = { collect: 0, steps: 0, errs: [] };
       Object.assign(box, {
@@ -303,6 +306,39 @@ const APP = rd('js/app.js');
       const rec = JSON.parse(w.store.c2_orders || '[]').find((x) => x.id === 'c0000000d');
       ok(box.S.order.orderId === 'c0000000b' && !!rec, '3b (U1): an order placed before switching is still kept in "my orders", but does not take over the screen · 换单前下好的单照样记进「我的订单」，但不抢回界面');
     }
+    // review 4 (A1): a voucher reply that comes back after switching to another order does not touch that order · 第四轮 A1：换单以后才回来的用券回包，不碰现在这张单
+    for (const kind of ['switch', 'switch-error', 'same']) {
+      const w = make();
+      box.$ = (q) => (q === '#c2vchCode' ? { value: 'VCH0X-ABCD', focus: () => {} } : q === '#c2vchGo' ? { disabled: false } : null);
+      box.S.order = { orderId: 'c0000000a', amountUsdt: '10', status: 'created' }; box.S.payment = { amountUsdt: '10' }; box.S.step = 3; box.S.vchErr = null;
+      vm.runInContext('vchGo()', box);
+      const v = w.calls.find((c) => /\/voucher$/.test(c.url));
+      if (kind !== 'same') {
+        vm.runInContext("resume('c0000000b', '" + 'bb'.repeat(16) + "')", box);
+        w.calls.find((c) => c.url === '/api/c2/orders/c0000000b').resolve({ code: 200, body: { orderId: 'c0000000b', status: 'created', amountUsdt: '20', depositAddress: '0x' + '22'.repeat(20), payChain: 'bsc' } }); await tick();
+      }
+      const n0 = w.seen.steps;
+      v.resolve(kind === 'switch-error' ? { code: 400, body: { error: 'NOPE' } } : { code: 200, body: { ok: true, covered: false, amountUsdt: '5', listUsdt: '10', hint: 'ABCD', creditUsdt: '5', kind: 'cash' } }); await tick();
+      if (kind === 'same') ok(v.url === '/api/c2/orders/c0000000a/voucher' && box.S.order.amountUsdt === '5' && box.S.payment.amountUsdt === '5' && box.S.order.voucherHint === 'ABCD', '3b normal: a voucher on the same order → the amount still due changes to what the platform says · 同一张单用券 → 还要付的金额按平台说的改');
+      else ok(box.S.order.orderId === 'c0000000b' && box.S.order.amountUsdt === '20' && box.S.payment.amountUsdt === '20' && !box.S.order.voucherHint && !box.S.vchErr && w.seen.steps === n0,
+        '3b attack (review 4, A1): a voucher reply' + (kind === 'switch-error' ? ' (an error)' : '') + ' that comes back after switching to another order does not touch that order · 换单以后才回来的用券回包' + (kind === 'switch-error' ? '（报错的那种）' : '') + '，不改现在这张单的金额、券、提示');
+    }
+    // review 4: of two price quotes only the last one counts; a quote that comes back after switching orders is dropped · 第四轮：两次报价只认后问的；换了单才回来的报价不认
+    {
+      const w = make(); box.S.step = 2;
+      vm.runInContext('getQuote(); getQuote()', box);
+      const q = w.calls.filter((c) => c.url === '/api/c2/quote');
+      q[1].resolve({ code: 200, body: { priceUsdt: 'NEW' } }); await tick();
+      q[0].resolve({ code: 200, body: { priceUsdt: 'OLD' } }); await tick();
+      ok(q.length === 2 && box.S.quote && box.S.quote.priceUsdt === 'NEW', '3b (review 4): of two price quotes, only the last one asked counts · 两次报价只认后问的那一次');
+    }
+    {
+      const w = make(); box.S.step = 2; box.S.quote = null;
+      vm.runInContext('getQuote()', box);
+      vm.runInContext("resume('c0000000b', '" + 'bb'.repeat(16) + "')", box);
+      w.calls.find((c) => c.url === '/api/c2/quote').resolve({ code: 200, body: { priceUsdt: 'OLD' } }); await tick();
+      ok(!box.S.quote, '3b (review 4): a price quote that comes back after switching to another order is dropped · 换了单才回来的报价不认');
+    }
   });
 
   // ── 4 · Collect → merge → receipt act on one checked result · 取货、合成、签收认同一份核对过的结果 ──────────────
@@ -320,7 +356,7 @@ const APP = rd('js/app.js');
         f: { needSecForTake: 'NEEDSEC', gotB: 'GOTB', mergeBad: () => 'MERGEBAD', mergeOk: 'MERGEOK', hitWord: 'hit', addrMatch: 'MATCH', addrDiff: (a) => 'MISMATCH ' + a, addrStop: 'STOP', evmTwin: (a) => 'twin ' + a,
           noReceipt: 'NORECEIPT', receiptNeedMerge: 'NEEDMERGE', receiptOdd: 'ODD', receiptBad: 'BAD', receiptOk: 'RECEIPTOK', perkOk: 'perk', perkLink: 'perk',
           pwShort: 'PWSHORT', pwDiff: 'PWDIFF', noSubtle: 'NOSUBTLE', ksWork: 'KSWORK ', ksOk: (n) => 'KSOK ' + n, ksFail: 'KSFAIL ' },
-        dl: (name) => dls.push(name),
+        dl: (name) => dls.push(name), ORDER_GEN: 1,
         api: (url, method, body) => new Promise((resolve) => calls.push({ url, method, body, resolve })),
       });
       vm.runInContext(code, ctx);
@@ -443,6 +479,41 @@ const APP = rd('js/app.js');
       if (revoke) ok(started && w.dls.length === 0 && w.$('#btnKs').disabled === false, '4 attack (review 3, U2): the merged result is taken back while locking → no wallet file is downloaded, and the button comes back · 上锁期间结果被收回 → 不下载钱包文件、按钮恢复');
       else ok(started && w.dls.length === 1 && w.dls[0] === 'my-keystore.json' && w.$('#btnKs').disabled === false, '4 normal: nothing changed while locking → the wallet file is downloaded · 上锁期间没变 → 照常下载钱包文件');
     }
+    // review 4 (A3): the six steps were drawn again (language switch / resume of the same order) while locking → that export is cancelled · 第四轮 A3：上锁的时候六步重画了（切语言 / 续同一张单）→ 那一次导出作废
+    {
+      const w = make(), k = setup(w), pend = [];
+      w.ctx.KC = () => Object.assign(Object.create(w.ctx.KeyCore), { keystore: () => new Promise((res, rej) => pend.push({ res, rej })), keystoreName: () => 'my-keystore.json' });
+      w.click('#btnDownload'); await tick();
+      w.calls[0].resolve({ code: 200, body: { b: String(k.b), address: k.m.addr } }); await tick();
+      w.click('#btnMerge');
+      w.$('#ksPw').value = 'correct horse 1'; w.$('#ksPw2').value = 'correct horse 1';
+      w.on['#btnKs'].call(w.$('#btnKs')); await tick();
+      vm.runInContext('ORDER_GEN++;', w.ctx);   // same order id, steps drawn again · 单号没变，六步重画了
+      pend[0] && pend[0].res({ version: 3 }); await tick(); await tick();
+      ok(pend.length === 1 && w.dls.length === 0 && w.$('#ksGuide').open !== true, '4 attack (review 4, A3): the steps were drawn again while the wallet file was being locked → no download, and the new page is left alone · 上锁的时候六步重画了 → 不下载、不动新画出来的那一页');
+    }
+    // review 4: a collect reply that comes back after the steps were drawn again is dropped (same order id too) · 第四轮：六步重画以后才回来的取货回包不认（单号没变也一样）
+    {
+      const w = make(), k = setup(w);
+      w.click('#btnDownload'); await tick();
+      vm.runInContext('ORDER_GEN++;', w.ctx);
+      w.calls[0].resolve({ code: 200, body: { b: String(k.b), address: k.m.addr } }); await tick();
+      ok(w.ctx.orderState.b === undefined && w.$('#btnMerge').disabled === true && !w.lines.some((l) => l.text === 'GOTB'), '4 attack (review 4): a collect reply from before the steps were drawn again does not fill in the new page · 六步重画以前发的取货回包，不填进新画出来的那一页');
+    }
+    // review 4 (A2): a receipt reply that comes back after switching orders does not grey out that order's button or mark it settled · 第四轮 A2：换单以后才回来的签收回包，不关那张单的按钮、不标「已签收」
+    for (const sw of [true, false]) {
+      const w = make(), k = setup(w);
+      w.click('#btnDownload'); await tick();
+      w.calls[0].resolve({ code: 200, body: { b: String(k.b), address: k.m.addr } }); await tick();
+      w.click('#btnMerge');
+      w.click('#btnReceipt'); await tick();
+      const post = w.calls.find((c) => /\/receipt$/.test(c.url));
+      if (sw) { vm.runInContext("ORDER_GEN++; orderState.orderId = 'ffff0000';", w.ctx); w.$('#btnReceipt').disabled = false; }
+      const s0 = w.status.length;
+      if (post) post.resolve({ code: 200, body: { ok: true } }); await tick(); await tick();
+      if (sw) ok(!!post && w.$('#btnReceipt').disabled === false && !w.status.slice(s0).includes('settled') && !w.lines.some((l) => l.text === 'RECEIPTOK'), '4 attack (review 4, A2): a receipt reply that comes back after switching orders leaves the new order alone (button stays, not "settled") · 换单以后才回来的签收回包：新那张单的按钮不动、不标已签收');
+      else ok(!!post && w.$('#btnReceipt').disabled === true && w.status[w.status.length - 1] === 'settled' && w.lines.some((l) => l.text === 'RECEIPTOK'), '4 normal: the same order → receipt accepted, button off, "settled" · 同一张单 → 收条交上、按钮关掉、标已签收');
+    }
   });
 
   // ── 4b · Personal orders: progress and resume replies act on one order at a time · 个人靓号：查进度、续单的回包只认这一张单 ──
@@ -513,6 +584,167 @@ const APP = rd('js/app.js');
     }
   });
 
+  // ── 4c · Personal orders: every step that waits acts on the order it started with · 个人靓号：每一个要等的步骤都只认开始时那张单 ──
+  //   Review 4 (A1 / A2): using a voucher, placing the order, uploading the share and the simulated payment wrote into whatever order was open when the reply came back.
+  //   第四轮 A1 / A2：用券、下单、交份额、模拟付款的回包，回来时开着哪张单就写进哪张单
+  console.log('== 4c · personal orders: every waiting step · 个人靓号：每一个要等的步骤');
+  await section('4c', async () => {
+    const tick = () => new Promise((r) => setTimeout(r, 0));
+    const escDecl = APP.split('\n').find((l) => l.startsWith('function esc(s)'));
+    const mk = () => {
+      const el = {}, on = {}, calls = [], rec = { lines: [], status: [], vch: [], remember: [], orders: 0, upload: 0, pay: 0, intervals: 0, errs: [] };
+      const $ = (id) => el[id] || (el[id] = { id, hidden: true, disabled: false, value: '', textContent: '', className: '', innerHTML: '', dataset: {}, parentElement: { hidden: false }, focus: () => {}, addEventListener: (e, fn) => { on[id] = fn; } });
+      const ctx = { $, ORDER_GEN: 1, RESUME_GEN: 0, orderState: { orderId: null, challenge: null, sec: null, poll: null }, IS_LIVE: false, CATALOG: {}, HEALTH_OK: true, payNeedsLook: false,
+        REF_RE: /^[2-9A-HJ-NP-Z]{6}$/, REF_KEY: 'ref', refNorm: (x) => String(x || '').trim().toUpperCase(), localStorage: { setItem: () => {} },
+        api: (url, method, body) => new Promise((resolve) => calls.push({ url, method, body, resolve })),
+        sync: async () => {}, rememberOrder: (id) => rec.remember.push(id), renderOrders: () => { rec.orders++; },
+        uploadShare: async () => { rec.upload++; return true; }, showPayment: async () => { rec.pay++; return true; },
+        outLine: (o, t) => rec.lines.push(t), showApiError: (o, r) => rec.errs.push(r.code), setStatus: (x) => rec.status.push(x),
+        vchShow: (v) => rec.vch.push(v), isZero: (x) => x != null && x !== '' && Number(x) === 0, L: (o, k) => o[k],
+        mintView: () => {}, pollStatus: () => {}, setInterval: () => { rec.intervals++; return 1; },
+        f: { needGen: 'NEEDGEN', payPickNow: 'PICK', refBad: 'REFBAD', created: 'CREATED', keepId: () => 'KEEP', signing: 'SIGNING', shareOk: 'SHAREOK', paying: 'PAYING', payingLive: 'PL', watching: 'WATCHING' } };
+      vm.createContext(ctx);
+      return { ctx, $, on, calls, rec, click: (id) => (!$(id).disabled && on[id] ? on[id]() : null) };
+    };
+    const toB = "ORDER_GEN++; orderState = { orderId: 'bbbbbbbb', challenge: 'CH-B', sec: orderState.sec, poll: null };";   // he resumed another order meanwhile · 这期间他续开了另一张单
+    // A1 · voucher · 用券
+    {
+      const code = slice(APP, '  async function vchGo() {', "  $('#vchAsk').addEventListener('click'");
+      for (const kind of ['switch', 'switch-error', 'same']) {
+        const w = mk(); vm.runInContext(code, w.ctx);
+        w.ctx.orderState.orderId = 'aaaaaaaa'; w.$('#vchCode').value = 'VCH0X-ABCD';
+        const p = vm.runInContext('vchGo()', w.ctx); await tick();
+        if (kind !== 'same') vm.runInContext(toB, w.ctx);
+        w.calls[0].resolve(kind === 'switch-error' ? { code: 400, body: { error: 'NOPE' } } : { code: 200, body: { ok: true, covered: false, amountUsdt: '5', hint: 'ABCD', creditUsdt: '5' } }); await p;
+        if (kind === 'same') ok(w.calls[0].url === '/api/orders/aaaaaaaa/voucher' && w.rec.vch.length === 1 && w.rec.vch[0].due === '5', '4c normal: a voucher on the same order → the amount still due becomes what the platform says · 同一张单用券 → 还要付的金额按平台说的改');
+        else ok(w.rec.vch.length === 0 && w.$('#vchMsg').textContent === '', '4c attack (review 4, A1): a voucher reply' + (kind === 'switch-error' ? ' (an error)' : '') + ' that comes back after switching to another order does not touch that order (no new amount, no message) · 换单以后才回来的用券回包' + (kind === 'switch-error' ? '（报错的那种）' : '') + '，不碰现在这张单（不改金额、不写提示）');
+      }
+    }
+    // A2 · placing the order · 下单
+    {
+      const code = slice(APP, "  $('#btnCreate').addEventListener('click', async () => {", '  // ── [3/6] 付款');
+      const SEC = { chain: 'evm', prefix: '0000', suffix: '', s: 1n };
+      for (const sw of [true, false]) {
+        const w = mk(); vm.runInContext(code, w.ctx);
+        w.ctx.orderState.sec = SEC;
+        const p = w.click('#btnCreate'); await tick();
+        if (sw) vm.runInContext(toB, w.ctx);
+        w.calls[0].resolve({ code: 200, body: { orderId: 'aaaaaaaa', challenge: 'CH-A' } }); await p; await tick();
+        if (sw) ok(w.ctx.orderState.orderId === 'bbbbbbbb' && w.ctx.orderState.challenge === 'CH-B' && w.rec.upload === 0 && w.rec.pay === 0 && w.rec.remember.join() === 'aaaaaaaa',
+          '4c attack (review 4, A2): an order placed before switching to another order does not take over that order (number and challenge stay), no share upload; it is still kept in "my orders" · 换单前下的单回来，不改现在这张单的单号和挑战串、不交份额；照样记进「我的订单」');
+        else ok(w.ctx.orderState.orderId === 'aaaaaaaa' && w.ctx.orderState.challenge === 'CH-A' && w.rec.upload === 1 && w.rec.pay === 1, '4c normal: the order comes back on the same page → share uploaded, payment shown · 同一页 → 交份额、显示收款');
+      }
+      {
+        const w = mk(); vm.runInContext(code, w.ctx); const rels = [];
+        w.ctx.CATALOG = null; w.ctx.sync = () => new Promise((r) => rels.push(r)); w.ctx.orderState.sec = SEC;
+        w.click('#btnCreate'); w.click('#btnCreate');
+        rels.forEach((r) => r()); await tick(); await tick();
+        ok(w.calls.filter((c) => c.url === '/api/orders').length === 1, '4c (review 4): a double click on "order" while the catalog is still being fetched places one order, not two · 目录还在拿的时候连点两下「下单」，只下一张单');
+      }
+      {
+        const w = mk(); vm.runInContext(code, w.ctx); const rels = [];
+        w.ctx.CATALOG = null; w.ctx.sync = () => new Promise((r) => rels.push(r)); w.ctx.orderState.sec = SEC;
+        w.click('#btnCreate'); await tick();
+        vm.runInContext(toB, w.ctx);
+        rels.forEach((r) => r()); await tick(); await tick();
+        ok(rels.length === 1 && w.calls.filter((c) => c.url === '/api/orders').length === 0 && w.ctx.orderState.orderId === 'bbbbbbbb', '4c attack (review 4, A2): another order was opened while the catalog was still being fetched → no order is placed with the old key · 目录还在拿的时候续开了别的单 → 不再拿旧钥匙下单');
+      }
+    }
+    // A2 · reading the key file back (after a page refresh): the order switched while the file was being read · 选回备份文件（刷新过页面）：读文件的时候换了单
+    {
+      const code = slice(APP, "  $('#secFile').addEventListener('change', (e) => {", '  // ── [2/6]');
+      const SA = { chain: 'evm', prefix: 'aaaa', suffix: '', s: 1n };
+      for (const sw of [true, false]) {
+        const w = mk(), readers = [];
+        Object.assign(w.ctx, { PICKED: 'evm', FileReader: function () { readers.push(this); this.readAsText = () => {}; }, KC: () => ({ readSecretJson: () => SA, signChallenge: () => ({ A: 'A' }) }) });
+        Object.assign(w.ctx.f, { fileOk: () => 'FILEOK', secBack: 'SECBACK', fileBad: 'FILEBAD' });
+        vm.runInContext(code, w.ctx);
+        w.ctx.orderState = { orderId: 'aaaaaaaa', challenge: 'CH-A', sec: null, poll: null, pendingShare: true };
+        w.on['#secFile']({ target: { files: [{}] } });
+        if (sw) vm.runInContext("ORDER_GEN++; orderState = { orderId: 'bbbbbbbb', challenge: 'CH-B', sec: null, poll: null, pendingShare: true };", w.ctx);
+        if (readers[0]) { readers[0].result = '{}'; readers[0].onload(); } await tick();
+        if (sw) ok(readers.length === 1 && w.ctx.orderState.sec === null && w.rec.upload === 0 && !w.rec.lines.includes('SECBACK'), '4c attack (review 4, A2): a key file that finishes reading after another order was opened is not loaded into that order (no key, no share upload) · 读完的时候已经换了单 → 这把钥匙不装进那张单（不装钥匙、不交份额）');
+        else ok(w.ctx.orderState.sec === SA && w.rec.upload === 1 && w.rec.lines.includes('SECBACK'), '4c normal: the same order → the key is loaded and the pending share is uploaded · 同一张单 → 钥匙装回来，没交的份额接着交');
+      }
+    }
+    // A2 · uploading the share · 交份额
+    {
+      const code = slice(APP, '  async function uploadShare(out) {', '  // 显示收款地址');
+      const K = keyCtx();
+      for (const sw of [true, false]) {
+        const w = mk(); w.ctx.KC = () => K.KeyCore; vm.runInContext(code, w.ctx);
+        w.ctx.orderState = { orderId: 'aaaaaaaa', challenge: 'CH-A', sec: { s: rnd(), chain: 'evm' }, poll: null };
+        const p = vm.runInContext('uploadShare({})', w.ctx); await tick();
+        if (sw) vm.runInContext(toB, w.ctx);
+        w.calls[0].resolve({ code: 200, body: { ok: true } }); const r = await p;
+        if (sw) ok(r === false && !w.rec.status.includes('share_uploaded') && !w.rec.lines.includes('SHAREOK'), '4c attack (review 4, A2): a share upload that finishes after switching orders writes nothing into the new order (not "share uploaded") · 换单以后才交完的份额，不往新那张单写任何东西（不标已交份额）');
+        else ok(r === true && w.rec.status.includes('share_uploaded') && w.calls[0].url === '/api/orders/aaaaaaaa/share', '4c normal: the same order → "share uploaded" · 同一张单 → 标已交份额');
+      }
+    }
+    // simulated payment (test mode) · 模拟付款（测试模式）
+    {
+      const code = slice(APP, "  $('#btnPay').addEventListener('click', async () => {", '  // ── [5/6]');
+      for (const sw of [true, false]) {
+        const w = mk(); vm.runInContext(code, w.ctx);
+        w.ctx.orderState.orderId = 'aaaaaaaa';
+        const p = w.click('#btnPay'); await tick();
+        if (sw) vm.runInContext(toB, w.ctx);
+        w.calls[0].resolve({ code: 200, body: {} }); await p;
+        if (sw) ok(w.rec.intervals === 0 && !w.ctx.orderState.poll, '4c attack (review 4): a simulated-payment reply that comes back after switching orders does not start progress polling there · 换单以后才回来的模拟付款回包，不给新那张单开进度轮询');
+        else ok(w.rec.intervals === 1, '4c normal: the same order → progress polling starts · 同一张单 → 开始问进度');
+      }
+    }
+    // "my orders": the older of two refreshes does not overwrite the newer list · 「我的订单」：两次重拉，旧的不盖新的
+    {
+      const code = escDecl + '\n' + slice(APP, ['let ORDERS_SEQ = 0;\nasync function renderOrders() {', 'async function renderOrders() {'], '/* ---- 续单入口');
+      const w = mk(); Object.assign(w.ctx, { myOrders: () => ['aaaaaaaa'], forgetOrder: () => {}, t: (k) => k, statusLabel: (x) => x, STATUS_CLASS: {}, ORDERS_DOWN: false });
+      vm.runInContext(code, w.ctx);
+      const p1 = vm.runInContext('renderOrders()', w.ctx), p2 = vm.runInContext('renderOrders()', w.ctx); await tick();
+      w.calls[1].resolve({ code: 200, body: { id: 'aaaaaaaa', pattern: 'p', status: 'paid', amountUsdt: 1 } }); await p2;
+      w.calls[0].resolve({ code: 200, body: { id: 'aaaaaaaa', pattern: 'p', status: 'created', amountUsdt: 1 } }); await p1;
+      ok(/>paid</.test(w.$('#ordersBody').innerHTML) && !/>created</.test(w.$('#ordersBody').innerHTML), '4c (review 4): of two "my orders" refreshes, the older one coming back late does not overwrite the newer list · 「我的订单」两次重拉，先发的晚回来不盖后发的');
+    }
+    // resuming twice: the overtaken one does not wipe the later one's message · 连着续两张单：被超过的那一次不擦掉后来那一次的提示
+    {
+      const code = slice(APP, 'async function resumeFrom(id, msgEl) {', "document.addEventListener('click'");
+      const w = mk(), pend = [];
+      w.ctx.RESUME = (id) => { if (!/^[0-9a-f]{8}$/.test(id)) return Promise.resolve('BADID'); w.ctx.RESUME_GEN++; return new Promise((r) => pend.push(r)); };
+      vm.runInContext(code, w.ctx); w.ctx.msg = { textContent: '', className: '' };
+      await vm.runInContext("resumeFrom('xyz', msg)", w.ctx);
+      ok(w.ctx.msg.textContent === 'BADID', '4c normal: a resume that is not overtaken still shows its message · 没被超过的续单照样显示它的提示');
+      const pa = vm.runInContext("resumeFrom('aaaaaaaa', msg)", w.ctx), pb = vm.runInContext("resumeFrom('bbbbbbbb', msg)", w.ctx);
+      pend[1]('NO SUCH ORDER B'); await pb; pend[0](null); await pa;
+      ok(w.ctx.msg.textContent === 'NO SUCH ORDER B', '4c (review 4): of two resumes, the overtaken one does not wipe the message of the later one · 连着续两张单，被超过的那一次不擦掉后来那一次的提示');
+    }
+  });
+
+  // ── 4d · Code check over the whole six-step flow: every wait on the network is followed by the order check ──
+  //   4d · 读源码：六步里每一处等网络的地方，后面紧跟着「还是这一代、这张单」那一核（上面逐个真跑；这一条防以后新加的处理器忘了核）
+  console.log('== 4d · every network wait re-checks the order (code check) · 每一处等网络都再核一次（读源码）');
+  await section('4d', async () => {
+    const CHECK = /ORDER_GEN|RESUME_GEN|DL_GEN|PICK_GEN|QUOTE_GEN|same\(\)|mine\(\)|still\(\)/;
+    // The health check is about the whole platform, not one order: what follows it (liveStep3) reads the page as it is when the reply arrives, so it is named, not checked.
+    // 平台在不在线那一问不属于哪一张单：回来以后做的事（liveStep3）读的是那一刻页面上的样子 —— 点名列出，不算漏核
+    const EXEMPT = [/await api\('\/api\/health'\)/];
+    const scan = (src, start, end, isWait) => {
+      const L = slice(src, start, end).split('\n'), waits = [], bad = [], skipped = [];
+      L.forEach((l, i) => {
+        if (/^\s*\/\//.test(l) || !isWait(l)) return;
+        if (EXEMPT.some((r) => r.test(l))) { skipped.push(l.trim().slice(0, 80)); return; }
+        waits.push(i);
+        const next = L.slice(i + 1).filter((x) => x.trim() && !/^\s*\/\//.test(x)).slice(0, 3).join('\n');
+        if (!CHECK.test(l.slice(Math.max(0, l.search(/await api\(|\.then\(|\.keystore\(/)))) && !CHECK.test(next)) bad.push(l.trim().slice(0, 100));
+      });
+      return { waits, bad, skipped };
+    };
+    const a = scan(APP, 'function wireOrderFlow(f) {', '\n}\n\n/* ---- 我的订单', (l) => /await api\(|\bapi\([^\n]*\)\.then\(|\.keystore\(/.test(l));
+    console.log('  · 4d not about one order, so not checked · 不属于哪一张单、不核: ' + (a.skipped.length ? a.skipped.join(' | ') : 'none · 无'));
+    ok(a.waits.length >= 9 && a.bad.length === 0 && a.skipped.length <= 1, '4d personal orders: ' + a.waits.length + ' network waits in the six steps, ' + a.bad.length + ' without the order check' + (a.bad.length ? ': ' + a.bad.join(' | ') : '') + ' · 个人靓号六步里 ' + a.waits.length + ' 处等网络，没核的 ' + a.bad.length + ' 处');
+    const C2 = rd('js/c2app.js');
+    const c = scan(C2, '  function api(path, method, body) {', '  // ── 开页', (l) => /\bapi\('[^\n]*\.then\(function/.test(l));
+    ok(c.waits.length >= 6 && c.bad.length === 0, '4d contract orders: ' + c.waits.length + ' replies, ' + c.bad.length + ' without the order check' + (c.bad.length ? ': ' + c.bad.join(' | ') : '') + ' · 合约单 ' + c.waits.length + ' 处回包，没核的 ' + c.bad.length + ' 处');
+  });
+
   // ── 5 · Wording matches what the code does · 说法跟代码一致 ─────────────────────────────────────────
   console.log('== 5 · wording · 说法');
   await section('5', async () => {
@@ -549,11 +781,18 @@ const APP = rd('js/app.js');
       [/(?<!按计划)每小时(巡检|一次|再拿|自动|下载)|(?<!terjadwal |jadwal )setiap jam(, mesin| dan| dicek|'|\.)/, 'hourly checks without "scheduled" · 每小时却不说按计划'],
       [/服务器不知道这两个地址是一起查的/, 'the server does not know the two addresses were checked together · 说服务器不知道两个地址一起查'],
       [/(?<!on an |a scheduled )(?:every hour|hourly tamper)/i, 'hourly checks without "scheduled" (en) · 英文每小时却不说按计划'],
+      [/数学上做不到|cannot do it, mathematically|secara matematis, itu tidak mungkin/, 'the FAQ says "mathematically impossible" without its conditions (review 4) · FAQ 说「数学上做不到」却不说前提（第四轮）'],
     ];
     const here = (f) => [path.join(ROOT, f), path.join(ROOT, '..', f)].find((p) => fs.existsSync(p));
-    const files = ['js/app.js', 'index.html', 'js/freeapp.js', 'free.html', 'js/c2app.js', 'contract.html', 'token.html', 'js/fcheck.js', 'faq.html',
-      '.github/workflows/noleak.yml', '.github/workflows/tamper-check.yml', '.github/workflows/fonts.yml'].map(here).filter(Boolean);
-    ok(files.length >= 8, '5b (gauge) found the page files to read: ' + files.length + ' · 量具自证：找得到要读的页面文件');
+    const want = ['js/app.js', 'index.html', 'js/freeapp.js', 'free.html', 'js/c2app.js', 'contract.html', 'token.html', 'js/fcheck.js', 'faq.html',
+      '.github/workflows/noleak.yml', '.github/workflows/tamper-check.yml', '.github/workflows/fonts.yml'];
+    // Review 4: files that were not here used to be skipped without a word. The public repository has no FAQ page (the FAQ is checked in the tree it lives in);
+    // the internal tree keeps the workflows elsewhere. Anything else missing fails, and what was not read is named. · 第四轮：原来找不到的文件悄悄跳过。
+    // 公开仓库里没有 FAQ 页（FAQ 在它在的那一份里查），内部那一份的 workflow 放在别处；除此之外少了就算不过；没读的点名说出来
+    const OPTIONAL = ['faq.html', '.github/workflows/noleak.yml', '.github/workflows/tamper-check.yml', '.github/workflows/fonts.yml'];
+    const files = want.map(here).filter(Boolean), missed = want.filter((f) => !here(f));
+    console.log('  · 5b not in this tree, so not read · 这一份里没有、所以没读: ' + (missed.length ? missed.join(', ') : 'none · 无'));
+    ok(files.length >= 8 && missed.every((f) => OPTIONAL.includes(f)), '5b (gauge) found the page files to read: ' + files.length + (missed.length ? ' (not in this tree: ' + missed.length + ', named above)' : '') + ' · 量具自证：找得到要读的页面文件');
     for (const f of files) {
       const s = fs.readFileSync(f, 'utf8'), hits = banned.filter(([re]) => re.test(s)).map(([, m]) => m);
       ok(hits.length === 0, '5b ' + path.relative(path.join(ROOT, '..'), f) + ': ' + (hits.length ? hits.join(' / ') : 'none of the overstated claims · 没有说过头的话'));
@@ -611,8 +850,140 @@ const APP = rd('js/app.js');
     ok(/hostOk\(c\.domain\) \?/.test(js) && /handleOk\(c\.x\.handle, 15\) \?/.test(js) && /handleOk\(c\.tg\.channel, 32\) \?/.test(js), '6 the personal card uses those checks for its links (code check) · 个人名片的链接走这些检查（读源码）');
     ok(/c\.status === 'live' && \/\^\[a-z0-9_\]\{3,40\}\$\/\.test\(n\)/.test(js) && /encodeURIComponent\(c\.name\) \+ '\.png/.test(js), '6 the badge HTML (pasted into the owner\'s own site) is only offered for a well-formed name; the picture link encodes the name (code check) · 要贴进他自己网站的那段 HTML 只给样子对的名字；存图链接把名字编码（读源码）');
     ok(/let state = [^\n]*fetchedAt = 0/.test(js) && /const FRESH_MS = /.test(js) && /async function copy\(text, btn, isAddr\)/.test(js) && /copy\(a\.address, cb, true\)/.test(js)
-      && /data = tidy\(j\)/.test(js) && /fetchedAt = Date\.now\(\)/.test(js) && /if \(NAME\) loadCard\(\);/.test(js), '6 (review 3, U3/S5) the re-read is wired in: one loader that checks what it gets and stamps the time, address buttons ask for the re-check (code check) · 重新读名片接上了：同一个读取口、读到就核、记时间，复制地址的按钮要求先核（读源码）');
-    ok(/isAddr && NAME && Date\.now\(\) - fetchedAt > FRESH_MS/.test(js) && /visibilitychange'[^\n]*loadCard\(\)/.test(js), '6 (review 3, U3/S5) the card is read again when the page comes back after a while and before copying an address (code check) · 隔一阵回来、复制地址之前都重新读名片（读源码）');
+      && /(?:data|d) = tidy\(j\)/.test(js) && /fetchedAt = Date\.now\(\)/.test(js) && /if \(NAME\) loadCard\(\);/.test(js), '6 (review 3, U3/S5) the re-read is wired in: one loader that checks what it gets and stamps the time, address buttons ask for the re-check (code check) · 重新读名片接上了：同一个读取口、读到就核、记时间，复制地址的按钮要求先核（读源码）');
+    ok(/NAME && Date\.now\(\) - fetchedAt > FRESH_MS/.test(js) && /visibilitychange'[^\n]*loadCard\(\)/.test(js), '6 (review 3, U3/S5) the card is read again when the page comes back after a while and before copying an address (code check; 6b runs it) · 隔一阵回来、复制地址之前都重新读名片（读源码；6b 真跑）');
+  });
+
+  // ── 6b · Payment card page, run for real: copy, QR and compare all check the card at the moment of use ──
+  //   Review 4 (A5): the QR code and the compare box used whatever card was on screen (no staleness check), and two re-reads could race.
+  //   第四轮 A5：二维码、核对框用的是屏幕上那份（不管旧不旧），两次重读会互相盖。这里把整页脚本放进假浏览器里真跑：假时钟、假网络（回包由测试决定先后）、假剪贴板
+  console.log('== 6b · payment card page, run for real · 收款名片页（真跑）');
+  await section('6b', async () => {
+    const CARD = [path.join(ROOT, 'card.html'), path.join(ROOT, '..', 'card.html')].find((p) => fs.existsSync(p));
+    if (!CARD) throw new Error('card.html not found next to ' + ROOT);
+    const js = [...fs.readFileSync(CARD, 'utf8').matchAll(/<script>([\s\S]*?)<\/script>/g)].map((m) => m[1]).pop();
+    const tick = async () => { for (let i = 0; i < 8; i++) await new Promise((r) => setImmediate(r)); };
+    const T0 = Date.UTC(2026, 10, 18, 0, 0, 0), MIN = 60e3;
+    const A1 = '0x00000000' + 'ab'.repeat(13) + 'c0ffee', A2 = '0x11111111' + 'cd'.repeat(13) + 'beef01';
+    const card = (o) => Object.assign({ name: 'alice', status: 'live', tier: 'blue', days: 30, since: T0 - 30 * 864e5, expiresAt: T0 + 30 * 864e5, addresses: [{ chain: 'evm', address: A1 }, { chain: 'evm', address: A2 }] }, o);
+    const boot = async (first) => {
+      let now = T0;
+      class FD extends Date { constructor(...a) { if (a.length) super(...a); else super(now); } static now() { return now; } }
+      let root;
+      class E {
+        constructor(tag) { this.tagName = tag; this.kids = []; this.up = null; this.own = ''; this.className = ''; this.dataset = {}; this.attrs = {}; this.on = {}; this.style = {}; this.innerHTML = ''; this.classList = { toggle() {}, add() {}, remove() {} }; }
+        get textContent() { return this.own + this.kids.map((k) => (typeof k === 'string' ? k : k.textContent)).join(''); }
+        set textContent(v) { this.kids.forEach((k) => { if (typeof k === 'object') k.up = null; }); this.kids = []; this.own = String(v); this.innerHTML = ''; }
+        append(...xs) { for (const x of xs) { if (x && typeof x === 'object') { if (x.up) x.up.kids = x.up.kids.filter((y) => y !== x); x.up = this; } this.kids.push(x); } }
+        get lastChild() { return this.kids[this.kids.length - 1]; }
+        setAttribute(k, v) { this.attrs[k] = String(v); }
+        addEventListener(e, fn) { (this.on[e] = this.on[e] || []).push(fn); }
+        insertAdjacentHTML(w, h) { this.innerHTML += h; }
+        get isConnected() { let n = this; while (n.up) n = n.up; return n === root; }
+        fire(e, ev) { return (this.on[e] || []).map((fn) => fn(ev || { preventDefault() {} })); }
+        all() { const out = []; const walk = (n) => n.kids.forEach((k) => { if (typeof k === 'object') { out.push(k); walk(k); } }); walk(this); return out; }
+      }
+      root = new E('body');
+      const ids = {}; for (const id of ['#app', '#ttl', '#foot', '#utcClock']) { ids[id] = new E('div'); root.append(ids[id]); }
+      const docOn = {}, winOn = {}, fetches = [], clips = [], intervals = [], timeouts = [];
+      const document = { hidden: false, title: '', documentElement: {}, querySelector: (q) => ids[q] || null,
+        querySelectorAll: (q) => (q === '[data-copy]' ? root.all().filter((e) => 'copy' in e.dataset) : []),
+        createElement: (t) => new E(t), createTextNode: (t) => String(t), addEventListener: (e, fn) => { docOn[e] = fn; } };
+      const ctx = { document, window: { addEventListener: (e, fn) => { winOn[e] = fn; } }, location: { pathname: '/@alice', search: '', href: '' }, URLSearchParams,
+        localStorage: { getItem: () => 'en', setItem() {} }, navigator: { clipboard: { writeText: (t) => { clips.push(t); return Promise.resolve(); } } },
+        fetch: (url) => new Promise((resolve) => fetches.push({ url, answer: (status, body) => resolve({ status, ok: status >= 200 && status < 300, json: async () => body }) })),
+        setInterval: (fn, ms) => intervals.push({ fn, ms }), setTimeout: (fn, ms) => timeouts.push({ fn, ms }), clearTimeout() {}, clearInterval() {},
+        qrcode: () => ({ addData() {}, make() {}, createSvgTag: () => '<svg></svg>' }), Date: FD };
+      vm.createContext(ctx); vm.runInContext(js, ctx, { filename: 'card.html' });
+      if (fetches[0]) fetches[0].answer(200, first); await tick();
+      const app = ids['#app'];
+      const box = (a) => app.all().find((e) => e.kids.some((k) => k && k.dataset && k.dataset.addr === a));
+      const btn = (a, i) => { const b = box(a); const row = b && b.kids.find((k) => k.className === 'btns'); return row ? row.kids[i] : null; };
+      const form = () => app.all().find((e) => e.tagName === 'form' && e.all().some((k) => k.className === 'inp'));
+      const snipBtn = () => { const b = app.all().find((e) => e.kids.some((k) => k && k.className === 'snip')); const row = b && b.kids.find((k) => k.className === 'btns'); return row ? row.kids[0] : null; };
+      return { fetches, clips, intervals, timeouts, app, box, btn, form, snipBtn, docOn, winOn, document, set: (t) => { now = t; },
+        shows: (a) => !!box(a), qrOpen: (a) => { const b = box(a); return !!b && b.kids.some((k) => k.className === 'qr'); },
+        res: () => { const r = app.all().find((e) => /^res/.test(e.className)); return r ? r.textContent : ''; },
+        compare: (v) => { const f = form(); f.all().find((k) => k.className === 'inp').value = v; f.fire('submit'); } };
+    };
+    const revoked = { name: 'alice', status: 'revoked', tier: 'blue' };
+    // normal: a fresh card · 正常：刚读的名片
+    {
+      const P = await boot(card());
+      ok(P.fetches.length === 1 && P.shows(A1) && P.shows(A2) && !!P.btn(A1, 0) && !!P.form(), '6b (setup) the page drew both addresses and the compare box from the first read · 量具自证：第一次读完，两个地址和核对框都画出来了');
+      P.btn(A1, 0).fire('click');
+      const inClick = P.clips.length === 1 && P.clips[0] === A1;
+      await tick();
+      ok(inClick && P.fetches.length === 1 && P.btn(A1, 0).textContent === '✓ Copied', '6b normal: a fresh card copies the address inside the click itself (no waiting first) and says copied · 刚读的名片：在点的那一下里就复制（不先等），按钮显示复制好了');
+      P.btn(A1, 1).fire('click'); await tick();
+      ok(P.qrOpen(A1) && P.fetches.length === 1, '6b normal: the QR code opens on a fresh card · 刚读的名片：二维码照样打开');
+      P.compare(A1); await tick();
+      ok(/^✅/.test(P.res()), '6b normal: comparing a verified address says it is the one · 核对认证过的地址 → 说就是这个');
+    }
+    {
+      const P = await boot(card({ tier: 'yellow' }));
+      const sb = P.snipBtn();
+      if (sb) sb.fire('click'); await tick();
+      P.timeouts.filter((t) => t.ms === 1800).forEach((t) => t.fn());
+      ok(!!sb && /^<a href="https:\/\/0x000000000\.com\/@alice">/.test(P.clips[0] || '') && sb.textContent === 'Copy code', '6b normal: the badge code is copied and its button goes back to "Copy code" (not "Copy address") · 徽章代码照样复制，按钮回到「复制代码」（不是「复制地址」）');
+      const Q = await boot(card({ tier: 'yellow' }));
+      Q.set(T0 + 6 * MIN); const old = Q.snipBtn(); if (old) old.fire('click'); await tick();
+      if (Q.fetches[1]) Q.fetches[1].answer(200, card({ tier: 'yellow' })); await tick();
+      const now = Q.snipBtn();
+      ok(Q.fetches.length === 2 && /^<a href/.test(Q.clips[0] || '') && !!now && now !== old && now.textContent === '✓ Copied', '6b normal (review 4): copying the badge code on a stale card re-reads first, then says "copied" on the button that is on the page now · 名片旧了复制徽章代码：先重读，再在现在页面上的按钮上说复制好了');
+    }
+    // the card expires while the page is open: copy at that moment does nothing · 开着的时候到期：那一刻复制不给
+    {
+      const P = await boot(card({ expiresAt: T0 + MIN }));
+      P.set(T0 + 2 * MIN); const b = P.btn(A1, 0); b.fire('click'); await tick();
+      ok(P.clips.length === 0 && !P.shows(A1) && P.fetches.length === 1, '6b attack (review 4, A5): the card expired a minute ago (read 2 minutes ago, not stale yet) → copy gives nothing and the page turns into "expired" · 一分钟前到期（两分钟前读的，还不算旧）→ 复制不给，页面变成「已过期」');
+    }
+    // stale + QR → re-read → revoked · 名片旧了 + 打开二维码 → 重读 → 已撤销
+    {
+      const P = await boot(card());
+      P.set(T0 + 6 * MIN); P.btn(A1, 1).fire('click'); await tick();
+      const asked = P.fetches.length === 2; if (asked) P.fetches[1].answer(200, revoked); await tick();
+      ok(asked && !P.qrOpen(A1) && !P.shows(A1), '6b attack (review 4, A5): a QR code opened on a card read 6 minutes ago reads it again first; revoked meanwhile → no QR code, the page shows revoked · 6 分钟前读的名片上开二维码 → 先重读；这期间撤销了 → 不给二维码，页面显示已撤销');
+    }
+    // stale + compare → re-read → that address was taken off · 名片旧了 + 核对 → 重读 → 那个地址拿掉了
+    {
+      const P = await boot(card());
+      P.set(T0 + 6 * MIN); P.compare(A2); await tick();
+      const asked = P.fetches.length === 2; if (asked) P.fetches[1].answer(200, card({ addresses: [{ chain: 'evm', address: A1 }] })); await tick();
+      ok(asked && /^✗/.test(P.res()) && !P.shows(A2), '6b attack (review 4, A5): comparing on a card read 6 minutes ago reads it again first; the address was taken off meanwhile → "not a verified address" (not "it is the one") · 6 分钟前读的名片上核对 → 先重读；这期间那个地址拿掉了 → 说「不是认证的地址」（不是「就是这个」）');
+    }
+    // stale + copy → re-read, unchanged → copied, and the button on the page now says so · 名片旧了 + 复制 → 重读没变 → 复制，现在页面上的按钮说复制好了
+    {
+      const P = await boot(card());
+      P.set(T0 + 6 * MIN); P.btn(A1, 0).fire('click'); await tick();
+      const asked = P.fetches.length === 2; if (asked) P.fetches[1].answer(200, card()); await tick();
+      ok(asked && P.clips.join() === A1 && P.btn(A1, 0).textContent === '✓ Copied', '6b normal (review 4): a copy that had to re-read first still copies, and the button that is on the page now says "copied" (it used to be written on the button the re-read had replaced) · 要先重读的复制照样复制，提示写在现在页面上的按钮上（原来写在被重画掉的旧按钮上，看不见）');
+      const Q = await boot(card());
+      Q.set(T0 + 6 * MIN); Q.btn(A2, 0).fire('click'); await tick();
+      if (Q.fetches[1]) Q.fetches[1].answer(200, card({ addresses: [{ chain: 'evm', address: A1 }] })); await tick();
+      ok(Q.fetches.length === 2 && Q.clips.length === 0 && !Q.shows(A2), '6b (review 3, U3) a copy on a stale card whose address was taken off meanwhile gives nothing · 名片旧了、那个地址这期间拿掉了 → 复制不给');
+    }
+    // two triggers at once → one read; the page ends on what the platform said · 同时两个触发 → 只读一次；页面停在平台说的样子
+    {
+      const P = await boot(card());
+      P.set(T0 + 6 * MIN); P.document.hidden = false;
+      if (P.docOn.visibilitychange) P.docOn.visibilitychange(); if (P.winOn.focus) P.winOn.focus(); await tick();
+      const n = P.fetches.length - 1, pend = P.fetches.slice(1);
+      if (pend.length) pend[pend.length - 1].answer(200, revoked); await tick();
+      pend.slice(0, -1).forEach((f) => f.answer(200, card())); await tick();
+      ok(n === 1 && !P.shows(A1), '6b attack (review 4, A5): coming back to the tab fires two events at once → one re-read, not two (with two, the older reply could land last and bring back a revoked card) · 回到这一页同时来两个事件 → 只重读一次（两次的话，先发的晚回来能把撤销的名片又画回去）');
+    }
+    // left open in the foreground: re-read every minute once stale; not while hidden · 一直开在前台：旧了每分钟重读；切到后台不读
+    {
+      const P = await boot(card());
+      const every = P.intervals.filter((t) => t.ms === 60e3);
+      P.set(T0 + 3 * MIN); every.forEach((t) => t.fn()); await tick();
+      const freshNoRead = P.fetches.length === 1;
+      P.document.hidden = true; P.set(T0 + 6 * MIN); every.forEach((t) => t.fn()); await tick();
+      const hiddenNoRead = P.fetches.length === 1;
+      P.document.hidden = false; every.forEach((t) => t.fn()); await tick();
+      ok(every.length >= 1 && freshNoRead && hiddenNoRead && P.fetches.length === 2, '6b (review 4, A5): a page left open in the foreground reads the card again once it is over 5 minutes old (not before, not while in the background) · 一直开在前台：超过 5 分钟就自己重读（不到 5 分钟不读、在后台不读）');
+    }
   });
 
   // ── 7 · Free Generator: the "saved" mark belongs to the result whose wallet file was saved · 免费生成页：「存好了」只属于真存了钱包文件的那一个结果 ──
