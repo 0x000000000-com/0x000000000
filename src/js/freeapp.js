@@ -260,7 +260,12 @@
   }
 
   // ── 状态 ────────────────────────────────────────────────────────────────────────────────────────
-  var CH = 'evm', WH = 'prefix' /* FREEPRE0X_20260928：免费版只钉开头（钉结尾拿掉了） */, R = null, SAVED = false, RUNNING = null, AGAIN = 0;
+  var CH = 'evm', WH = 'prefix' /* FREEPRE0X_20260928：免费版只钉开头（钉结尾拿掉了） */, R = null, RUNNING = null, AGAIN = 0;
+  // SECFIX3_20261118（Codex 第三轮）：「存好了」原来是一个不跟结果绑定的开关 —— 上一把钥匙的钱包文件还在上锁，就能再算出一把新的；
+  //   旧的那份锁完把开关打开，新钥匙就被当成「存好了」（关页面不再提醒、「存好之后」那一块也出来）。现在记的是【存好的是哪一个结果】，
+  //   上锁那几秒里不许再算、不许清掉；锁完发现结果已经换了，就不算数。
+  var SAVED_FOR = null, KS_BUSY = null;
+  function saved() { return !!R && SAVED_FOR === R; }
   var OK = typeof BigInt === 'function' && typeof Worker === 'function' && !!(window.crypto && crypto.getRandomValues) && !!FG && !!KC;
   function pat() { return FG ? FG.norm(CH, WH, $('#patIn').value) : ''; }
   function zeros(addr) { var m = /^0x(0*)/.exec(addr || ''); return m ? m[1].length : 0; }
@@ -328,7 +333,7 @@
     var dots = '…';
     txt('patPrev', t.prev + (CH === 'evm' ? '0x' + (WH === 'prefix' ? body + dots : dots + body) : (WH === 'prefix' ? 'T' + body + dots : 'T' + dots + body)));
     txt('patOdds', t.odds(fmt(FG.expected(CH, WH, p))));
-    $('#btnGo').disabled = !!RUNNING;
+    $('#btnGo').disabled = !!RUNNING || !!KS_BUSY;
   }
   function markAddr(r) {
     var a = r.addr, p = r.pat, i;
@@ -345,7 +350,7 @@
     if (R.chain === 'tron') h += '<div class="dim">' + esc(t.tronTwin(KC.addrOf('evm', R.k))) + '</div>';
     out.innerHTML = h; out.hidden = false;
     $('#ksBox').hidden = false;
-    var ab = $('#afterBox'); ab.hidden = !SAVED;
+    var ab = $('#afterBox'); ab.hidden = !saved();
     var al = t.after.slice(), links = '';
     if (R.chain === 'evm' && zeros(R.addr) >= 5) links += '<li>' + esc(t.toZero(zeros(R.addr))) + ' <a href="https://0x000000000.com/zero#' + esc(R.addr) + '">' + esc(t.toZeroLink) + '</a></li>';
     $('#afterL').innerHTML = '<li>' + esc(al[0]) + '</li><li>' + esc(al[1]) + ' <a href="https://0x000000000.com/">' + esc(t.toVanityLink) + '</a></li>' + links;
@@ -361,11 +366,11 @@
     renderForm();
   }
   function go() {
-    if (!OK || RUNNING) return;
-    if (R && !SAVED) { if (AGAIN < 1) { AGAIN++; var o = $('#genOut'); o.hidden = false; o.insertAdjacentHTML('beforeend', '<div class="warn">' + esc(T().againSure) + '</div>'); return; } }
+    if (!OK || RUNNING || KS_BUSY) return;
+    if (R && !saved()) { if (AGAIN < 1) { AGAIN++; var o = $('#genOut'); o.hidden = false; o.insertAdjacentHTML('beforeend', '<div class="warn">' + esc(T().againSure) + '</div>'); return; } }
     var p = pat(), why = FG.problem(CH, WH, p);
     if (why) { txt('patErr', why[lang] || why.en); return; }
-    R = null; SAVED = false; AGAIN = 0; renderResult();
+    R = null; SAVED_FOR = null; AGAIN = 0; renderResult();
     $('#ksPw').value = ''; $('#ksPw2').value = ''; txt('ksMsg', '');
     var exp = FG.expected(CH, WH, p), started;
     $('#genLive').hidden = false; $('#genLiveNote').hidden = false; txt('genLiveNote', T().liveNote); txt('genLiveTxt', T().warm);
@@ -375,7 +380,7 @@
       started = FG.start({ chain: CH, where: WH, pat: p }, {
         up: function () {},
         rate: function (tried, per) { if (!RUNNING) return; txt('genLiveTxt', T().cores(RUNNING.workers) + ' · ' + T().live(fmt(per), fmt(tried), dur(exp / Math.max(1, per)))); },
-        found: function (r) { RUNNING = null; R = r; SAVED = false; stopRun(); renderResult(); },
+        found: function (r) { RUNNING = null; R = r; SAVED_FOR = null; stopRun(); renderResult(); },
         fail: function (why) { if (why === 'recheck') { var o = $('#genOut'); o.hidden = false; o.innerHTML = '<div class="warn">' + esc(T().failRecheck) + '</div>'; } else stopRun(T().failWorker); }
       });
     } catch (e) { stopRun(e.message); return; }
@@ -390,19 +395,24 @@
     setTimeout(function () { URL.revokeObjectURL(url); }, 4000);
   }
   function saveKs() {
-    if (!R) return;
+    if (!R || KS_BUSY) return;
     var t = T(), msg = $('#ksMsg'), pw = $('#ksPw').value || '', pw2 = $('#ksPw2').value || '';
     if (pw.length < 8) { msg.className = 'step-desc warn'; msg.textContent = t.pwShort; return; }
     if (pw !== pw2) { msg.className = 'step-desc warn'; msg.textContent = t.pwDiff; return; }
     if (!crypto.subtle) { msg.className = 'step-desc warn'; msg.textContent = t.noSubtle; return; }
     var btn = $('#btnKs'); btn.disabled = true; msg.className = 'step-desc';
     var r = R;
-    KC.keystore(r.k, r.addr, r.chain, pw, function (p) { msg.textContent = T().ksWork + Math.round(p * 100) + '%'; }).then(function (ks) {
+    KS_BUSY = r; $('#btnAgain').disabled = true; renderForm();
+    var done = function () { KS_BUSY = null; btn.disabled = false; $('#btnAgain').disabled = false; renderForm(); }, job;
+    try { job = KC.keystore(r.k, r.addr, r.chain, pw, function (p) { if (R === r) msg.textContent = T().ksWork + Math.round(p * 100) + '%'; }); } catch (e) { job = Promise.reject(e); }
+    job.then(function (ks) {
+      done();
+      if (R !== r) return;   // 结果已经换了：这一份不算数，也不下载（不然文件名一样，会跟新钥匙的弄混）
       var name = KC.keystoreName(r.chain);
       dl(name, JSON.stringify(ks, null, 2));
-      msg.className = 'step-desc ok'; msg.textContent = T().ksOk(name, r.chain === 'tron'); btn.disabled = false;
-      SAVED = true; $('#ksGuide').open = true; renderResult();
-    }, function (e) { msg.className = 'step-desc warn'; msg.textContent = T().ksFail + e.message; btn.disabled = false; });
+      msg.className = 'step-desc ok'; msg.textContent = T().ksOk(name, r.chain === 'tron');
+      SAVED_FOR = r; $('#ksGuide').open = true; renderResult();
+    }, function (e) { done(); if (R !== r) return; msg.className = 'step-desc warn'; msg.textContent = T().ksFail + (e && e.message || e); });
   }
 
   // ── 证书图（在这一页里画，不带钥匙）───────────────────────────────────────────────────────────────
@@ -445,9 +455,9 @@
   $('#btnStop').addEventListener('click', function () { stopRun(T().stopped); });
   $('#btnKs').addEventListener('click', saveKs);
   $('#btnCert').addEventListener('click', cert);
-  $('#btnAgain').addEventListener('click', function () { R = null; SAVED = false; AGAIN = 0; $('#genOut').hidden = true; renderResult(); $('#patIn').focus(); });
+  $('#btnAgain').addEventListener('click', function () { if (KS_BUSY) return; R = null; SAVED_FOR = null; AGAIN = 0; $('#genOut').hidden = true; renderResult(); $('#patIn').focus(); });
   window.addEventListener('online', renderNet); window.addEventListener('offline', renderNet);
-  window.addEventListener('beforeunload', function (e) { if (R && !SAVED) { e.preventDefault(); e.returnValue = T().unsaved; return T().unsaved; } });
+  window.addEventListener('beforeunload', function (e) { if (R && !saved()) { e.preventDefault(); e.returnValue = T().unsaved; return T().unsaved; } });
   // 从推荐链接进来的（?ref=）：跟首页记在同一个地方（这个浏览器里），去个人靓号下单时首页自己会带上；地址栏洗干净
   try {
     var q = new URLSearchParams(location.search).get('ref');

@@ -83,7 +83,7 @@ const dict = {
     sentTimes: (n) => '（' + n + ' 次，每隔几秒问一次）',
     sentFailed: '（没发出去：当时没联网）',
     sentTech: '懂技术的人看这里：每一次发了什么，原样列出',
-    sentGhHead: '不信这一页自己说的？GitHub 上有两项检查，在 GitHub 的机器上跑，结果谁都看得见（检查脚本是我们写的，改动都公开留在历史里）：',
+    sentGhHead: '不信这一页自己说的？GitHub 上有两项检查，在 GitHub 的机器上跑，结果谁都看得见（检查脚本是我们写的；它的改动现在都能在公开记录里查到，但代码库归我们管，不是独立档案）：',
     sentGh1: '① 私钥外发检查：每次改这个页面，GitHub 的机器都用真浏览器把 6 步走一遍，逐个核对页面发出去的每一句话。绿色 ✓ = 没有把钥匙发出去。',
     sentGh2: '② 防篡改巡检：GitHub 的机器按计划每小时下载一次网站上的页面（不保证准点），跟公开的那份逐字节比。绿色 ✓ = 最近那一次对得上：网站上的就是公开的那份，没被偷偷改过。',
     sentGhRuns: '看 GitHub 的检查记录 ↗',
@@ -340,7 +340,7 @@ const dict = {
     sentTimes: (n) => ' (' + n + ' times, once every few seconds)',
     sentFailed: ' (not sent: you were offline)',
     sentTech: 'For technical readers: exactly what was sent each time',
-    sentGhHead: 'Rather not take this page at its word? GitHub runs two checks on its own machines and anyone can see the results (we wrote the check scripts; every change to them stays public in the history):',
+    sentGhHead: 'Rather not take this page at its word? GitHub runs two checks on its own machines and anyone can see the results (we wrote the check scripts; their changes can be seen in the public history today, but the repository is ours, not an independent archive):',
     sentGh1: '1. Private-key leak check: every time this page changes, machines at GitHub walk through all 6 steps in a real browser and check every single thing the page sends. Green ✓ = no key was sent.',
     sentGh2: '2. Tamper patrol: on an hourly schedule (not guaranteed to be on time), machines at GitHub download the live page and compare it byte by byte with the published copy. Green ✓ = the latest run matched: the live page is the published one, unchanged.',
     sentGhRuns: 'See the check history on GitHub ↗',
@@ -586,7 +586,7 @@ const dict = {
     sentTimes: (n) => ' (' + n + ' kali, setiap beberapa detik)',
     sentFailed: ' (tidak terkirim: Anda sedang offline)',
     sentTech: 'Untuk pembaca teknis: persis apa yang dikirim setiap kali',
-    sentGhHead: 'Tidak mau percaya begitu saja pada halaman ini? GitHub menjalankan dua pemeriksaan di mesinnya sendiri dan siapa pun bisa melihat hasilnya (skrip pemeriksaannya kami yang menulis; setiap perubahannya tetap publik di riwayat):',
+    sentGhHead: 'Tidak mau percaya begitu saja pada halaman ini? GitHub menjalankan dua pemeriksaan di mesinnya sendiri dan siapa pun bisa melihat hasilnya (skrip pemeriksaannya kami yang menulis; perubahannya saat ini bisa dilihat di riwayat publik, tetapi repositorinya milik kami, bukan arsip independen):',
     sentGh1: '1. Pemeriksaan kebocoran kunci privat: setiap kali halaman ini berubah, mesin GitHub menjalankan keenam langkah di browser sungguhan dan memeriksa setiap hal yang dikirim halaman. Hijau ✓ = tidak ada kunci yang dikirim.',
     sentGh2: '2. Patroli anti-ubah: sesuai jadwal setiap jam (tidak dijamin tepat waktu), mesin GitHub mengunduh halaman live dan membandingkannya byte demi byte dengan salinan yang dipublikasikan. Hijau ✓ = pemeriksaan terakhir cocok: halaman live adalah yang dipublikasikan, tanpa perubahan.',
     sentGhRuns: 'Lihat riwayat pemeriksaan di GitHub ↗',
@@ -1035,6 +1035,9 @@ const REF_FROM = (() => {
   return { code: '', from: '' };
 })();
 let RESUME = null;   // 由 wireOrderFlow 挂上（它要用向导里的闭包）
+// SECFIX3_20261118（Codex 第三轮 U1）：每换一次单（新单 / 续单都会重画六步）ORDER_GEN 加一；付款信息、进度、续单的回包
+//   写共享状态之前都核「还是这一单、这一代」—— 晚回来的旧单回包整个丢掉（原来只有取货那一处核）。
+let ORDER_GEN = 0, RESUME_GEN = 0;
 let KEEPKEY = null;  // 同上：切语言重画之后把内存里的钥匙装回第 1 步（LANGKEEP0X_20260924）
 
 // SENTLOG0X_20260923：这一页发给平台的【每一次】通信都记下来，用人话摆在页面上（「发给平台的全部内容」）。
@@ -1173,6 +1176,7 @@ function mintStop() {
 
 function renderSteps() {
   const f = t('flow');
+  ORDER_GEN++;   // SECFIX3_20261118 U1
   stepsEl.innerHTML = '';
   if (orderState.poll) { clearInterval(orderState.poll); orderState.poll = null; }
   orderState.orderId = null; orderState.challenge = null; orderState.A = null;
@@ -1481,7 +1485,9 @@ function wireOrderFlow(f) {
   }
   // 显示收款地址 + 打开「我转好了」按钮。o = 续单时平台回的这张单（看它用没用过券）；新下的单没有
   async function showPayment(o) {
-    const pay = await api('/api/orders/' + orderState.orderId + '/payment');
+    const gen = ORDER_GEN, oid = orderState.orderId;
+    const pay = await api('/api/orders/' + oid + '/payment');
+    if (gen !== ORDER_GEN || oid !== orderState.orderId) return false;   // SECFIX3_20261118 U1：等回包时换了单 → 这一份不是现在这张单的
     if (pay.code !== 200) return false;
     orderState.address = pay.body.address;
     orderState.pay = pay.body;
@@ -1587,7 +1593,10 @@ function wireOrderFlow(f) {
 
   // ── [3/6] 付款 ──────────────────────────────────────────────────────
   const pollStatus = () => {
-    api('/api/orders/' + orderState.orderId).then((r) => {
+    const gen = ORDER_GEN, oid = orderState.orderId;
+    if (!oid) return;
+    api('/api/orders/' + oid).then((r) => {
+      if (gen !== ORDER_GEN || oid !== orderState.orderId) return;   // SECFIX3_20261118 U1：旧单的进度回包不写进现在这张单
       if (r.code !== 200) return;
       const st = r.body.status;
       // ORDERSTALE0X_20260924：状态一变，最下面「我的订单」跟着重拉 —— 原来要重新打开页面才变
@@ -1674,7 +1683,7 @@ function wireOrderFlow(f) {
     if (!orderState.sec || !orderState.b) return outLine(out, f.needSecForTake, 'err');
     let r;
     try { r = KC().merge(orderState.sec, KC().parseB(orderState.b)); }
-    catch (e) { return outLine(out, e.message, 'err'); }
+    catch (e) { revokeTake(); return outLine(out, e.message, 'err'); }   // SECFIX3_20261118：合成直接出错也收回之前放出来的钱包文件、收条
     if (!r.ok) {
       revokeTake();   // SECFIX2_20261117 ④：合不出来也把之前放出来的钱包文件、收条收回
       outLine(out, f.mergeBad(r.want, r.chain.toUpperCase()), 'err');
@@ -1716,14 +1725,18 @@ function wireOrderFlow(f) {
     if (!crypto.subtle) { msg.className = 'step-desc warn'; msg.textContent = f.noSubtle; return; }
     const btn = this; btn.disabled = true;
     msg.className = 'step-desc';
-    KC().keystore(MERGED.k, MERGED.addr, MERGED.chain, pw, (p) => {
-      msg.textContent = f.ksWork + Math.round(p * 100) + '%';
+    // SECFIX3_20261118（Codex 第三轮 U2）：开始上锁时就固定这一份合成结果；锁完它已经被收回 / 换掉（新交货、合成失败）就不下载
+    const mg = MERGED;
+    KC().keystore(mg.k, mg.addr, mg.chain, pw, (p) => {
+      if (MERGED === mg) msg.textContent = f.ksWork + Math.round(p * 100) + '%';
     }).then((ks) => {
-      const name = KC().keystoreName(MERGED.chain);
+      btn.disabled = false;
+      if (MERGED !== mg) { msg.className = 'step-desc'; msg.textContent = ''; return; }
+      const name = KC().keystoreName(mg.chain);
       dl(name, JSON.stringify(ks, null, 2));
-      msg.className = 'step-desc ok'; msg.textContent = f.ksOk(name, MERGED.chain === 'tron'); btn.disabled = false;
+      msg.className = 'step-desc ok'; msg.textContent = f.ksOk(name, mg.chain === 'tron');
       const g = $('#ksGuide'); if (g) g.open = true;
-    }, (e) => { msg.className = 'step-desc warn'; msg.textContent = f.ksFail + e.message; btn.disabled = false; });
+    }, (e) => { btn.disabled = false; if (MERGED !== mg) return; msg.className = 'step-desc warn'; msg.textContent = f.ksFail + e.message; });
   });
 
   // ── [6/6] 回执：一键签 + 提交 ───────────────────────────────────────
@@ -1775,11 +1788,14 @@ function wireOrderFlow(f) {
   RESUME = async (id, quiet) => {
     id = String(id || '').trim().toLowerCase();
     if (!/^[0-9a-f]{8}$/.test(id)) return f.badId;
+    const rg = ++RESUME_GEN;   // SECFIX3_20261118 U1：连着续两张单，只认最后一次；之后每一步 await 回来都再核一次
     const r = await api('/api/orders/' + id);
+    if (rg !== RESUME_GEN) return null;
     if (r.code !== 200) return (r.body && L(r.body, 'error')) || f.noSuchOrder;
     const o = r.body;
     const keep = orderState.sec;
     renderSteps();
+    const og = ORDER_GEN, still = () => rg === RESUME_GEN && og === ORDER_GEN && orderState.orderId === o.id;
     orderState.orderId = o.id; orderState.challenge = o.challenge;
     orderState.receiptChallenge = o.receiptChallenge || null; orderState.address = o.address || null;
     orderState.sec = keep && keep.chain === o.chain ? keep : null;
@@ -1802,12 +1818,12 @@ function wireOrderFlow(f) {
     const st = o.status;
     setStatus(st);
     if (st === 'created') {                              // 建了单还没交份额
-      if (orderState.sec) { const o2 = $('#out2'); o2.hidden = false; if (await uploadShare(o2)) await showPayment(o); }
+      if (orderState.sec) { const o2 = $('#out2'); o2.hidden = false; if ((await uploadShare(o2)) && still()) await showPayment(o); }
       else orderState.pendingShare = true;
     } else if (st === 'share_uploaded') {
       await showPayment(o);
     } else if (st === 'paid' || st === 'mining') {
-      await showPayment(o); $('#btnPay').disabled = true;
+      await showPayment(o); if (!still()) return null; $('#btnPay').disabled = true;
       const o3 = $('#out3'); o3.hidden = false; outLine(o3, f.watchingAgain, 'dim');
       mintView(st === 'paid' ? 'paid' : 'run', { since: o.paidAt || Date.now() });
       if (!orderState.poll) orderState.poll = setInterval(pollStatus, 2500);
