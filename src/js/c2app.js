@@ -115,9 +115,11 @@
       // SECFIX0X_20261117 ③：交货跟你下单时填的对不对得上（部署地址、模式、图案、create2 的代码哈希）
       reqSame: '跟你下单时填的一样（部署地址、模式、图案）',
       reqDiff: '跟你下单时填的不一样（部署地址、模式、图案里至少一样不对）',
-      reqNone: '这台电脑上没有你下单时的记录，没法替你对照 —— 请自己核对：部署地址、模式、图案是不是你要的',
+      reqNone: '这台电脑上没有你下单时的记录（换了电脑、清过浏览器，或者不是在这个浏览器下的单），拿交货自己对自己不算数 —— 先把你下单时填的再填一遍，跟交货对上了才给部署命令。',
       reqStop: '⛔ 这份交货跟你的订单对不上 —— 别部署。把这一屏截给官方机器人 @OxOOOOOOOOObot。',
-      reqShow: function (d) { return '部署地址 ' + d.deployer + ' · 模式 ' + d.mode + ' · 图案 ' + ((d.prefix || '') + '…' + (d.suffix || '')); },
+      reqGo: '核对',
+      reqBadIn: '填的不完整或者格式不对：部署地址 0x 加 40 位、代码指纹 0x 加 64 位（CREATE2 才要）、图案只能用 0-9、a-f。',
+      reqTypedDiff: '你填的跟这份交货对不上 —— 别部署。再核对一次你下单时填的；还是对不上，把这一屏截给官方机器人 @OxOOOOOOOOObot。',
       // CONTRACT0X_20260928：合约自己转不了账 —— 登记用 /contract（部署地址先认证过，盐就是上面这个），不用转零头
       regAfter: { contract: '部署之后：在官方机器人里发「/contract 合约地址 盐」，把它登记到你的认证下（部署地址要先认证过）—— 谁在零九零查这个地址，都看到「这是 @你 登记的官方合约」。',
         token: '发币之后：在官方机器人里发「/contract 合约地址 盐」，把代币地址登记到你的黄勾认证下（部署地址要先认证过）—— 谁在零九零查这个地址，都看到「这是 @你 登记的官方合约」；名字一样、地址不一样的币，就不是你登记的那一个。' },
@@ -231,9 +233,11 @@
       // SECFIX0X_20261117 ③
       reqSame: 'Matches what you ordered (deployer, mode, pattern)',
       reqDiff: 'Does not match what you ordered (at least one of deployer, mode, pattern is different)',
-      reqNone: 'This computer has no record of your order, so it cannot compare - check yourself that the deployer, mode and pattern are what you want',
+      reqNone: 'This computer has no record of your order (another computer, a cleared browser, or an order placed elsewhere), and checking the delivery against itself proves nothing - first enter what you ordered once more; the deploy command only appears when it matches the delivery.',
       reqStop: '⛔ This delivery does not match your order - do not deploy. Send a screenshot of this to the official bot @OxOOOOOOOOObot.',
-      reqShow: function (d) { return 'Deployer ' + d.deployer + ' · mode ' + d.mode + ' · pattern ' + ((d.prefix || '') + '…' + (d.suffix || '')); },
+      reqGo: 'Check',
+      reqBadIn: 'Something is missing or malformed: deployer = 0x + 40 hex characters, code fingerprint = 0x + 64 hex characters (CREATE2 only), pattern = only 0-9 and a-f.',
+      reqTypedDiff: 'What you entered does not match this delivery - do not deploy. Check what you ordered once more; if it still does not match, send a screenshot of this to the official bot @OxOOOOOOOOObot.',
       regAfter: { contract: 'After deploying: send "/contract <contract address> <salt>" to the official bot to register it under your verification (the deployer must be verified first) - anyone who looks the address up on 0x000000000 then sees "the official contract registered by @you".',
         token: 'After launch: send "/contract <token address> <salt>" to the official bot to register it under your gold check (the deployer must be verified first) - anyone who looks the address up on 0x000000000 then sees "the official contract registered by @you"; a token with the same name at a different address is not the one you registered.' },
       regAfterLink: 'How verification works ->',
@@ -347,9 +351,11 @@
       // SECFIX0X_20261117 ③
       reqSame: 'Cocok dengan pesanan Anda (deployer, mode, pola)',
       reqDiff: 'Tidak cocok dengan pesanan Anda (setidaknya satu dari deployer, mode, pola berbeda)',
-      reqNone: 'Komputer ini tidak punya catatan pesanan Anda, jadi tidak bisa membandingkan - periksa sendiri bahwa deployer, mode, dan pola sesuai keinginan Anda',
+      reqNone: 'Komputer ini tidak punya catatan pesanan Anda (komputer lain, browser yang sudah dibersihkan, atau pesanan dari tempat lain), dan mencocokkan pengiriman dengan dirinya sendiri tidak membuktikan apa-apa - isi lagi apa yang Anda pesan; perintah deploy baru muncul setelah cocok dengan pengiriman.',
       reqStop: '⛔ Pengiriman ini tidak cocok dengan pesanan Anda - jangan deploy. Kirim tangkapan layar ini ke bot resmi @OxOOOOOOOOObot.',
-      reqShow: function (d) { return 'Deployer ' + d.deployer + ' · mode ' + d.mode + ' · pola ' + ((d.prefix || '') + '…' + (d.suffix || '')); },
+      reqGo: 'Periksa',
+      reqBadIn: 'Ada yang kurang atau formatnya salah: deployer = 0x + 40 karakter hex, sidik jari kode = 0x + 64 karakter hex (hanya CREATE2), pola = hanya 0-9 dan a-f.',
+      reqTypedDiff: 'Yang Anda isi tidak cocok dengan pengiriman ini - jangan deploy. Periksa sekali lagi apa yang Anda pesan; jika tetap tidak cocok, kirim tangkapan layar ini ke bot resmi @OxOOOOOOOOObot.',
       regAfter: { contract: 'Setelah deploy: kirim "/contract <alamat kontrak> <salt>" ke bot resmi untuk mendaftarkannya di bawah verifikasi Anda (deployer harus terverifikasi lebih dulu) - siapa pun yang mencari alamat itu di 0x000000000 akan melihat "kontrak resmi yang didaftarkan oleh @Anda".',
         token: 'Setelah peluncuran: kirim "/contract <alamat token> <salt>" ke bot resmi untuk mendaftarkannya di bawah centang kuning Anda (deployer harus terverifikasi lebih dulu) - siapa pun yang mencari alamat itu di 0x000000000 akan melihat "kontrak resmi yang didaftarkan oleh @Anda"; token dengan nama sama di alamat berbeda bukanlah yang Anda daftarkan.' },
       regAfterLink: 'Cara kerja verifikasi ->',
@@ -411,8 +417,21 @@
       && (q.mode !== 'create2' || /^0x[0-9a-fA-F]{64}$/.test(String(q.initHash)))
       && /^[0-9a-f]{0,40}$/.test(String(q.prefix == null ? '' : q.prefix)) && /^[0-9a-f]{0,40}$/.test(String(q.suffix == null ? '' : q.suffix));
   }
-  function reqOf(id) { var x = myOrders().filter(function (y) { return y.id === id; })[0]; return x && reqOk(x.req) ? x.req : null; }
-  function remember(id, code, req) { try { var keep = reqOk(req) ? req : reqOf(id); var l = myOrders().filter(function (x) { return x.id !== id; }); var rec = { id: id, code: code, p: PRODUCT }; if (keep) rec.req = keep; l.unshift(rec); localStorage.setItem(MY_KEY, JSON.stringify(l.slice(0, 50))); } catch (e) { /* 存不了：取货码印在页面上，他自己抄 */ } }
+  // SECFIX2_20261117 ③（Codex 复查）：所有入口先统一写法，再核、再存、再比 —— 部署地址一律「0x + 校验大小写」（跟后端 c2order 存的一样），
+  //   代码指纹一律「0x + 64 位小写」，图案一律小写、去掉 0x。原来下单表单收不带 0x 的部署地址（后端也收），记录却要求带 0x —— 这种单永远存不进记录。
+  function normReq(q) {
+    if (!q || (q.mode !== 'create2' && q.mode !== 'create3') || SALT.addrProblem(q.deployer)) return null;
+    var ih = q.mode === 'create2' ? (SALT.isHex(q.initHash, 32) ? '0x' + String(q.initHash).trim().replace(/^0x/i, '').toLowerCase() : null) : undefined;
+    var r = { mode: q.mode, deployer: SALT.checksum(q.deployer), initHash: ih, prefix: SALT.normPat(q.prefix), suffix: SALT.normPat(q.suffix) };
+    return reqOk(r) && (r.prefix || r.suffix) ? r : null;
+  }
+  function sameReq(q, d) {
+    var hx = function (a) { return String(a == null ? '' : a).replace(/^0x/i, '').toLowerCase(); };
+    return !!q && !!d && q.mode === d.mode && hx(q.deployer) === hx(d.deployer) && (q.mode !== 'create2' || hx(q.initHash) === hx(d.initHash))
+      && SALT.normPat(q.prefix || '') === SALT.normPat(d.prefix || '') && SALT.normPat(q.suffix || '') === SALT.normPat(d.suffix || '');
+  }
+  function reqOf(id) { var x = myOrders().filter(function (y) { return y.id === id; })[0]; return x ? normReq(x.req) : null; }
+  function remember(id, code, req) { try { var keep = normReq(req) || reqOf(id); var l = myOrders().filter(function (x) { return x.id !== id; }); var rec = { id: id, code: code, p: PRODUCT }; if (keep) rec.req = keep; l.unshift(rec); localStorage.setItem(MY_KEY, JSON.stringify(l.slice(0, 50))); } catch (e) { /* 存不了：取货码印在页面上，他自己抄 */ } }
   function newCode() { var b = new Uint8Array(16); crypto.getRandomValues(b); return SALT.bytesToHex(b); }
   function codeHash(c) { return SALT.bytesToHex(SALT.keccak256(new TextEncoder().encode(c))); }
 
@@ -632,8 +651,9 @@
     });
   }
   function placeOrder() {
-    S.req = { mode: S.mode, deployer: S.deployer, initHash: S.mode === 'create2' ? S.initHash : undefined, prefix: SALT.normPat(S.prefix), suffix: SALT.normPat(S.suffix) };   // SECFIX0X_20261117 ③
-    var b = { product: PRODUCT, mode: S.mode, deployer: S.deployer, initHash: S.mode === 'create2' ? S.initHash : undefined, prefix: SALT.normPat(S.prefix), suffix: SALT.normPat(S.suffix),
+    S.req = normReq({ mode: S.mode, deployer: S.deployer, initHash: S.initHash, prefix: S.prefix, suffix: S.suffix });   // SECFIX0X_20261117 ③ · SECFIX2_20261117：统一写法
+    var q = S.req || { deployer: S.deployer, initHash: S.initHash };   // 统一不了（格式不对）就原样发，后端会拒
+    var b = { product: PRODUCT, mode: S.mode, deployer: q.deployer, initHash: S.mode === 'create2' ? q.initHash : undefined, prefix: SALT.normPat(S.prefix), suffix: SALT.normPat(S.suffix),
       label: S.label || undefined, payChain: S.payChain, ref: S.ref || undefined, pickupHash: codeHash(S.code), lang: lang };
     api('/api/c2/orders', 'POST', b).then(function (r) {
       if (r.code !== 200) { txt('c2err2', errOf(r)); return; }
@@ -658,9 +678,12 @@
       S.poll = setTimeout(pollStatus, S.step >= 4 ? 15000 : 10000);
     });
   }
+  var PICK_GEN = 0;
   function collect() {
     if (!S.order || !S.code) return;
-    api('/api/c2/orders/' + S.order.orderId + '/pickup', 'POST', { code: S.code }).then(function (r) {
+    var gen = ++PICK_GEN, oid = S.order.orderId;   // SECFIX2_20261117：连点两下「取货」，只认最后一次的回包；换了单的回包也不认
+    api('/api/c2/orders/' + oid + '/pickup', 'POST', { code: S.code }).then(function (r) {
+      if (gen !== PICK_GEN || !S.order || S.order.orderId !== oid) return;
       if (r.code !== 200) { txt('c2err5', errOf(r)); return; }
       S.delivery = r.body.delivery; S.step = 5; renderSteps();
     });
@@ -673,18 +696,19 @@
     //   部署命令里的 CreateX 地址、调用也直接用交货单的 d.factory / d.call（核对用的却是本地写死的 CreateX）。Codex 安全检查两种都实测全绿。
     //   现在：拿你下单时填的（本机记录 S.req）去核；对不上 → 不给部署命令。CreateX 地址和函数一律用 salt.js 里写死的。
     var q = reqOk(S.req) ? S.req : null;
-    var hx = function (a) { return String(a == null ? '' : a).replace(/^0x/i, '').toLowerCase(); };
-    var c0 = !!q && q.mode === d.mode && hx(q.deployer) === hx(d.deployer) && (q.mode !== 'create2' || hx(q.initHash) === hx(d.initHash))
-      && SALT.normPat(q.prefix || '') === SALT.normPat(d.prefix || '') && SALT.normPat(q.suffix || '') === SALT.normPat(d.suffix || '');
-    var w = q || { mode: d.mode, deployer: d.deployer, initHash: d.initHash, prefix: d.prefix, suffix: d.suffix };   // 没有本机记录：只能用交货单的（c0 如实写「没法对照」）
+    // SECFIX2_20261117 ③（Codex 复查）：原来没有本机记录时「如实写没法对照」，却照样给部署命令（go = (c0 || !q) && …）——
+    //   换了电脑、清过浏览器的人，拿到一份「自己对自己全对」的假交货照样能部署。现在没有记录就不给命令：
+    //   先请他把下单时填的再填一遍（不预填交货里的值 —— 预填就又成了拿交货对交货），对上了才往下走，并记进这台电脑。
+    if (!q) { box.innerHTML = reqAgainHtml(t); wireReqAgain(); return; }
+    var c0 = sameReq(q, d), w = q;
     var parts = (function () { try { return SALT.saltParts(salt); } catch (e) { return null; } })();
     var v = SALT.verify({ mode: w.mode, deployer: w.deployer, initHash: w.initHash ? String(w.initHash).replace(/^0x/i, '') : undefined, salt: salt, prefix: w.prefix, suffix: w.suffix });
     var c1 = !!parts && parts.owner.toLowerCase() === String(w.deployer).toLowerCase(), c2 = !!parts && parts.flag === 0, c3 = !!v.address && v.address === d.address, c4 = v.ok;
-    var go = (c0 || !q) && c1 && c2 && c3 && c4;   // 有本机记录就必须对得上；四项必须全过 —— 不过就不给部署命令
+    var go = c0 && c1 && c2 && c3 && c4;   // 下单记录必须对得上、四项必须全过 —— 少一样都不给部署命令
     var dep = { deployer: w.deployer, factory: SALT.CREATEX, call: SALT.SELECTOR[w.mode], mode: w.mode, initHash: w.initHash, address: d.address };
     var mark = function (x) { return x ? '<b class="up">✓</b> ' : '<b class="down">✗</b> '; };
     var h = '<div class="c2addr"><code>' + esc(d.address) + '</code></div>'
-      + '<ol class="c2checks"><li>' + (q ? mark(c0) + esc(c0 ? t.reqSame : t.reqDiff) : '<b class="down">?</b> ' + esc(t.reqNone) + '<br><code>' + esc(t.reqShow(w)) + '</code>') + '</li><li>' + mark(c1) + esc(t.checks[0]) + '</li><li>' + mark(c2) + esc(t.checks[1]) + '</li><li>' + mark(c3) + esc(t.checks[2]) + (lang === 'zh' ? '：' : ': ') + '<code>' + esc(v.address || '—') + '</code></li><li>' + mark(c4) + esc(t.checks[3]) + (lang === 'zh' ? '：' : ': ') + '0x' + esc(w.prefix) + '…' + esc(w.suffix) + '</li></ol>'
+      + '<ol class="c2checks"><li>' + mark(c0) + esc(c0 ? t.reqSame : t.reqDiff) + '</li><li>' + mark(c1) + esc(t.checks[0]) + '</li><li>' + mark(c2) + esc(t.checks[1]) + '</li><li>' + mark(c3) + esc(t.checks[2]) + (lang === 'zh' ? '：' : ': ') + '<code>' + esc(v.address || '—') + '</code></li><li>' + mark(c4) + esc(t.checks[3]) + (lang === 'zh' ? '：' : ': ') + '0x' + esc(w.prefix) + '…' + esc(w.suffix) + '</li></ol>'
       + '<div class="lbl">salt</div><div class="c2code"><code>' + esc(d.salt) + '</code> <button type="button" class="copy" data-copy="' + esc(d.salt) + '">' + esc(t.copy) + '</button></div>'
       + '<div class="lbl">' + esc(t.ocH) + '</div>'
       + (d.onchain && d.onchain.rows ? '<div class="chips">' + d.onchain.rows.map(function (r) { return '<span class="chip ' + (r.ok ? 'on' : 'off') + '">' + (r.ok ? '✓ ' : '✗ ') + esc(r.chain) + '</span>'; }).join('') + '</div>' : '<div class="step-desc dim">' + esc(t.ocPending) + '</div>')
@@ -701,6 +725,29 @@
     var l = myOrders().filter(function (x) { return x.p === PRODUCT; });
     box.innerHTML = l.length ? esc(T().myOrders) + ' ' + l.map(function (x) { return '<button type="button" class="chip" data-resume="' + esc(x.id) + '">' + esc(x.id) + '</button>'; }).join(' ') : '';
     box.querySelectorAll('[data-resume]').forEach(function (b) { b.addEventListener('click', function () { var x = myOrders().filter(function (y) { return y.id === b.getAttribute('data-resume'); })[0]; if (x) resume(x.id, x.code); }); });
+  }
+  function reqAgainHtml(t) {
+    var inp = function (id, ph) { return '<input id="' + id + '" class="c2in" spellcheck="false" autocomplete="off"' + (ph ? ' placeholder="' + esc(ph) + '"' : '') + '>'; };
+    return '<ol class="c2checks"><li><b class="down">?</b> ' + esc(t.reqNone) + '</li></ol><div class="c2form">'
+      + '<div class="lbl">' + esc(t.modeH) + '</div>'
+      + '<label class="c2radio"><input type="radio" name="c2rqMode" value="create3"> ' + esc(t.m3) + '</label>'
+      + '<label class="c2radio"><input type="radio" name="c2rqMode" value="create2"> ' + esc(t.m2) + '</label>'
+      + '<div class="lbl">' + esc(t.depH) + '</div>' + inp('c2rqDep', t.depPh)
+      + '<div class="lbl">' + esc(t.ihH) + '</div>' + inp('c2rqIh', t.ihPh)
+      + '<div class="lbl">' + esc(t.preLbl) + '</div>' + inp('c2rqPre') + '<div class="lbl">' + esc(t.sufLbl) + '</div>' + inp('c2rqSuf')
+      + '<div class="flow-ctl"><button type="button" class="run" id="c2rqGo">' + esc(t.reqGo) + '</button></div><div class="c2errs err" id="c2rqErr"></div></div>';
+  }
+  function wireReqAgain() {
+    var go = $('#c2rqGo'); if (!go) return;
+    go.addEventListener('click', function () {
+      var t = T(), v = function (id) { var e = document.getElementById(id); return e ? String(e.value || '').trim() : ''; };
+      var md = document.querySelector('input[name=c2rqMode]:checked');
+      var q2 = normReq({ mode: md ? md.value : '', deployer: v('c2rqDep'), initHash: v('c2rqIh'), prefix: v('c2rqPre'), suffix: v('c2rqSuf') });
+      if (!q2) { txt('c2rqErr', t.reqBadIn); return; }
+      if (!sameReq(q2, S.delivery)) { txt('c2rqErr', t.reqTypedDiff); return; }
+      S.req = q2; if (S.order && S.code) remember(S.order.orderId, S.code, q2);
+      showDelivery();
+    });
   }
   function resume(id, code) {
     id = String(id || '').trim().toLowerCase(); code = String(code || '').trim().toLowerCase().replace(/[^0-9a-f]/g, '');

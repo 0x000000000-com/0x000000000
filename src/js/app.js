@@ -256,6 +256,7 @@ const dict = {
       receiptBad: '签不出来 —— 手上的 b 跟这张收条对不上。',
       receiptOdd: '平台发来的收条原文不是固定的那种格式（或者单号、地址、图案对不上）—— 没签。你的钥匙不受影响；把这一屏截给官方机器人 @OxOOOOOOOOObot。',
       noReceipt: '还没有收条可签，先完成上一步。',
+      receiptNeedMerge: '先在第 5 步合成钥匙、核对地址，对上了才能交收条。',
       copied: '已复制 ✓',
       keepId: (id) => '记下订单号 ' + id + '：关了页面也能在下面「我的订单」里接着做，换电脑就输这个号。',
       needSecForTake: '取货要用你那半把钥匙签名 —— 请先在第 1 步选回你的 my-secret-s.json。',
@@ -499,6 +500,7 @@ const dict = {
       receiptBad: 'Cannot sign - the b on hand does not match this receipt.',
       receiptOdd: 'The receipt text from the platform is not in the fixed format (or the order, address or pattern does not match) - not signed. Your key is not affected; send a screenshot of this to the official bot @OxOOOOOOOOObot.',
       noReceipt: 'No receipt to sign yet - finish the step above.',
+      receiptNeedMerge: 'Merge the key and check the address in step 5 first - the receipt can only be filed once they match.',
       copied: 'Copied',
       keepId: (id) => 'Keep your order number ' + id + ': you can close this page and continue from "My orders" below, or enter this number on another computer.',
       needSecForTake: 'Collecting needs a signature from your half of the key - pick your my-secret-s.json in step 1 first.',
@@ -744,6 +746,7 @@ const dict = {
       receiptBad: 'Tidak bisa menandatangani - b yang ada tidak cocok dengan tanda terima ini.',
       receiptOdd: 'Teks tanda terima dari platform tidak dalam format tetap (atau pesanan, alamat, atau pola tidak cocok) - tidak ditandatangani. Kunci Anda tidak terpengaruh; kirim tangkapan layar ini ke bot resmi @OxOOOOOOOOObot.',
       noReceipt: 'Belum ada tanda terima untuk ditandatangani - selesaikan langkah di atas.',
+      receiptNeedMerge: 'Gabungkan kunci dan cocokkan alamatnya di langkah 5 dulu - tanda terima baru bisa dikirim setelah cocok.',
       copied: 'Tersalin',
       keepId: (id) => 'Simpan nomor pesanan Anda ' + id + ': Anda bisa menutup halaman ini dan melanjutkan dari "Pesanan saya" di bawah, atau memasukkan nomor ini di komputer lain.',
       needSecForTake: 'Mengambil butuh tanda tangan dari separuh kunci Anda - pilih my-secret-s.json Anda di langkah 1 dulu.',
@@ -1174,6 +1177,7 @@ function renderSteps() {
   if (orderState.poll) { clearInterval(orderState.poll); orderState.poll = null; }
   orderState.orderId = null; orderState.challenge = null; orderState.A = null;
   orderState.b = null; orderState.address = null; orderState.sec = null;
+  orderState.deliveredAddr = null; orderState.receiptChallenge = null; MERGED_K = null;   // SECFIX2_20261117 ④：上一单的交货地址、收条原文、合出来的钥匙不带进下一单
   orderState.lastSeen = null; orderState.watchSince = 0;
   orderState.pay = null; orderState.vch = null;          // VOUCHER0X_20261002：收款那一行的原始数据 / 已经显示的那张券
   mintStop();
@@ -1632,7 +1636,21 @@ function wireOrderFlow(f) {
   });
 
   // ── [5/6] 取 b + 当场合成 + 核对 ────────────────────────────────────
-  let MERGED = null;
+  let MERGED = null, DL_GEN = 0;
+  // SECFIX2_20261117 ④（Codex 复查）：取货、合成、签收要认同一份结果。原来「取货」按钮等请求回来才锁 —— 连点两下就有两个请求在路上：
+  //   第一个回来、合成成功、放出了钱包文件和收条；第二个晚回来，把交货地址换掉、又把「合成」打开；再合成对不上时只清了钥匙变量，
+  //   前一次放出来的「交收条」按钮和「已交货」都还在（Codex 用原样的四个处理器离线跑出来：签收照样签得出）。
+  //   现在：① 一按就锁住取货和合成，记下这是第几次取货；回来的不是最新那一次、或者已经换了单 → 整个丢掉；
+  //         ② 每拿到一份新交货、每一次合成失败，都把钱包文件、收条、「已交货」一起收回（revokeTake）；
+  //         ③ 收条那一步自己再核一遍：必须有第 5 步核对过的合成结果，而且就是现在这份交货的地址 —— 不只靠按钮灰没灰。
+  const revokeTake = () => {
+    const had = !!MERGED;
+    MERGED = null; MERGED_K = null;
+    const ks = $('#ksBox'); if (ks) ks.hidden = true;
+    const rb = $('#btnReceipt'); if (rb) rb.disabled = true;
+    if (had) setStatus('found');
+  };
+  const sameAddr = (chain, a, b) => typeof a === 'string' && typeof b === 'string' && (chain === 'tron' ? a === b : a.toLowerCase() === b.toLowerCase());
   $('#btnDownload').addEventListener('click', async () => {
     const out = $('#out5'); out.hidden = false; out.innerHTML = '';
     // DLSIG0X_20260923：取货凭签名 —— 用你那半把钥匙签这张单的挑战串。没有 s 的人下不到。
@@ -1640,11 +1658,15 @@ function wireOrderFlow(f) {
     let dsig;
     try { dsig = KC().signChallenge(orderState.sec.s, orderState.challenge).sig; }
     catch (e) { return outLine(out, e.message, 'err'); }
-    const res = await api('/api/orders/' + orderState.orderId + '/download?sig=' + dsig);
-    if (res.code !== 200) { showApiError(out, res); return; }
+    const gen = ++DL_GEN, oid = orderState.orderId;
+    $('#btnDownload').disabled = true; $('#btnMerge').disabled = true;
+    revokeTake();
+    const res = await api('/api/orders/' + oid + '/download?sig=' + dsig);
+    if (gen !== DL_GEN || oid !== orderState.orderId) return;   // 过期的回包（后面又点过一次，或者已经换了单）：不认
+    if (res.code !== 200) { $('#btnDownload').disabled = false; showApiError(out, res); return; }
     orderState.b = res.body.b; orderState.deliveredAddr = res.body.address;
     outLine(out, f.gotB, 'ok');
-    $('#btnDownload').disabled = true; $('#btnMerge').disabled = false;
+    $('#btnMerge').disabled = false;
   });
   // MERGESPLIT0X_20260924：合成单独一个按钮 —— 取货要联网，合成不用；让人可以在两步之间断网。
   $('#btnMerge').addEventListener('click', () => {
@@ -1654,6 +1676,7 @@ function wireOrderFlow(f) {
     try { r = KC().merge(orderState.sec, KC().parseB(orderState.b)); }
     catch (e) { return outLine(out, e.message, 'err'); }
     if (!r.ok) {
+      revokeTake();   // SECFIX2_20261117 ④：合不出来也把之前放出来的钱包文件、收条收回
       outLine(out, f.mergeBad(r.want, r.chain.toUpperCase()), 'err');
       KC().candList(r.cands).split('\n').forEach((l) => outLine(out, l, 'dim'));
       return;
@@ -1662,9 +1685,9 @@ function wireOrderFlow(f) {
     // SECFIX0X_20261117 ④：原来对不上只印一行红字，接着照样打开钱包文件、标「已交货」、放出「交收条」——
     //   红字自己写着「先别导出」，按钮却开着（Codex 安全检查：mismatchShown / exportWalletVisible / receiptEnabled 三个都是 true）。
     //   现在对不上就停在这一步：不做钱包文件、不签收条、不标已交货。以太坊类地址不分大小写比（校验大小写不改变地址），波场逐字比。
-    const same = typeof exp === 'string' && (r.chain === 'tron' ? r.addr === exp : r.addr.toLowerCase() === exp.toLowerCase());
+    const same = sameAddr(r.chain, r.addr, exp);
     if (!same) {
-      MERGED = null; MERGED_K = null;
+      revokeTake();   // SECFIX2_20261117 ④：原来只清钥匙变量，前一次放出来的「交收条」和「已交货」还在
       outLine(out, r.addr + (r.want ? '   ← ' + r.want + ' ' + f.hitWord : ''), 'err');
       outLine(out, f.addrDiff(exp), 'err');
       outLine(out, f.addrStop, 'err');
@@ -1707,9 +1730,12 @@ function wireOrderFlow(f) {
   $('#btnReceipt').addEventListener('click', async () => {
     const out = $('#out6'); out.hidden = false; out.innerHTML = '';
     if (!orderState.receiptChallenge) return outLine(out, f.noReceipt, 'err');
+    // SECFIX2_20261117 R1 / ④：只签第 5 步核对过的那一份合成结果 —— 没合成、合成没对上、或者交货已经换了，都不签
+    const mg = MERGED;
+    if (!mg || !sameAddr(mg.chain, mg.addr, orderState.deliveredAddr)) return outLine(out, f.receiptNeedMerge, 'err');
     let r;
     // SECFIX0X_20261117 ②：收条原文是服务器给的 —— 交给 signReceipt 按平台那一种固定格式逐行核（单号、地址、图案都要对得上），不对就不签
-    try { r = KC().signReceipt(orderState.sec, KC().parseB(orderState.b), orderState.receiptChallenge, { orderId: orderState.orderId }); }
+    try { r = KC().signReceipt(orderState.sec, KC().parseB(orderState.b), orderState.receiptChallenge, { orderId: orderState.orderId, merged: mg }); }
     catch (e) { return outLine(out, e.message, 'err'); }
     if (!r.ok) return outLine(out, r.why === 'form' ? f.receiptOdd : f.receiptBad, 'err');
     const res = await api('/api/orders/' + orderState.orderId + '/receipt', 'POST', { sig: r.sig });

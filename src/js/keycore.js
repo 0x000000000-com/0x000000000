@@ -246,16 +246,30 @@
     }
     return pat.toLowerCase() === ('0x' + txt).toLowerCase();
   }
+  // SECFIX2_20261117 R1（Codex 复查）：格式对了还不够 —— 原来按收条里写的地址，在六个 GLV 候选里【重新挑一把钥匙】来签：
+  //   服务器给一张「单号、图案都对，地址是另一个候选」的收条，就会用一把根本不满足图案、也不是你核对过的钥匙签出一个有效签名。
+  //   现在：只认第 5 步合出来、跟交货地址核对过的那一份（want.merged）。这里用同一套确定的合成（merge）再算一遍：
+  //   必须是同一把钥匙、同一个地址，收条里的地址也必须就是它；豹子号再核地址末尾真的是 N 个一样的字。
+  //   任何一样对不上 → { ok:false, why:'addr' }，一个字都不签。不再按服务器给的地址去挑候选。
+  function repeatTailOk(addr, pat) {
+    var rep = /last (\d{1,2}) characters all the same$/.exec(pat), k, i;
+    if (!rep) return true;
+    k = +rep[1];
+    if (k < 2 || k > addr.length) return false;
+    for (i = addr.length - k + 1; i < addr.length; i++) if (addr[i] !== addr[addr.length - k]) return false;
+    return true;
+  }
   function signReceipt(sec, b, message, want) {
     var msg = String(message || '').replace(/\r\n/g, '\n').replace(/\s+$/, '');
     if (!msg) throw new Error(M('回执原文是空的。', 'The receipt text is empty.', 'Teks tanda terima kosong.'));
-    var sh = secShape(sec), cands = mergeCandidates(sec.s, b, sh.chain), m = RCPT_RE.exec(msg);
-    if (!m || !want || m[1] !== String(want.orderId) || !receiptPatternOk(sh, m[2])) return { ok: false, why: 'form', cands: cands };
-    var tron = sh.chain === 'tron';
-    var hit = pickByOracle(cands, function (a) { return tron ? a === m[3] : a.toLowerCase() === m[3].toLowerCase(); });
-    if (!hit) return { ok: false, cands: cands };
-    return { ok: true, addr: hit.addr,
-             sig: hex(N.sign(N.keccak_256(enc.encode(msg)), u8(pad64(hit.k))).toCompactRawBytes()) };
+    var sh = secShape(sec), r = merge(sec, b), m = RCPT_RE.exec(msg);
+    if (!m || !want || m[1] !== String(want.orderId) || !receiptPatternOk(sh, m[2])) return { ok: false, why: 'form', cands: r.cands };
+    var eq = function (x, y) { return sh.chain === 'tron' ? String(x) === String(y) : String(x).toLowerCase() === String(y).toLowerCase(); };
+    var g = want.merged;
+    if (!r.ok || !g || typeof g.k !== 'bigint' || g.k !== r.k || !eq(g.addr, r.addr) || !eq(m[3], r.addr) || !repeatTailOk(r.addr, m[2]))
+      return { ok: false, why: 'addr', cands: r.cands };
+    return { ok: true, addr: r.addr,
+             sig: hex(N.sign(N.keccak_256(enc.encode(msg)), u8(pad64(r.k))).toCompactRawBytes()) };
   }
 
   // keystore v3（web3 secret storage）。故意算得慢：暴力猜密码也得这么慢。
