@@ -319,15 +319,26 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     if (top && top.m.sum >= (chain === 'evm' ? 4 : 3)) return ['bad', L.vfLike(top.a, top.m.h, top.m.t).replace(/\{n\}/g, n)];
     return ['bad', L.vfNone.replace(/\{n\}/g, n)];
   }
+  // SECFIX4_20261118（Codex 第四轮 A5）：复制地址、打开二维码、核对、复制徽章代码，四个出口共用这一道 ——
+  //   动作那一刻判到期；名片读了超过 5 分钟就先重读（在路上的那一次合并，不另发）；撤销了、过期了、地址拿掉了、读不到 → 不给，
+  //   页面按最新的样子重画。允许的旧数据窗口写死在这里：显示的名片最多旧 5 分钟多一点（开着的时候每分钟看一次，超过 5 分钟就重读）。
+  function usableNow(addr) {
+    if (state !== 'ok' || !data) return false;
+    const was = data.status; tidy(data);
+    if (data.status !== was) render();
+    if (data.status === 'revoked' || data.status === 'expired') return false;
+    return addr == null || (data.addresses || []).some((a) => a.address === addr && a.state !== 'adding');
+  }
+  async function usable(addr) { if (NAME && stale()) await loadCard(); return usableNow(addr); }
   async function copy(text, btn, isAddr) {
     const L = T[lang];
     // SECFIX3_20261118（Codex 第三轮 U3/S5）：名片读了超过 5 分钟，复制地址之前先重新核一次 —— 撤销了、过期了、地址拿掉了，就不复制（页面跟着变成最新的样子）
-    if (isAddr && NAME && Date.now() - fetchedAt > FRESH_MS) {
-      await loadCard();
-      const c = data, ok = c && c.status !== 'revoked' && c.status !== 'expired' && (c.addresses || []).some((a) => a.address === text && a.state !== 'adding');
-      if (!ok) return;
-    }
-    try { await navigator.clipboard.writeText(text); btn.textContent = L.copied; setTimeout(() => { btn.textContent = L.copy; }, 1800); }
+    // SECFIX4_20261118：名片不旧就不等 —— 复制在点按的那一下里完成（中间隔了等待，有的浏览器不让写剪贴板）；旧了才等重读
+    if (NAME && stale()) await loadCard();
+    if (!usableNow(isAddr ? text : null)) return;
+    // 重读过页面就重画了：提示写到现在页面上的那个按钮（原来写在已经不在页面上的旧按钮上 —— 复制不了也没人看见）
+    if (!btn.isConnected) btn = [...document.querySelectorAll('[data-copy]')].find((b) => b.dataset.copy === (isAddr ? text : 'snip')) || btn;
+    try { await navigator.clipboard.writeText(text); btn.textContent = L.copied; setTimeout(() => { btn.textContent = isAddr ? L.copy : L.copySnip; }, 1800); }
     catch (e) { btn.textContent = L.copyFail; }
   }
   function qrSvg(text) { const q = qrcode(0, 'M'); q.addData(text); q.make(); return q.createSvgTag({ cellSize: 4, margin: 2, scalable: true }); }
@@ -389,9 +400,13 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     line.append(el('span', 'hl', p1), el('span', 'mid', p2), el('span', 'hl', p3));
     box.append(line, html('div', 'check', L.check2(c1, c2)));
     const btns = el('div', 'btns'), cb = el('button', 'btn main', L.copy), qb = el('button', 'btn', openQr.has(a.address) ? L.qrHide : L.qr);
-    cb.type = qb.type = 'button';
+    cb.type = qb.type = 'button'; cb.dataset.copy = a.address;
     cb.addEventListener('click', () => copy(a.address, cb, true));
-    qb.addEventListener('click', () => { openQr.has(a.address) ? openQr.delete(a.address) : openQr.add(a.address); render(); });
+    qb.addEventListener('click', async () => {   // SECFIX4_20261118 A5：打开二维码之前跟复制一样先核（收起不用核）
+      if (openQr.has(a.address)) { openQr.delete(a.address); render(); return; }
+      if (!(await usable(a.address))) return;
+      openQr.add(a.address); render();
+    });
     btns.append(cb, qb); box.append(btns);
     if (openQr.has(a.address)) { const q = el('div', 'qr'); q.innerHTML = qrSvg(a.address); q.setAttribute('role', 'img'); q.setAttribute('aria-label', 'QR ' + a.address); box.append(q); }
     if (a.imitate) {
@@ -452,7 +467,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
         const f = el('form'), inp = el('input', 'inp'), go = el('button', 'btn main', L.verifyBtn), res = el('div', 'res');
         inp.placeholder = L.verifyPh; inp.autocomplete = 'off'; inp.spellcheck = false; inp.value = lastCheck; go.type = 'submit';
         const run = () => { lastCheck = inp.value; if (!inp.value.trim()) { res.textContent = ''; return; } const [k, msg] = verdict(inp.value); res.className = 'res ' + k; res.textContent = msg; };
-        f.addEventListener('submit', (e) => { e.preventDefault(); run(); });
+        f.addEventListener('submit', async (e) => { e.preventDefault(); lastCheck = inp.value; if (await usable(null)) run(); });   // SECFIX4_20261118 A5：核对之前也先核名片还算不算数（重读了就按新的重画、自动再核一次）
         const row = el('div', 'btns'); inp.style.flex = '1'; row.append(inp, go); f.append(row, res, el('div', 'small', L.vfLocal));
         vb.append(f); app.append(vb);
         if (lastCheck) run();
@@ -468,7 +483,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
         if (c.tier === 'yellow' && c.status === 'live' && /^[a-z0-9_]{3,40}$/.test(n)) {   // SECFIX3_20261118：这段是他要贴进自己网站的 HTML —— 名字样子不对就不给
           const snip = '<a href="https://0x000000000.com/@' + n + '"><img src="https://0x000000000.com/api/badge/' + n + '.svg" alt="@' + sn + ' verified by 0x000000000"></a>';
           const bb = el('div', 'box'); bb.append(el('div', 'row-h', L.badgeHead), el('code', 'snip', snip));
-          const sb = el('button', 'btn', L.copySnip); sb.type = 'button'; sb.addEventListener('click', () => copy(snip, sb)); bb.append(el('div', 'btns')); bb.lastChild.append(sb); app.append(bb);
+          const sb = el('button', 'btn', L.copySnip); sb.type = 'button'; sb.dataset.copy = 'snip'; sb.addEventListener('click', () => copy(snip, sb)); bb.append(el('div', 'btns')); bb.lastChild.append(sb); app.append(bb);
         }
       }
       const nw = el('p', 'small', L.news + ' ');
@@ -488,20 +503,30 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
   render();
   // SECFIX3_20261118（Codex 第三轮 U3/S5）：原来名片只在打开时读一次 —— 开着放几个小时，撤销 / 过期 / 地址变了都看不到。
   //   现在：离开这一页超过 5 分钟再回来就重新读；复制地址前名片超过 5 分钟也先重新读；到期时间一过自己变「已过期」。读不到算「读不到」，不沿用旧的
-  async function loadCard() {
-    try {
-      const r = await fetch('/api/card/' + encodeURIComponent(NAME), { cache: 'no-store' });
-      if (r.status === 404) { state = 'none'; data = null; }
-      else if (r.ok) { const j = await r.json(); if (j && typeof j.name === 'string' && (j.official || Array.isArray(j.addresses) || j.status === 'revoked' || j.status === 'expired')) { data = tidy(j); state = 'ok'; } else { state = 'down'; data = null; } }
-      else { state = 'down'; data = null; }
-    } catch (e) { state = 'down'; data = null; }
-    fetchedAt = Date.now();
-    render();
+  // SECFIX4_20261118（Codex 第四轮 A5）：重读合并 —— 已经有一次在路上就等它，不另发；每一次都带序号，旧的回包不盖新的
+  let LOADING = null, LOAD_SEQ = 0;
+  function loadCard() {
+    if (LOADING) return LOADING;
+    const seq = ++LOAD_SEQ;
+    LOADING = (async () => {
+      let st = 'down', d = null;
+      try {
+        const r = await fetch('/api/card/' + encodeURIComponent(NAME), { cache: 'no-store' });
+        if (r.status === 404) st = 'none';
+        else if (r.ok) { const j = await r.json(); if (j && typeof j.name === 'string' && (j.official || Array.isArray(j.addresses) || j.status === 'revoked' || j.status === 'expired')) { d = tidy(j); st = 'ok'; } }
+      } catch (e) { /* 读不到算「读不到」，不沿用旧的 */ }
+      if (seq !== LOAD_SEQ) return;
+      state = st; data = d; fetchedAt = Date.now();
+      render();
+    })();
+    LOADING.then(() => { if (seq === LOAD_SEQ) LOADING = null; }, () => { if (seq === LOAD_SEQ) LOADING = null; });
+    return LOADING;
   }
   const stale = () => NAME && Date.now() - fetchedAt > FRESH_MS;
   document.addEventListener('visibilitychange', () => { if (!document.hidden && stale()) loadCard(); });
   window.addEventListener('focus', () => { if (stale()) loadCard(); });
   setInterval(() => { if (data && data.status === 'live' && tidy(data).status === 'expired') render(); }, 30e3);
+  setInterval(() => { if (!document.hidden && stale()) loadCard(); }, 60e3);   // SECFIX4_20261118 A5：一直开在前台也每分钟看一次，超过 5 分钟就重读（撤销、拿掉地址这种只有平台知道的事，最多晚 6 分钟看到）
   if (NAME) loadCard();
 })();
 </script>
