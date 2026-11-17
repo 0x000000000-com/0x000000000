@@ -1040,6 +1040,8 @@ let RESUME = null;   // 由 wireOrderFlow 挂上（它要用向导里的闭包�
 // SECFIX4_20261118（Codex 第四轮 A1 / A2 / A3）：六步里【每一个】要等的地方都照这一条 —— 点下去那一刻记下「第几代、哪张单」，
 //   等回来先核，不是这一代、这张单就什么都不写（用券、下单、交份额、模拟付款、取货、导出钱包文件、签收、读备份文件）。
 //   测试 test/secfix.cjs 第 4c 节逐个处理器验，第 4d 节扫源码：六步里每一处 await 后面紧跟着这一核。
+// SECFIX5_20261118（Codex 第五轮）：第 2、3 步（下单 → 交份额 → 拿收款信息）哪一步没成，「下单」都放开；这一页已经有单时再点 =
+//   接着做这一张（走 RESUME：先问平台到哪一步了），绝不另建新单。测试第 4e 节。
 let ORDER_GEN = 0, RESUME_GEN = 0;
 let KEEPKEY = null;  // 同上：切语言重画之后把内存里的钥匙装回第 1 步（LANGKEEP0X_20260924）
 
@@ -1465,7 +1467,8 @@ function wireOrderFlow(f) {
       outLine(out, f.fileOk((sec.prefix || '') + (sec.suffix ? '…' + sec.suffix : ''), sec.chain.toUpperCase()), 'ok');
       if (orderState.orderId) {                            // 在续一张已有的单：钥匙装回来就够了
         const o5 = $('#out5'); if (o5) { o5.hidden = false; outLine(o5, f.secBack, 'ok'); }
-        if (orderState.pendingShare) { orderState.pendingShare = false; uploadShare($('#out2')).then((ok) => ok && showPayment()); }
+        // SECFIX5_20261118：选回文件以后交份额 / 拿收款信息没成 →「下单」放开，再点就接着做这一张（原来只能回「我的订单」重新续）
+        if (orderState.pendingShare) { orderState.pendingShare = false; uploadShare($('#out2')).then(async (ok) => { if (!(ok && (await showPayment())) && g === ORDER_GEN && oid === orderState.orderId) $('#btnCreate').disabled = false; }); }
       } else {
         $('#btnCreate').disabled = false;
       }
@@ -1496,7 +1499,7 @@ function wireOrderFlow(f) {
     const gen = ORDER_GEN, oid = orderState.orderId;
     const pay = await api('/api/orders/' + oid + '/payment');
     if (gen !== ORDER_GEN || oid !== orderState.orderId) return false;   // SECFIX3_20261118 U1：等回包时换了单 → 这一份不是现在这张单的
-    if (pay.code !== 200) return false;
+    if (pay.code !== 200) { const o2 = $('#out2'); if (o2) { o2.hidden = false; showApiError(o2, pay); } return false; }   // SECFIX5：原来一句话都不说
     orderState.address = pay.body.address;
     orderState.pay = pay.body;
     $('#btnPay').disabled = !drawPay();   // SECFIX0X_20261117 ①：样子不对就不让点「我转好了」
@@ -1581,6 +1584,14 @@ function wireOrderFlow(f) {
   });
   $('#btnCreate').addEventListener('click', async () => {
     const out = $('#out2'); out.hidden = false; out.innerHTML = '';
+    // SECFIX5_20261118（Codex 第五轮）：这一页已经有一张单了（上一次交份额 / 拿收款信息没成，按钮放开了）→ 再点 = 接着做这一张：
+    //   走「我的订单 → 接着做」同一条路，先问平台这张单现在到哪一步再往下走，不另建新单（原来会再建一张，新单的回包被丢掉，按钮一直灰着）
+    if (orderState.orderId) {
+      const btn = $('#btnCreate'); btn.disabled = true;
+      const why = await RESUME(orderState.orderId, true);
+      if (why && btn.isConnected) { outLine(out, why, 'err'); btn.disabled = false; }
+      return;
+    }
     const sec = orderState.sec;
     if (!sec) return outLine(out, f.needGen, 'err');
     // SECFIX4_20261118（Codex 第四轮 A2）：一按就锁（等目录的时候连点两下不会下两张单）；记下「第几代、哪把钥匙、还没有单」，
@@ -1608,7 +1619,7 @@ function wireOrderFlow(f) {
     outLine(out, f.keepId(res.body.orderId), 'dim');
     if (!(await uploadShare(out))) { btn.disabled = false; return; }
     renderOrders();
-    await showPayment();
+    if (!(await showPayment()) && g === ORDER_GEN) btn.disabled = false;   // SECFIX5：收款信息没拿到 → 同上，再点接着拿（原来按钮一直灰着）
   });
 
   // ── [3/6] 付款 ──────────────────────────────────────────────────────
@@ -1844,10 +1855,13 @@ function wireOrderFlow(f) {
     const st = o.status;
     setStatus(st);
     if (st === 'created') {                              // 建了单还没交份额
-      if (orderState.sec) { const o2 = $('#out2'); o2.hidden = false; if ((await uploadShare(o2)) && still()) await showPayment(o); }
-      else orderState.pendingShare = true;
+      if (orderState.sec) {
+        const o2 = $('#out2'); o2.hidden = false;
+        // SECFIX5_20261118：份额没交上 / 收款信息没拿到 →「下单」放开，再点就是接着做这一张（不另建新单）
+        if (!((await uploadShare(o2)) && still() && (await showPayment(o))) && still()) $('#btnCreate').disabled = false;
+      } else orderState.pendingShare = true;
     } else if (st === 'share_uploaded') {
-      await showPayment(o);
+      if (!(await showPayment(o)) && still()) $('#btnCreate').disabled = false;   // SECFIX5：同上
     } else if (st === 'paid' || st === 'mining') {
       await showPayment(o); if (!still()) return null; $('#btnPay').disabled = true;
       const o3 = $('#out3'); o3.hidden = false; outLine(o3, f.watchingAgain, 'dim');
