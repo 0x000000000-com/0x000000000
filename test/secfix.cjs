@@ -1074,7 +1074,7 @@ const APP = rd('js/app.js');
     }
     // ── review 6 (F1): name must match the request, address must fit its chain; otherwise every address exit is off · 第六轮：名字对得上、地址格式对得上，否则所有出口停用 ──
     {
-      const TR = 'T' + 'A'.repeat(33), bads = [['0x123', 'evm'], ['0x' + 'g'.repeat(40), 'evm'], [A1 + '00', 'evm'], [TR, 'evm'], [A1, 'tron'], ['T' + 'l'.repeat(33), 'tron'], [A1, 'sol'], [A1, undefined]];
+      const TR = 'TG1YyTqihYBVjbzaoEm5gUdiZDNwHndhRg', bads = [['T' + 'A'.repeat(33), 'tron'], ['0x123', 'evm'], ['0x' + 'g'.repeat(40), 'evm'], [A1 + '00', 'evm'], [TR, 'evm'], [A1, 'tron'], ['T' + 'l'.repeat(33), 'tron'], [A1, 'sol'], [A1, undefined]];
       const P0 = await boot(card({ addresses: [{ chain: 'evm', address: A1 }, { chain: 'tron', address: TR }] }));
       ok(P0.shows(A1) && P0.shows(TR) && !!P0.btn(TR, 0), '6b normal (review 6): a valid EVM address and a valid TRON address are both shown · 格式都对的以太坊类、波场地址照常显示');
       let all = true, why = '';
