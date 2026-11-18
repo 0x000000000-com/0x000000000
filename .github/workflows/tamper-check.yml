@@ -14,6 +14,11 @@ name: Live page tamper patrol
 # 公开新版本之后、上线之前那几分钟，网站上还是上一个公开版本 —— 原来这里会无缘无故变红。
 # 现在：SHA256SUMS 换版之后 3 小时内，上一个公开版本的指纹也算过（记一条提示，不算错）。
 # 网站上照样不可能出现没在这里公开过的字节：只有当前版本、或者（3 小时内）上一个公开版本能过。时间取自这个仓库自己的提交记录（提交记录也是我们这个仓库所有者写的 —— 见 README）。
+# PATROLGRACE2_20261118: when a branch is merged into main (the dev room's branches come in this way), the time and the previous version come from main's own line of commits
+# (git log --first-parent): when the new fingerprints landed on main, and what main had just before. The commits inside the branch were never on the site - before this,
+# the "previous version" was one of them, and the patrol turned red between the merge and the deploy (run #794).
+# PATROLGRACE2_20261118：分支合并进 main（开发室的分支就是这样进来的）时，时间和上一个版本都按 main 自己那条提交线算（git log --first-parent）：新指纹什么时候进的 main、进之前 main 上是什么。
+# 分支里面那几个中间提交从来没上过网站 —— 原来「上一个版本」取到的是其中一个，合并之后、上线之前这里就会变红（第 794 次巡检）。
 on:
   schedule:
     - cron: '7 * * * *'
@@ -35,8 +40,8 @@ jobs:
         run: |
           bad=0
           # When the current fingerprints were published, and what they were before · 当前指纹什么时候公开的、换版之前是什么
-          last=$(git log -1 --format=%ct -- SHA256SUMS)
-          prevc=$(git log -1 --format=%H -- SHA256SUMS)
+          last=$(git log -1 --first-parent --format=%ct -- SHA256SUMS)
+          prevc=$(git log -1 --first-parent --format=%H -- SHA256SUMS)
           git show "$prevc^:SHA256SUMS" > "$RUNNER_TEMP/prev.sums" 2>/dev/null || : > "$RUNNER_TEMP/prev.sums"
           age=$(( $(date +%s) - last ))
           grace=$(( GRACE_HOURS * 3600 ))
