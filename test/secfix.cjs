@@ -1138,6 +1138,14 @@ const APP = rd('js/app.js');
     ok(n1 >= 2 && warnNew && !!last && !leaveWarns() && dls.length >= 2, '7 normal: after saving, a new address can be generated; it warns until its own wallet file is saved · 存好之后能再算；新地址自己存好之前关页面会提醒');
   });
 
+  // 第 8 节（第六轮，黑客视角自查）：页面自带「只许联网到哪里」的声明，万一以后哪里被塞进外发代码，浏览器也不让发
+  {
+    const csp = (h) => { const m = h.match(/<meta http-equiv="Content-Security-Policy" content="([^"]+)"/); return m ? m[1] : ''; };
+    const fp = csp(rd('free.html')), cp = csp(fs.readFileSync(path.join(ROOT, '..', 'card.html'), 'utf8'));
+    ok(/connect-src 'none'/.test(fp) && /default-src 'none'/.test(fp) && /form-action 'none'/.test(fp) && /base-uri 'none'/.test(fp) && !/https?:/.test(fp), '8 free generator page carries a policy that forbids every outgoing connection (the private key cannot be sent out even if code gets injected) · 免费生成页自带声明：任何外发连接都不许');
+    ok(/connect-src 'self'/.test(cp) && /default-src 'none'/.test(cp) && /base-uri 'none'/.test(cp) && !/https?:/.test(cp), '8 payment card page may only talk to its own site · 收款名片页只许连自己的网站');
+  }
+
   console.log(`  total ${good} passed · ${bad} not · 合计 ${good} 条对 · ${bad} 条不对 ${bad ? '★' : '✓'}`);
   process.exitCode = bad ? 1 : 0; finished = true;
 })();
