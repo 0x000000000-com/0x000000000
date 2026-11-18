@@ -1164,6 +1164,12 @@ const APP = rd('js/app.js');
     ok(n1 >= 2 && warnNew && !!last && !leaveWarns() && dls.length >= 2, '7 normal: after saving, a new address can be generated; it warns until its own wallet file is saved · 存好之后能再算；新地址自己存好之前关页面会提醒');
   });
 
+  // 名片回归（devroom-tests/card-validation.cjs）并进来：姓名字符范围、姓名不匹配、地址校验被改回去时这里会变红 · card regression folded in so GitHub goes red if name-charset / name-mismatch / address checks are reverted
+  await section('card', async () => {
+    const r = require('node:child_process').spawnSync(process.execPath, [path.join('devroom-tests', 'card-validation.cjs')], { cwd: path.resolve(__dirname, '..'), encoding: 'utf8' });
+    ok(r.status === 0, 'card (devroom-tests/card-validation.cjs): name charset, name mismatch, bad addresses disable every outlet; valid card still shows · 名片姓名字符范围、姓名不匹配、地址校验：坏名片全部出口停用，好名片照常' + (r.status === 0 ? '' : ' :: ' + (r.stderr || r.stdout || '').slice(0, 400)));
+  });
+
   console.log(`  total ${good} passed · ${bad} not · 合计 ${good} 条对 · ${bad} 条不对 ${bad ? '★' : '✓'}`);
   process.exitCode = bad ? 1 : 0; finished = true;
 })();
