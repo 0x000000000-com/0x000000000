@@ -289,7 +289,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     const r = b.reverse(); if (r.length !== 25 || r[0] !== 0x41) return false; const h = sha256(sha256(Uint8Array.from(r.slice(0, 21))));
     return h[0] === r[21] && h[1] === r[22] && h[2] === r[23] && h[3] === r[24]; };
   const addrOk = (a) => !!a && typeof a === 'object' && typeof a.chain === 'string' && Object.prototype.hasOwnProperty.call(ADDR_RE, a.chain) && typeof a.address === 'string' && ADDR_RE[a.chain].test(a.address) && (a.chain !== 'tron' || tronSumOk(a.address));
-  const cardOk = (j) => !!j && typeof j.name === 'string' && (!NAME || j.name.toLowerCase() === NAME)
+  const cardOk = (j) => !!j && typeof j.name === 'string' && /^[A-Za-z0-9_]{3,40}$/.test(j.name) && (!NAME || j.name.toLowerCase() === NAME)
     && (j.addresses == null || (Array.isArray(j.addresses) && j.addresses.every(addrOk)));
   // U3：认证到期时间一过，这一页自己就按「已过期」显示（不等重新打开）；店主名片不会到期
   const tidy = (j) => { if (Array.isArray(j.addresses)) j.addresses.forEach((a) => { if (a && a.imitate && !imitateOk(a)) a.imitate = null; });
