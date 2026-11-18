@@ -269,6 +269,13 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     const p = lo(i.pattern), c = lo(i.checkText);
     return i.end === 'tail' ? s.startsWith(p) && s.endsWith(c) : s.endsWith(p) && s.startsWith(c);
   };
+  // SECFIX6_20261118（Codex 第六轮 F1）：名片在显示、复制、二维码、核对之前先核两件事 ——
+  //   一、接口返回的名字必须就是请求的这个名字（NAME；官方名片也一样）；二、每个地址都要符合它那条链的格式（以太坊类 0x+40 位十六进制；波场 T+33 位 base58）。
+  //   任何一条不对 → 整张名片按「读不到」处理（state=down，不画任何地址、不给复制、二维码、核对）。格式对不能证明地址属于收款人，归属仍由平台保证。
+  const ADDR_RE = { evm: /^0x[0-9a-fA-F]{40}$/, tron: /^T[1-9A-HJ-NP-Za-km-z]{33}$/ };
+  const addrOk = (a) => !!a && typeof a === 'object' && Object.prototype.hasOwnProperty.call(ADDR_RE, a.chain) && typeof a.address === 'string' && ADDR_RE[a.chain].test(a.address);
+  const cardOk = (j) => !!j && typeof j.name === 'string' && (!NAME || j.name.toLowerCase() === NAME)
+    && (j.addresses == null || (Array.isArray(j.addresses) && j.addresses.every(addrOk)));
   // U3：认证到期时间一过，这一页自己就按「已过期」显示（不等重新打开）；店主名片不会到期
   const tidy = (j) => { if (Array.isArray(j.addresses)) j.addresses.forEach((a) => { if (a && a.imitate && !imitateOk(a)) a.imitate = null; });
     if (j.status === 'live' && !j.owner && !j.official && j.expiresAt && Date.now() > j.expiresAt) j.status = 'expired'; return j; };
@@ -325,6 +332,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
   //   开在前台时大约每分钟看一次、旧过 5 分钟就重读 —— 浏览器放慢计时器、网络慢的时候会更晚（SECFIX5_20261118：原来写成「最多旧 5 分钟多一点」，说过头了）。
   function usableNow(addr) {
     if (state !== 'ok' || !data) return false;
+    if (!cardOk(data)) { state = 'down'; data = null; render(); return false; }   // SECFIX6 F1：名片被改成对不上了 → 停用所有出口
     const was = data.status; tidy(data);
     if (data.status !== was) render();
     if (data.status === 'revoked' || data.status === 'expired') return false;
@@ -342,7 +350,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     try { await navigator.clipboard.writeText(text); btn.textContent = L.copied; setTimeout(() => { btn.textContent = isAddr ? L.copy : L.copySnip; }, 1800); }
     catch (e) { btn.textContent = L.copyFail; }
   }
-  function qrSvg(text) { const q = qrcode(0, 'M'); q.addData(text); q.make(); return q.createSvgTag({ cellSize: 4, margin: 2, scalable: true }); }
+  function qrSvg(text) { if (!/^(0x[0-9a-fA-F]{40}|T[1-9A-HJ-NP-Za-km-z]{33})$/.test(String(text))) return ''; const q = qrcode(0, 'M'); q.addData(text); q.make(); return q.createSvgTag({ cellSize: 4, margin: 2, scalable: true }); }
 
   // CARDPNG0X_20261001：页面顶上那张卡（跟机器人发的名片图同一个样子；二维码打开的就是这一页）。只放名片上本来就有的东西
   function sealSvg(kind) {
@@ -514,7 +522,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
       try {
         const r = await fetch('/api/card/' + encodeURIComponent(NAME), { cache: 'no-store' });
         if (r.status === 404) st = 'none';
-        else if (r.ok) { const j = await r.json(); if (j && typeof j.name === 'string' && (j.official || Array.isArray(j.addresses) || j.status === 'revoked' || j.status === 'expired')) { d = tidy(j); st = 'ok'; } }
+        else if (r.ok) { const j = await r.json(); if (j && typeof j.name === 'string' && (j.official || Array.isArray(j.addresses) || j.status === 'revoked' || j.status === 'expired') && cardOk(j)) { d = tidy(j); st = 'ok'; } }
       } catch (e) { /* 读不到算「读不到」，不沿用旧的 */ }
       if (seq !== LOAD_SEQ) return;
       state = st; data = d; fetchedAt = Date.now();

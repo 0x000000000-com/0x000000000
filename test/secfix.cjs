@@ -1072,6 +1072,32 @@ const APP = rd('js/app.js');
       if (Q.fetches[1]) Q.fetches[1].answer(200, card({ addresses: [{ chain: 'evm', address: A1 }] })); await tick();
       ok(Q.fetches.length === 2 && Q.clips.length === 0 && !Q.shows(A2), '6b (review 3, U3) a copy on a stale card whose address was taken off meanwhile gives nothing · 名片旧了、那个地址这期间拿掉了 → 复制不给');
     }
+    // ── review 6 (F1): name must match the request, address must fit its chain; otherwise every address exit is off · 第六轮：名字对得上、地址格式对得上，否则所有出口停用 ──
+    {
+      const TR = 'T' + 'A'.repeat(33), bads = [['0x123', 'evm'], ['0x' + 'g'.repeat(40), 'evm'], [A1 + '00', 'evm'], [TR, 'evm'], [A1, 'tron'], ['T' + 'l'.repeat(33), 'tron'], [A1, 'sol'], [A1, undefined]];
+      const P0 = await boot(card({ addresses: [{ chain: 'evm', address: A1 }, { chain: 'tron', address: TR }] }));
+      ok(P0.shows(A1) && P0.shows(TR) && !!P0.btn(TR, 0), '6b normal (review 6): a valid EVM address and a valid TRON address are both shown · 格式都对的以太坊类、波场地址照常显示');
+      let all = true, why = '';
+      for (const [addr, chain] of bads) {
+        const P = await boot(card({ addresses: [{ chain: 'evm', address: A1 }, { chain, address: addr }] }));
+        const off = !P.shows(A1) && !P.shows(addr) && !P.form() && P.clips.length === 0;
+        if (!off) { all = false; why += chain + ':' + addr.slice(0, 6) + ' '; }
+      }
+      ok(all, '6b attack (review 6, F1): one address with a wrong format for its chain (or an unknown chain) → the whole card shows no address, no copy, no QR, no compare ' + why + ' · 有一个地址格式对不上它那条链（或链不认识）→ 整张名片不显示任何地址、不给复制、二维码、核对');
+      const N = await boot(card({ name: 'mallory' }));
+      ok(!N.shows(A1) && !N.shows(A2) && !N.form(), '6b attack (review 6, F1): the API answers with another name\'s card → nothing shown · 接口回的是别人的名片 → 一个地址都不显示');
+      const N2 = await boot({ name: 'mallory', status: 'revoked', tier: 'blue' });
+      ok(N2.app.all().length <= 3, '6b (review 6): a revoked card for another name is not drawn either · 别人的「已撤销」名片也不画');
+      const C = await boot(card({ name: 'ALICE' }));
+      ok(C.shows(A1), '6b normal (review 6): the same name in another letter case is accepted · 名字只是大小写不同照常认');
+      // the card on screen turns bad later (stale re-read answers with a wrong card) → copy / QR give nothing
+      const S = await boot(card());
+      S.set(T0 + 6 * MIN); S.btn(A1, 0).fire('click'); await tick();
+      if (S.fetches[1]) S.fetches[1].answer(200, card({ addresses: [{ chain: 'evm', address: '0x123' }] })); await tick();
+      ok(S.clips.length === 0 && !S.shows(A1), '6b attack (review 6, F1): a re-read before copying returns a bad address → nothing copied, page shows none · 复制前重读回来的地址格式不对 → 不复制，页面不显示地址');
+      const O = await boot({ name: 'alice', official: true, site: 'https://0x000000000.com' }), O2 = await boot({ name: '0x000000000', official: true, site: 'https://0x000000000.com' });
+      ok(O.app.all().length > 5 && O2.app.all().length <= 3, '6b (review 6): an official-style card is drawn only when its name is the requested one; another name → shows the "cannot be read" notice only · 官方样式的名片也要名字对得上才画，对不上只显示「读不到」');
+    }
     // two triggers at once → one read; the page ends on what the platform said · 同时两个触发 → 只读一次；页面停在平台说的样子
     {
       const P = await boot(card());
