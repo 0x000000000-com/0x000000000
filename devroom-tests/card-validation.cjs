@@ -45,7 +45,7 @@ class Element {
   }
 }
 
-async function openCard(addresses, name = 'alice') {
+async function openCard(addresses, name = 'alice', requestedName = 'alice') {
   const elements = new Map();
   const clipboard = [];
   const document = {
@@ -60,14 +60,14 @@ async function openCard(addresses, name = 'alice') {
     addEventListener() {},
   };
   const context = vm.createContext({
-    document, location: { pathname: '/@alice', search: '' }, URLSearchParams,
+    document, location: { pathname: '/@' + requestedName, search: '' }, URLSearchParams,
     localStorage: { getItem: () => 'zh' },
     window: { addEventListener() {} },
     navigator: { clipboard: { async writeText(value) { clipboard.push(value); } } },
     crypto: webcrypto, TextEncoder, TextDecoder,
     setInterval() {}, setTimeout() {},
     async fetch(url) {
-      assert.equal(url, '/api/card/alice');
+      assert.equal(url, '/api/card/' + requestedName);
       return { status: 200, ok: true, json: async () => ({ name, status: 'live', tier: 'blue', addresses }) };
     },
   });
@@ -87,6 +87,10 @@ async function main() {
   const mismatch = await openCard([{ chain: 'evm', address: evm }], 'bob');
   assert.equal(mismatch.all().filter((node) => node.dataset.addr).length, 0, '姓名不一致时应停用地址');
   const failures = [];
+  const invalidName = await openCard([{ chain: 'evm', address: evm }], 'al\u212A', 'alk');
+  if (invalidName.all().some((node) => node.dataset.addr || node.dataset.copy || node.tag === 'form')) {
+    failures.push('接口姓名含用户名不允许的字符时应停用全部地址出口，实际仍展示可用名片');
+  }
   for (const [label, entry] of [
     ['波场地址的校验码不匹配', { chain: 'tron', address: tronAddress(false) }],
     ['链字段不是字符串', { chain: ['evm'], address: '0x' + 'cd'.repeat(20) }],
