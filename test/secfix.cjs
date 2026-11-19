@@ -1170,6 +1170,12 @@ const APP = rd('js/app.js');
     ok(r.status === 0, 'card (devroom-tests/card-validation.cjs): name charset, name mismatch, bad addresses disable every outlet; valid card still shows · 名片姓名字符范围、姓名不匹配、地址校验：坏名片全部出口停用，好名片照常' + (r.status === 0 ? '' : ' :: ' + (r.stderr || r.stdout || '').slice(0, 400)));
   });
 
+  // 内部巡检接口回归（devroom-tests/patrol.cjs）：令牌缺失、错误都拒绝且不泄露；公开 health 只有三样 · internal patrol endpoint regression
+  await section('patrol', async () => {
+    const r = require('node:child_process').spawnSync(process.execPath, [path.join('devroom-tests', 'patrol.cjs')], { cwd: path.resolve(__dirname, '..'), encoding: 'utf8' });
+    ok(r.status === 0, 'patrol (devroom-tests/patrol.cjs): missing / wrong token refused without leaking, right token gets attention, public health stays 3 fields · 内部巡检接口：没令牌、错令牌都拒绝且不泄露，对令牌才给 attention，公开 health 仍三样' + (r.status === 0 ? '' : ' :: ' + (r.stderr || r.stdout || '').slice(0, 400)));
+  });
+
   console.log(`  total ${good} passed · ${bad} not · 合计 ${good} 条对 · ${bad} 条不对 ${bad ? '★' : '✓'}`);
   process.exitCode = bad ? 1 : 0; finished = true;
 })();
