@@ -34,7 +34,7 @@ const dict = {
     navPpt: '说明书 · 6 步看懂',
     navWp: '白皮书',   // WPNAV0X_20260928
     // CONTRACT0X_20260928：三种铸造各一页、各一个名字（DSJ「名字和页面要不一样，不要让人给混了」）+ 首页三张入口卡片 + 以太坊类各链同址
-    navVanity: '个人靓号', navContract: '合约靓号', navToken: '发币地址定制', navFree: '免费生成',
+    navVanity: '个人靓号', navContract: '合约靓号', navToken: '发币地址定制',
     ecb1: '防骗提醒 →', ecb2: '个人靓号 ↓', ec3a: '合约靓号 →', ec3b: '发币地址定制 →',
     heroEvm: '0x 开头的靓号：同一把私钥，在以太坊、BSC、Polygon、Arbitrum、Optimism、Base、Avalanche C 链这些以太坊类的链上都是同一个地址 —— 买一个，这些链都能用。每条链上的钱是分开记的，转账时选对链。',
     // CONTRACT0X_20260928：防混第 1、2 条 —— 页首「你现在在」+ 三格对照表（表里的字跟 js/c2app.js 的 cmpRows 逐字相同，order-ui.test 第 8 段比对）
@@ -299,7 +299,7 @@ const dict = {
     heroCta: 'Start minting →',
     navPpt: 'How it works · 6 steps',
     navWp: 'White paper',
-    navVanity: 'Vanity Wallet', navContract: 'Vanity Contract', navToken: 'Token Address', navFree: 'Free Generator',
+    navVanity: 'Vanity Wallet', navContract: 'Vanity Contract', navToken: 'Token Address',
     ecb1: 'Scam alerts →', ecb2: 'Vanity Wallet ↓', ec3a: 'Vanity Contract →', ec3b: 'Token Address →',
     heroEvm: '0x vanity addresses: the same private key gives the same address on Ethereum, BSC, Polygon, Arbitrum, Optimism, Base, Avalanche C-Chain and other Ethereum-type chains - buy one, use it on all of them. Funds on each chain are kept separately, so pick the right chain when you send.',
     hereBig: 'You are on: Vanity Wallet (for individuals and merchants)',
@@ -545,7 +545,7 @@ const dict = {
     heroCta: 'Mulai cetak →',
     navPpt: 'Cara kerja · 6 langkah',
     navWp: 'Whitepaper',
-    navVanity: 'Dompet Cantik', navContract: 'Kontrak Cantik', navToken: 'Alamat Token', navFree: 'Generator Gratis',
+    navVanity: 'Dompet Cantik', navContract: 'Kontrak Cantik', navToken: 'Alamat Token',
     ecb1: 'Peringatan penipuan →', ecb2: 'Dompet Cantik ↓', ec3a: 'Kontrak Cantik →', ec3b: 'Alamat Token →',
     heroEvm: 'Alamat cantik 0x: kunci privat yang sama menghasilkan alamat yang sama di Ethereum, BSC, Polygon, Arbitrum, Optimism, Base, Avalanche C-Chain, dan jaringan tipe Ethereum lainnya - beli satu, pakai di semuanya. Dana di tiap jaringan dicatat terpisah, jadi pilih jaringan yang benar saat mengirim.',
     hereBig: 'Anda sedang di: Dompet Cantik (untuk perorangan dan pedagang)',
