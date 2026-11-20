@@ -136,6 +136,7 @@ const dict = {
     loginLbl: '用 Telegram 登录：换电脑、换浏览器也看得到挂在你账号下的订单。',
     loginBtn: '用 Telegram 登录', loginOpen: '打开 Telegram', loginCancel: '取消', logoutBtn: '退出',
     hdrLogin: '登录', acctOrders: '我的订单',   // LOGINTOP0X_20261120：右上角那个登录按键
+    pvAria: '零九零宣传片（30 秒）', pvPlay: '播放', pvSndOn: '打开声音', pvSndOff: '关闭声音',   // PROMOVID0X_20261121：首页的宣传片（这几个只做按键的说明文字，页面上只画图标）
     loginWait: (code, bot) => '在 Telegram 里打开 @' + bot + '，点「确认登录（' + code + '）」—— 数字跟这里一样才点。点完这一页几秒内自己登录。',
     loginAs: (name) => '已用 Telegram 登录：' + name,
     loginDenied: '你在 Telegram 里点了「不是我」，这一页没有登录。',
@@ -411,6 +412,7 @@ const dict = {
     loginLbl: 'Log in with Telegram to see the orders kept with your account on any computer or browser.',
     loginBtn: 'Log in with Telegram', loginOpen: 'Open Telegram', loginCancel: 'Cancel', logoutBtn: 'Log out',
     hdrLogin: 'Log in', acctOrders: 'My orders',   // LOGINTOP0X_20261120
+    pvAria: '0x000000000 promo video (30 seconds)', pvPlay: 'Play', pvSndOn: 'Sound on', pvSndOff: 'Sound off',   // PROMOVID0X_20261121
     loginWait: (code, bot) => 'In Telegram, open @' + bot + ' and tap "Confirm login (' + code + ')" - only if the number matches this one. This page logs in by itself within a few seconds.',
     loginAs: (name) => 'Logged in with Telegram: ' + name,
     loginDenied: 'You tapped "Not me" in Telegram - this page is not logged in.',
@@ -676,6 +678,7 @@ const dict = {
     loginLbl: 'Masuk dengan Telegram untuk melihat pesanan yang tersimpan di akun Anda dari komputer atau browser mana pun.',
     loginBtn: 'Masuk dengan Telegram', loginOpen: 'Buka Telegram', loginCancel: 'Batal', logoutBtn: 'Keluar',
     hdrLogin: 'Masuk', acctOrders: 'Pesanan saya',   // LOGINTOP0X_20261120
+    pvAria: 'Video promosi 0x000000000 (30 detik)', pvPlay: 'Putar', pvSndOn: 'Nyalakan suara', pvSndOff: 'Matikan suara',   // PROMOVID0X_20261121
     loginWait: (code, bot) => 'Di Telegram, buka @' + bot + ' dan ketuk "Konfirmasi masuk (' + code + ')" - hanya jika angkanya sama dengan yang ini. Halaman ini akan masuk sendiri dalam beberapa detik.',
     loginAs: (name) => 'Masuk dengan Telegram: ' + name,
     loginDenied: 'Anda mengetuk "Bukan saya" di Telegram - halaman ini tidak masuk.',
@@ -891,6 +894,7 @@ function applyStaticLang() {
   if (typeof renderRef === 'function') renderRef();              // REF0X：推荐码那一句跟着换语言
   tickerRestart();
   if (typeof window.fcLang === 'function') window.fcLang();   // FREECHECK0X_20260928：免费查、快讯自己画出来的字也跟着换
+  if (typeof renderPromo === 'function') renderPromo();      // PROMOVID0X_20261121：宣传片按键的说明文字跟着换
 }
 function applyLang(save) {
   if (save) { try { localStorage.setItem(LANG_KEY, lang); } catch (e) {} }
@@ -2260,6 +2264,73 @@ setInterval(tickUtc, 1000);
 const ON_SITE = /(^|\.)0x000000000\.com$/i.test(location.hostname);
 // LOGINTG0X_20261120：「我的订单」那一块网站上也露出来 —— 网站上只放登录条和挂在账号下的单（renderLogin 管），6 步照旧只在下载下来的那一页
 [['#dlGate', !ON_SITE], ['#flowWrap', ON_SITE]].forEach(([sel, hide]) => { const e = $(sel); if (e) e.hidden = hide; });
+// ── PROMOVID0X_20261121：首页的宣传片（DSJ 11-21 05:40「可以把这个视频放在网页，让人进来就可以看。但是因为你做的是竖屏版，
+//   所以用户看的时候不要让他们看见左右两边的黑屏。」）—— 框是 9:16、跟片子一样（样式在 index.html 里），所以不会有黑边。
+//   只在网站上：片子的地址到这里才写进 <video>，下载下来的那一页一个请求都不多发。浏览器只许【静音】自动播放 → 静音循环放，右下角一个喇叭开声音。
+//   滚出屏幕就停、滚回来接着放；点画面暂停 / 接着放。系统设了「减少动态效果」或「省流量」就不自动放：摆第一帧 + 播放键，点了才放。
+//   拿不到片子（404、断网、浏览器放不了）→ 整块藏起来，排法回到没有它的样子。
+//   现在只有中文版：三种语言都放它；PROMO_SRC 里加一种语言（如 en: '/media/promo-en'）就换那种语言的片子。
+const PROMO_SRC = { zh: '/media/promo-zh' };
+const PV = { on: false, src: '', user: false, blocked: false, io: null };
+const PV_ICON = {
+  off: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 9.2h3.8L12 5v14l-4.7-4.2H3.5z" fill="currentColor"/><path d="M15.6 9.4l5 5.2M20.6 9.4l-5 5.2" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></svg>',
+  on: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 9.2h3.8L12 5v14l-4.7-4.2H3.5z" fill="currentColor"/><path d="M15.4 8.6a4.9 4.9 0 0 1 0 6.8M17.9 6.2a8.4 8.4 0 0 1 0 11.6" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></svg>',
+  play: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7.5 5.2v13.6L19 12z" fill="currentColor"/></svg>' };
+function renderPromo() {
+  const box = $('#promoVid'); if (!box || !PV.on) return;
+  const v = $('#pvVideo'), s = $('#pvSnd'), p = $('#pvPlay');
+  const want = PROMO_SRC[lang] || PROMO_SRC.zh;
+  if (PV.src !== want) {                                  // 第一次，或者换了一种有自己片子的语言
+    PV.src = want; v.poster = want + '.jpg'; v.src = want + '.mp4';
+    if (!PV.blocked && !PV.user) pvPlay();
+  }
+  v.setAttribute('aria-label', t('pvAria'));
+  const loud = !v.muted, lbl = loud ? t('pvSndOff') : t('pvSndOn');   // 两个都写成 t('…')：字典死词条检查按这个写法认（order-ui 测试）
+  s.setAttribute('aria-pressed', loud ? 'true' : 'false');
+  s.setAttribute('aria-label', lbl); s.title = lbl;
+  if (s.dataset.st !== (loud ? 'on' : 'off')) { s.dataset.st = loud ? 'on' : 'off'; s.innerHTML = PV_ICON[s.dataset.st]; }
+  p.setAttribute('aria-label', t('pvPlay')); p.title = t('pvPlay');
+  if (!p.firstChild) p.innerHTML = PV_ICON.play;
+  p.hidden = !(v.paused && (PV.user || PV.blocked));
+}
+function pvPlay() {
+  const v = $('#pvVideo'); if (!v || !PV.on) return;
+  const r = v.play();
+  if (r && r.catch) r.catch((e) => { if (e && e.name === 'NotAllowedError') { PV.blocked = true; renderPromo(); } });   // 浏览器不让自动放（省电模式之类）→ 摆播放键
+}
+function pvHide() {
+  PV.on = false; const box = $('#promoVid'); if (box) box.hidden = true;
+  if (PV.io) PV.io.disconnect();
+  const v = $('#pvVideo'); if (v) { try { v.pause(); v.removeAttribute('src'); v.load(); } catch (e) {} }
+}
+(() => {
+  const box = $('#promoVid'), v = $('#pvVideo'); if (!box || !v || !ON_SITE) return;
+  let save = false; try { save = !!(navigator.connection && navigator.connection.saveData); } catch (e) {}
+  PV.on = true; PV.blocked = reducedMotion || save;
+  v.muted = true; v.defaultMuted = true; v.playsInline = true;
+  v.preload = PV.blocked ? 'metadata' : 'auto';
+  v.addEventListener('error', pvHide);
+  ['play', 'pause', 'volumechange'].forEach((ev) => v.addEventListener(ev, renderPromo));
+  box.addEventListener('click', (e) => {
+    const snd = e.target.closest && e.target.closest('#pvSnd');
+    if (snd) { v.muted = !v.muted; if (!v.muted && v.paused) { PV.user = false; PV.blocked = false; pvPlay(); } return; }
+    if (v.paused) { PV.user = false; PV.blocked = false; pvPlay(); } else { PV.user = true; v.pause(); }
+  });
+  v.addEventListener('keydown', (e) => {                  // 键盘也能停 / 接着放（空格、回车）
+    if (e.key !== ' ' && e.key !== 'Enter') return;
+    e.preventDefault(); if (v.paused) { PV.user = false; PV.blocked = false; pvPlay(); } else { PV.user = true; v.pause(); }
+  });
+  box.hidden = false;
+  if ('IntersectionObserver' in window) {                 // 露出来不到 2 成就停（也不在后面一直响），回来接着放 —— 他自己按了暂停的不动。
+    //   2 成不是 3、4 成：320×640 的小手机上顶栏占得多，进来时片子只露出 3 成多，门槛高了它进来就不放（20261121 量过）
+    PV.io = new IntersectionObserver((es) => { for (const en of es) {
+      if (en.intersectionRatio >= 0.2) { if (v.paused && !PV.user && !PV.blocked) pvPlay(); }
+      else if (!v.paused) v.pause();
+    } }, { threshold: [0, 0.2] });
+    PV.io.observe(box);
+  }
+  renderPromo();
+})();
 // REF0X_20260928：网站上有推荐码 → 下载的文件名带上它 + 「下载」那一块最上面说一句（带复制按钮）
 function renderRef() {
   const box = $('#dlRef'); if (!box) return;
