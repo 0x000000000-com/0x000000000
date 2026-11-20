@@ -577,6 +577,38 @@ details.netline[open]>summary{margin-bottom:4px}
    跟 .note 同一个办法：放不下的长串才折行，普通字不受影响。 */
 #payInfo .lbl,.c2form>.step-desc{overflow-wrap:anywhere}
 </style>
+<style>
+/* LOGINTOP0X_20261120：右上角的登录按键（只在网站上露出来）+ 它下面弹出来的那一小块。宽屏：排在语言按键后面、第一行最右边。
+   写在这一页里、不写进 css/style.css：那份样式还拼进合约页、发币页、免费页三个单文件，也挂在别的页面上 —— 只这一页有这个按键。
+   顶栏的排法只在它露出来的时候（网站上）才动 —— 下载下来的那一页一个像素都不变：
+   平板（≤900）：第一行 logo + 标题 + 它（最右），时钟和语言换到第二行靠右；手机（≤640）：第一行左 logo、右登录，标题自己一行。
+   不这样它会被挤到第二、三行的最左边（20261120 云端 Chromium 量过 641~900 宽）。 */
+.acct{position:relative;flex:none;margin-left:6px}
+button.run.acct-btn{font-size:12px;padding:4px 12px;border:1px solid var(--gold-d);max-width:11em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;vertical-align:middle}
+button.run.acct-btn.in{background:rgba(201,162,39,.14);color:var(--gold-b);font-weight:600}
+.acct-pop{position:absolute;right:0;top:calc(100% + 8px);z-index:60;display:block;width:min(340px,calc(100vw - 24px));box-sizing:border-box;
+  background:var(--panel);border:1px solid var(--gold-d);border-radius:8px;padding:12px 14px;box-shadow:0 12px 32px rgba(0,0,0,.6);text-align:left;white-space:normal}
+.acct-lbl{display:block;font-size:12.5px;color:var(--dim);line-height:1.6;overflow-wrap:anywhere}
+.acct-code{display:block;margin-top:8px;font-family:var(--mono);font-size:26px;font-weight:700;letter-spacing:.18em;color:var(--gold-b)}
+.acct-row{display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;margin-top:10px}
+.acct-pop .step-desc{display:block;margin-top:8px;overflow-wrap:anywhere}
+.acct-pop .step-desc:empty{display:none}
+@media (max-width:900px){                       /* 第一行跟第二行中间那条空行（::after）本身高 0，上下两个行距各收一半 —— 行距跟原来一样 10 像素 */
+  .titlebar:has(#acct:not([hidden])){row-gap:5px}
+  .titlebar:has(#acct:not([hidden])) .acct{order:1;margin-left:auto}
+  .titlebar:has(#acct:not([hidden]))::after{content:"";order:2;flex:0 0 100%;height:0}
+  .titlebar:has(#acct:not([hidden])) .utc{order:3}
+  .titlebar:has(#acct:not([hidden])) .lang{order:4}
+  .titlebar:has(#acct:not([hidden])) .topnav{margin-top:5px}
+}
+@media (max-width:640px){
+  .titlebar:has(#acct:not([hidden])){row-gap:10px}
+  .titlebar:has(#acct:not([hidden])) .acct{order:0}
+  .titlebar:has(#acct:not([hidden])) .ttl{order:1;flex:1 1 100%}
+  .titlebar:has(#acct:not([hidden]))::after{display:none}
+  .titlebar:has(#acct:not([hidden])) .topnav{margin-top:0}
+}
+</style>
 </head>
 <body class="p-vanity">
 <div class="cosmos" aria-hidden="true">
@@ -603,6 +635,24 @@ details.netline[open]>summary{margin-bottom:4px}
       <button id="btnZh" data-lang="zh">中文</button>
       <button id="btnEn" data-lang="en">EN</button>
       <button id="btnId" data-lang="id">ID</button>
+    </span>
+    <!-- LOGINTOP0X_20261120：DSJ 11-20 18:47「你应该把登录按键放在右上方，用户比较容易看见」。只在 0x000000000.com 上露出来（renderAcct 管）；
+         下载下来的那一页它一直藏着、不多发一个请求。点它跟「我的订单」那一块的「用 Telegram 登录」是同一套（同一个 LOGIN、同一串请求），
+         数字和「打开 Telegram」就在它下面弹出来。 -->
+    <span class="acct" id="acct" hidden>
+      <button class="run acct-btn" id="acctBtn" type="button" aria-haspopup="true" aria-expanded="false" aria-controls="acctPop">Log in</button>
+      <span class="acct-pop" id="acctPop" hidden>
+        <span class="acct-lbl" id="acctLbl"></span>
+        <span class="acct-code" id="acctCode" hidden></span>
+        <span class="acct-row">
+          <button class="run" id="acctGo" type="button" hidden data-i18n="loginBtn">Log in with Telegram</button>
+          <button class="run" id="acctOpen" type="button" hidden data-i18n="loginOpen">Open Telegram</button>
+          <button class="copy" id="acctCancel" type="button" hidden data-i18n="loginCancel">Cancel</button>
+          <button class="copy" id="acctOrders" type="button" hidden data-i18n="acctOrders">My orders</button>
+          <button class="copy" id="acctOut" type="button" hidden data-i18n="logoutBtn">Log out</button>
+        </span>
+        <span class="step-desc" id="acctMsg"></span>
+      </span>
     </span>
   </div>
   <!-- TICKER0X_20260924：DSJ「在网页横梁上做一个像打代码出现的一段字…一直重复…我们不骗取用户信任，我们提供证明」 -->
@@ -754,7 +804,7 @@ details.netline[open]>summary{margin-bottom:4px}
           <ul class="proof">
             <li data-i18n="proof1">Your half of the key is created on your own computer and only ever stored there. The platform only receives a public key (public, like a bank account number) and signatures (proof that you hold your half, without revealing it). Everything the minting page says to the platform is listed at its bottom under "Every word this page said to the platform" - check it yourself.</li>
             <li data-i18n="proof2">"Make key" needs no network: switch off Wi-Fi before clicking and it still works.</li>
-            <li><span data-i18n="proof3">This page is a single file, byte-for-byte identical to the copy published on GitHub. GitHub's machines download the live page on an hourly schedule (not guaranteed to be on time) and compare fingerprints, and run the whole flow in a real browser on every new version to check that no private key is sent; anyone can see the results. We wrote those checks - the strongest check is to compute this file's SHA-256 yourself and compare it with the one on GitHub.</span> <span class="dim"><span data-i18n="proofVer">page version</span> <span id="buildId">83cc7fb97896</span></span></li>
+            <li><span data-i18n="proof3">This page is a single file, byte-for-byte identical to the copy published on GitHub. GitHub's machines download the live page on an hourly schedule (not guaranteed to be on time) and compare fingerprints, and run the whole flow in a real browser on every new version to check that no private key is sent; anyone can see the results. We wrote those checks - the strongest check is to compute this file's SHA-256 yourself and compare it with the one on GitHub.</span> <span class="dim"><span data-i18n="proofVer">page version</span> <span id="buildId">ed1651aeff3c</span></span></li>
           </ul></details>
           <!-- LESSMORE0X_20260929：原来这里还有一个「下载铸造页面到自己电脑上」—— 网站上它跟下面那个大「下载」按钮重复，下载下来的那份又一直把它藏着（藏了还留下一个孤零零的「·」）。拿掉，只留「到 GitHub 核对」。 -->
           <div class="proof-links"><a href="https://github.com/0x000000000-com/0x000000000" target="_blank" rel="noopener" data-i18n="proofGh">Verify on GitHub</a></div>
@@ -1717,6 +1767,7 @@ const dict = {
     // LOGINTG0X_20261120：网站上用 Telegram 登录
     loginLbl: '用 Telegram 登录：换电脑、换浏览器也看得到挂在你账号下的订单。',
     loginBtn: '用 Telegram 登录', loginOpen: '打开 Telegram', loginCancel: '取消', logoutBtn: '退出',
+    hdrLogin: '登录', acctOrders: '我的订单',   // LOGINTOP0X_20261120：右上角那个登录按键
     loginWait: (code, bot) => '在 Telegram 里打开 @' + bot + '，点「确认登录（' + code + '）」—— 数字跟这里一样才点。点完这一页几秒内自己登录。',
     loginAs: (name) => '已用 Telegram 登录：' + name,
     loginDenied: '你在 Telegram 里点了「不是我」，这一页没有登录。',
@@ -1991,6 +2042,7 @@ const dict = {
     // LOGINTG0X_20261120
     loginLbl: 'Log in with Telegram to see the orders kept with your account on any computer or browser.',
     loginBtn: 'Log in with Telegram', loginOpen: 'Open Telegram', loginCancel: 'Cancel', logoutBtn: 'Log out',
+    hdrLogin: 'Log in', acctOrders: 'My orders',   // LOGINTOP0X_20261120
     loginWait: (code, bot) => 'In Telegram, open @' + bot + ' and tap "Confirm login (' + code + ')" - only if the number matches this one. This page logs in by itself within a few seconds.',
     loginAs: (name) => 'Logged in with Telegram: ' + name,
     loginDenied: 'You tapped "Not me" in Telegram - this page is not logged in.',
@@ -2255,6 +2307,7 @@ const dict = {
     // LOGINTG0X_20261120
     loginLbl: 'Masuk dengan Telegram untuk melihat pesanan yang tersimpan di akun Anda dari komputer atau browser mana pun.',
     loginBtn: 'Masuk dengan Telegram', loginOpen: 'Buka Telegram', loginCancel: 'Batal', logoutBtn: 'Keluar',
+    hdrLogin: 'Masuk', acctOrders: 'Pesanan saya',   // LOGINTOP0X_20261120
     loginWait: (code, bot) => 'Di Telegram, buka @' + bot + ' dan ketuk "Konfirmasi masuk (' + code + ')" - hanya jika angkanya sama dengan yang ini. Halaman ini akan masuk sendiri dalam beberapa detik.',
     loginAs: (name) => 'Masuk dengan Telegram: ' + name,
     loginDenied: 'Anda mengetuk "Bukan saya" di Telegram - halaman ini tidak masuk.',
@@ -2668,7 +2721,7 @@ function forgetOrder(id) {
 //   私钥外发检查的白名单（每个请求都要能逐字重算）照旧成立。
 //   登录凭证存在这个浏览器里（0x_login），只跟「看我的订单 / 挂一张单 / 退出」这三条请求走；碰不到钥匙、碰不到钱。
 const LOGIN_KEY = '0x_login';
-const LOGIN = { t: null, name: '', ids: [], poll: null, code: '', bot: '', link: '', until: 0, msg: null, warn: false, timer: 0, gen: 0 };
+const LOGIN = { t: null, name: '', ids: [], poll: null, code: '', bot: '', link: '', until: 0, msg: null, warn: false, timer: 0, gen: 0, pop: false };   // pop：LOGINTOP0X_20261120 右上角弹出来那一块开着没有
 try { const v = JSON.parse(localStorage.getItem(LOGIN_KEY) || 'null'); if (v && /^[A-Za-z0-9_-]{43}$/.test(v.t)) { LOGIN.t = v.t; LOGIN.name = String(v.n || '').slice(0, 40); } } catch (e) {}
 function loginSave() {
   try { if (LOGIN.t) localStorage.setItem(LOGIN_KEY, JSON.stringify({ t: LOGIN.t, n: LOGIN.name })); else localStorage.removeItem(LOGIN_KEY); } catch (e) {}
@@ -3624,6 +3677,7 @@ if ($('#resumeBtn')) {
    登录了：「我的订单」列挂在这个号下的单（网站上没有 6 步，接着做要回下载下来的那一页），还能把一张订单按订单号挂上来。 */
 function loginSay(f, warn) { LOGIN.msg = f; LOGIN.warn = !!warn; }
 function renderLogin() {
+  renderAcct();                                  // LOGINTOP0X_20261120：右上角跟着同一个 LOGIN 画
   const bar = $('#loginBar'); if (!bar) return;
   bar.hidden = !ON_SITE;
   const rc = $('#resumeId') && $('#resumeId').closest('.flow-ctl');
@@ -3641,6 +3695,39 @@ function renderLogin() {
   m.textContent = LOGIN.msg ? LOGIN.msg() : '';
   m.className = 'step-desc' + (LOGIN.msg && LOGIN.warn ? ' warn' : '');
 }
+// ── LOGINTOP0X_20261120：右上角的登录按键（DSJ 11-20 18:47「你应该把登录按键放在右上方，用户比较容易看见」）──
+//   跟「我的订单」那一块的登录条读同一个 LOGIN、走同一串请求，只是换个看得见的地方。只在网站上；下载下来的那一页它一直藏着。
+//   没登录：点一下就开始登录，4 位数字和「打开 Telegram」在按键下面弹出来。登录了：按键上是名字，点开是「我的订单」「退出」。
+function renderAcct() {
+  const box = $('#acct'); if (!box) return;
+  box.hidden = !ON_SITE;
+  if (!ON_SITE) return;
+  const inn = !!LOGIN.t, wait = !inn && !!LOGIN.poll, nm = LOGIN.name || 'Telegram', btn = $('#acctBtn');
+  btn.textContent = inn ? nm : t('hdrLogin');
+  btn.title = inn ? t('loginAs')(nm) : t('loginBtn');
+  btn.classList.toggle('in', inn);
+  btn.setAttribute('aria-expanded', LOGIN.pop ? 'true' : 'false');
+  $('#acctPop').hidden = !LOGIN.pop;
+  $('#acctLbl').textContent = inn ? t('loginAs')(nm) : wait ? t('loginWait')(LOGIN.code, LOGIN.bot) : t('loginLbl');
+  const c = $('#acctCode'); c.textContent = wait ? LOGIN.code : ''; c.hidden = !wait;
+  $('#acctGo').hidden = inn || wait;
+  $('#acctOpen').hidden = !wait;
+  $('#acctCancel').hidden = !wait;
+  $('#acctOrders').hidden = !inn;
+  $('#acctOut').hidden = !inn;
+  const m = $('#acctMsg');
+  m.textContent = LOGIN.msg ? LOGIN.msg() : '';
+  m.className = 'step-desc' + (LOGIN.msg && LOGIN.warn ? ' warn' : '');
+}
+function acctClick() {
+  if (!LOGIN.t && !LOGIN.poll) { LOGIN.pop = true; return loginStart(); }   // 没登录：点一下就开始
+  LOGIN.pop = !LOGIN.pop; renderAcct();
+}
+function acctToOrders() {
+  LOGIN.pop = false; renderAcct();
+  const s = $('#secOrders'); if (s) s.scrollIntoView({ behavior: reducedMotion ? 'auto' : 'smooth', block: 'start' });
+}
+const loginOpenTg = () => { if (/^https:\/\/t\.me\//.test(LOGIN.link)) window.open(LOGIN.link, '_blank', 'noopener'); };
 async function loginStart() {
   const g = ++LOGIN.gen;
   loginSay(null); renderLogin();
@@ -3705,7 +3792,11 @@ async function loginAdd() {
 {
   const on = (sel, f) => { const e = $(sel); if (e) e.addEventListener('click', f); };
   on('#loginBtn', loginStart); on('#loginCancel', loginCancel); on('#logoutBtn', logout); on('#loginAddBtn', loginAdd);
-  on('#loginOpen', () => { if (/^https:\/\/t\.me\//.test(LOGIN.link)) window.open(LOGIN.link, '_blank', 'noopener'); });
+  on('#loginOpen', loginOpenTg);
+  // LOGINTOP0X_20261120：右上角那一套 —— 点外面、按 Esc 收起来
+  on('#acctBtn', acctClick); on('#acctGo', loginStart); on('#acctOpen', loginOpenTg); on('#acctCancel', loginCancel); on('#acctOut', () => { LOGIN.pop = false; return logout(); }); on('#acctOrders', acctToOrders);
+  document.addEventListener('click', (e) => { if (LOGIN.pop && !e.target.closest('#acct')) { LOGIN.pop = false; renderAcct(); } });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && LOGIN.pop) { LOGIN.pop = false; renderAcct(); const b = $('#acctBtn'); if (b) b.focus(); } });
   const ai = $('#loginAddId'); if (ai) ai.addEventListener('keydown', (e) => { if (e.key === 'Enter') loginAdd(); });
   // 从 Telegram 切回来：马上问一次，不等下一个 2 秒
   document.addEventListener('visibilitychange', () => { if (!document.hidden && LOGIN.poll) loginTick(LOGIN.gen); });
