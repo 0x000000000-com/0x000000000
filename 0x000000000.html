@@ -597,7 +597,7 @@ details.netline[open]>summary{margin-bottom:4px}
     <!-- WPNAV0X_20260928：白皮书 0x000000000.com/wp 的入口（首页单文件本来就要重过白名单和 GitHub，这一次一起放进来） -->
     <!-- CONTRACT0X_20260928：DSJ「合约靓号 / 发币地址定制：在网页增加导航…名字和页面要不一样，不要让人给混了」——
          三种铸造各一页、各一个名字；这一页是「个人靓号」，导航上标着「你在这」。 -->
-    <nav class="topnav" aria-label="guide"><a id="navVanity" class="cur" aria-current="page" href="/" data-site="" data-i18n="navVanity">Vanity Wallet</a><a id="navContract" href="/contract" data-site="contract" data-i18n="navContract">Vanity Contract</a><a id="navToken" href="/token" data-site="token" data-i18n="navToken">Token Address</a><a id="navFree" href="/free" data-site="free" data-i18n="navFree">Free Generator</a><a id="navPpt" href="/ppt" data-site="ppt" data-i18n="navPpt">How it works · 6 steps</a><a id="navWp" href="/wp" data-site="wp" data-i18n="navWp">White paper</a></nav>
+    <nav class="topnav" aria-label="guide"><a id="navVanity" class="cur" aria-current="page" href="/" data-site="" data-i18n="navVanity">Vanity Wallet</a><a id="navContract" href="/contract" data-site="contract" data-i18n="navContract">Vanity Contract</a><a id="navToken" href="/token" data-site="token" data-i18n="navToken">Token Address</a><a id="navPpt" href="/ppt" data-site="ppt" data-i18n="navPpt">How it works · 6 steps</a><a id="navWp" href="/wp" data-site="wp" data-i18n="navWp">White paper</a></nav>
     <span class="utc" id="utcClock">--:--:-- UTC</span>
     <span class="lang">
       <button id="btnZh" data-lang="zh">中文</button>
@@ -754,7 +754,7 @@ details.netline[open]>summary{margin-bottom:4px}
           <ul class="proof">
             <li data-i18n="proof1">Your half of the key is created on your own computer and only ever stored there. The platform only receives a public key (public, like a bank account number) and signatures (proof that you hold your half, without revealing it). Everything the minting page says to the platform is listed at its bottom under "Every word this page said to the platform" - check it yourself.</li>
             <li data-i18n="proof2">"Make key" needs no network: switch off Wi-Fi before clicking and it still works.</li>
-            <li><span data-i18n="proof3">This page is a single file, byte-for-byte identical to the copy published on GitHub. GitHub's machines download the live page on an hourly schedule (not guaranteed to be on time) and compare fingerprints, and run the whole flow in a real browser on every new version to check that no private key is sent; anyone can see the results. We wrote those checks - the strongest check is to compute this file's SHA-256 yourself and compare it with the one on GitHub.</span> <span class="dim"><span data-i18n="proofVer">page version</span> <span id="buildId">fc6b06cba344</span></span></li>
+            <li><span data-i18n="proof3">This page is a single file, byte-for-byte identical to the copy published on GitHub. GitHub's machines download the live page on an hourly schedule (not guaranteed to be on time) and compare fingerprints, and run the whole flow in a real browser on every new version to check that no private key is sent; anyone can see the results. We wrote those checks - the strongest check is to compute this file's SHA-256 yourself and compare it with the one on GitHub.</span> <span class="dim"><span data-i18n="proofVer">page version</span> <span id="buildId">77470187bb59</span></span></li>
           </ul></details>
           <!-- LESSMORE0X_20260929：原来这里还有一个「下载铸造页面到自己电脑上」—— 网站上它跟下面那个大「下载」按钮重复，下载下来的那份又一直把它藏着（藏了还留下一个孤零零的「·」）。拿掉，只留「到 GitHub 核对」。 -->
           <div class="proof-links"><a href="https://github.com/0x000000000-com/0x000000000" target="_blank" rel="noopener" data-i18n="proofGh">Verify on GitHub</a></div>
@@ -1602,7 +1602,7 @@ const dict = {
     navPpt: '说明书 · 6 步看懂',
     navWp: '白皮书',   // WPNAV0X_20260928
     // CONTRACT0X_20260928：三种铸造各一页、各一个名字（DSJ「名字和页面要不一样，不要让人给混了」）+ 首页三张入口卡片 + 以太坊类各链同址
-    navVanity: '个人靓号', navContract: '合约靓号', navToken: '发币地址定制', navFree: '免费生成',
+    navVanity: '个人靓号', navContract: '合约靓号', navToken: '发币地址定制',
     ecb1: '防骗提醒 →', ecb2: '个人靓号 ↓', ec3a: '合约靓号 →', ec3b: '发币地址定制 →',
     heroEvm: '0x 开头的靓号：同一把私钥，在以太坊、BSC、Polygon、Arbitrum、Optimism、Base、Avalanche C 链这些以太坊类的链上都是同一个地址 —— 买一个，这些链都能用。每条链上的钱是分开记的，转账时选对链。',
     // CONTRACT0X_20260928：防混第 1、2 条 —— 页首「你现在在」+ 三格对照表（表里的字跟 js/c2app.js 的 cmpRows 逐字相同，order-ui.test 第 8 段比对）
@@ -1867,7 +1867,7 @@ const dict = {
     heroCta: 'Start minting →',
     navPpt: 'How it works · 6 steps',
     navWp: 'White paper',
-    navVanity: 'Vanity Wallet', navContract: 'Vanity Contract', navToken: 'Token Address', navFree: 'Free Generator',
+    navVanity: 'Vanity Wallet', navContract: 'Vanity Contract', navToken: 'Token Address',
     ecb1: 'Scam alerts →', ecb2: 'Vanity Wallet ↓', ec3a: 'Vanity Contract →', ec3b: 'Token Address →',
     heroEvm: '0x vanity addresses: the same private key gives the same address on Ethereum, BSC, Polygon, Arbitrum, Optimism, Base, Avalanche C-Chain and other Ethereum-type chains - buy one, use it on all of them. Funds on each chain are kept separately, so pick the right chain when you send.',
     hereBig: 'You are on: Vanity Wallet (for individuals and merchants)',
@@ -2113,7 +2113,7 @@ const dict = {
     heroCta: 'Mulai cetak →',
     navPpt: 'Cara kerja · 6 langkah',
     navWp: 'Whitepaper',
-    navVanity: 'Dompet Cantik', navContract: 'Kontrak Cantik', navToken: 'Alamat Token', navFree: 'Generator Gratis',
+    navVanity: 'Dompet Cantik', navContract: 'Kontrak Cantik', navToken: 'Alamat Token',
     ecb1: 'Peringatan penipuan →', ecb2: 'Dompet Cantik ↓', ec3a: 'Kontrak Cantik →', ec3b: 'Alamat Token →',
     heroEvm: 'Alamat cantik 0x: kunci privat yang sama menghasilkan alamat yang sama di Ethereum, BSC, Polygon, Arbitrum, Optimism, Base, Avalanche C-Chain, dan jaringan tipe Ethereum lainnya - beli satu, pakai di semuanya. Dana di tiap jaringan dicatat terpisah, jadi pilih jaringan yang benar saat mengirim.',
     hereBig: 'Anda sedang di: Dompet Cantik (untuk perorangan dan pedagang)',

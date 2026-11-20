@@ -68,7 +68,7 @@ td.num{font-variant-numeric:tabular-nums;white-space:nowrap}
     <span class="ttl" id="ttl">0x000000000 — Zero board</span>
     <span class="utc" id="utcClock">--:--:-- UTC</span>
     <span class="lang"><button type="button" data-lang-btn="zh">中文</button><button type="button" data-lang-btn="en">EN</button><button type="button" data-lang-btn="id">ID</button></span>
-    <nav class="topnav" aria-label="products"><a id="navVanity" href="/">Vanity Wallet</a><a id="navContract" href="/contract">Vanity Contract</a><a id="navToken" href="/token">Token Address</a><a id="navFree" href="/free">Free Generator</a><a id="navWp" href="/wp">White paper</a></nav>
+    <nav class="topnav" aria-label="products"><a id="navVanity" href="/">Vanity Wallet</a><a id="navContract" href="/contract">Vanity Contract</a><a id="navToken" href="/token">Token Address</a><a id="navWp" href="/wp">White paper</a></nav>
   </div>
   <section class="here"><div class="here-big" id="hereBig">Zero board: how many zeros right after 0x</div><div class="here-sub" id="hereSub"></div></section>
   <section class="box">
@@ -94,7 +94,7 @@ td.num{font-variant-numeric:tabular-nums;white-space:nowrap}
   <section class="box">
     <div class="h2" id="honestH">Honestly</div>
     <ul class="why" id="honestL"></ul>
-    <div class="lbl"><a href="/free" id="toFree">Free Generator</a> · <a href="/" id="toVanity">Vanity Wallet</a></div>
+    <div class="lbl"><a href="/" id="toVanity">Vanity Wallet</a></div>
   </section>
   <footer class="foot">
     <div id="footLinks"><a href="/faq.html">FAQ</a> · <a href="/partners.html">Partners</a> · <a href="/verify.html">Verification</a> · <a href="/alerts.html">Paid alerts</a></div>
@@ -113,7 +113,7 @@ td.num{font-variant-numeric:tabular-nums;white-space:nowrap}
   var lang = (function () { try { var v = localStorage.getItem(LANG_KEY); return v === 'zh' || v === 'en' || v === 'id' ? v : 'en'; } catch (e) { return 'en'; } })();   // IDLANG0X_20260928：多一种印尼文 id
   var D = {
     zh: {
-      ttl: '0x000000000 — 零之榜', navVanity: '个人靓号', navContract: '合约靓号', navToken: '发币地址定制', navFree: '免费生成', navWp: '白皮书',
+      ttl: '0x000000000 — 零之榜', navVanity: '个人靓号', navContract: '合约靓号', navToken: '发币地址定制', navWp: '白皮书',
       hereBig: '零之榜：0x 后面开头连着几个 0', hereSub: '比的是数学，谁也作不了假。自愿上榜；上榜要先证明地址是你的。',
       boardH: '榜单', cols: ['名次', '地址', '开头几个 0', '上榜日期', '认证'],
       empty: '还没有人上榜 —— 第一个就是你。', total: function (n) { return '一共 ' + n + ' 个地址上榜（这里列前 100 名）'; }, loadFail: '榜单这次没取到（断网了？）—— 刷新一下再试。',
@@ -127,16 +127,16 @@ td.num{font-variant-numeric:tabular-nums;white-space:nowrap}
       already: function (r) { return '这个地址已经在榜上：第 ' + r + ' 名。'; },
       netFail: '连不上平台（断网了？）—— 过一会再试。',
       honestH: '照实说',
-      honest: ['只收以太坊类地址：波场地址里根本没有 0 这个字。', '开头至少 5 个 0 才能上榜。免费生成能在你自己的电脑上算到 5 个 0（正好够上榜）；更多的交给显卡（个人靓号）。',
+      honest: ['只收以太坊类地址：波场地址里根本没有 0 这个字。', '开头至少 5 个 0 才能上榜；要更多的 0，交给显卡（个人靓号）。',
         '我们证明的是「这个地址在你手里」，不证明你是谁。榜上不放任何人自己写的字（免得有人拿榜单打广告、冒充）—— 认证过的地址会带上认证名字。',
         '零头是转给你自己的另一个地址：钱不经过我们，也不用把钱包连到这个网站。'],
-      toFree: '去免费生成', toVanity: '去个人靓号',
+      toVanity: '去个人靓号',
       footLinks: '常见问题 · 招商 · 认证 · 付费提醒',
       footNever: '零九零永远不会让你连接钱包、不会让你在钱包 App 里给我们签名或授权、不会让你转钱给我们来「验证」。凡是这样要求你的，一定是假的。',
       footOne: '官方网址只有一个：0x 000 000 000 .com（0x 后面 9 个 0）· 零九零没有发行任何代币 · 收藏官网，以后只从收藏夹进。'
     },
     en: {
-      ttl: '0x000000000 — Zero board', navVanity: 'Vanity Wallet', navContract: 'Vanity Contract', navToken: 'Token Address', navFree: 'Free Generator', navWp: 'White paper',
+      ttl: '0x000000000 — Zero board', navVanity: 'Vanity Wallet', navContract: 'Vanity Contract', navToken: 'Token Address', navWp: 'White paper',
       hereBig: 'Zero board: how many zeros right after 0x', hereSub: 'It is maths - nobody can fake it. Joining is voluntary, and you first prove the address is yours.',
       boardH: 'The board', cols: ['#', 'Address', 'Zeros at the start', 'Joined', 'Verified'],
       empty: 'Nobody is on the board yet - be the first.', total: function (n) { return n + (n === 1 ? ' address' : ' addresses') + ' on the board (the top 100 are listed here)'; }, loadFail: 'The board could not be loaded (offline?) - reload to try again.',
@@ -150,17 +150,17 @@ td.num{font-variant-numeric:tabular-nums;white-space:nowrap}
       already: function (r) { return 'This address is already on the board: #' + r + '.'; },
       netFail: 'Cannot reach the platform (offline?) - try again shortly.',
       honestH: 'Honestly',
-      honest: ['EVM addresses only: TRON addresses have no 0 at all.', 'At least 5 zeros at the start to go on the board. The Free Generator can reach 5 zeros on your own computer (just enough for the board); more is a job for the GPU (Vanity Wallet).',
+      honest: ['EVM addresses only: TRON addresses have no 0 at all.', 'At least 5 zeros at the start to go on the board; more zeros are a job for the GPU (Vanity Wallet).',
         'We prove that the address is in your hands, not who you are. The board shows no text written by anyone (so nobody can use it to advertise or impersonate) - verified addresses carry their verified name.',
         'The tiny amount goes to another address of yours: the money never passes through us, and you never connect a wallet to this website.'],
-      toFree: 'Go to the Free Generator', toVanity: 'Go to Vanity Wallet',
+      toVanity: 'Go to Vanity Wallet',
       footLinks: 'FAQ · Partners · Verification · Paid alerts',
       footNever: '0x000000000 will never ask you to connect your wallet, to sign or approve anything for us in a wallet app, or to send us money to "verify". Anyone who asks is fake.',
       footOne: 'The only official website: 0x 000 000 000 .com (nine zeros after 0x) · 0x000000000 has not issued any token · bookmark it and always come in from the bookmark.'
     },
     // IDLANG0X_20260928：印尼文（DSJ「增加印尼文」）。键、数组长度、函数参数跟 en 一一对应。
     id: {
-      ttl: '0x000000000 — Papan Nol', navVanity: 'Dompet Cantik', navContract: 'Kontrak Cantik', navToken: 'Alamat Token', navFree: 'Generator Gratis', navWp: 'Whitepaper',
+      ttl: '0x000000000 — Papan Nol', navVanity: 'Dompet Cantik', navContract: 'Kontrak Cantik', navToken: 'Alamat Token', navWp: 'Whitepaper',
       hereBig: 'Papan Nol: berapa banyak angka nol tepat setelah 0x', hereSub: 'Ini matematika - tidak ada yang bisa memalsukannya. Ikut serta bersifat sukarela, dan Anda harus membuktikan dulu bahwa alamat itu milik Anda.',
       boardH: 'Papan', cols: ['#', 'Alamat', 'Nol di awal', 'Bergabung', 'Terverifikasi'],
       empty: 'Belum ada yang masuk papan - jadilah yang pertama.', total: function (n) { return n + ' alamat di papan (100 teratas ditampilkan di sini)'; }, loadFail: 'Papan tidak bisa dimuat (offline?) - muat ulang untuk mencoba lagi.',
@@ -174,10 +174,10 @@ td.num{font-variant-numeric:tabular-nums;white-space:nowrap}
       already: function (r) { return 'Alamat ini sudah ada di papan: #' + r + '.'; },
       netFail: 'Tidak bisa menghubungi platform (offline?) - coba lagi sebentar lagi.',
       honestH: 'Jujur saja',
-      honest: ['Hanya alamat EVM: alamat TRON sama sekali tidak memiliki 0.', 'Minimal 5 angka nol di awal untuk masuk papan. Generator Gratis bisa mencapai 5 angka nol di komputer Anda sendiri (pas untuk masuk papan); lebih dari itu adalah tugas GPU (Dompet Cantik).',
+      honest: ['Hanya alamat EVM: alamat TRON sama sekali tidak memiliki 0.', 'Minimal 5 angka nol di awal untuk masuk papan; lebih banyak angka nol adalah tugas GPU (Dompet Cantik).',
         'Kami membuktikan bahwa alamat itu ada di tangan Anda, bukan siapa Anda. Papan ini tidak menampilkan teks yang ditulis siapa pun (agar tidak ada yang memakainya untuk beriklan atau menyamar) - alamat yang terverifikasi membawa nama verifikasinya.',
         'Jumlah kecil itu dikirim ke alamat Anda yang lain: uangnya tidak pernah melewati kami, dan Anda tidak pernah menghubungkan dompet ke situs web ini.'],
-      toFree: 'Ke Generator Gratis', toVanity: 'Ke Dompet Cantik',
+      toVanity: 'Ke Dompet Cantik',
       footLinks: 'FAQ · Mitra · Verifikasi · Peringatan berbayar',
       footNever: '0x000000000 tidak akan pernah meminta Anda menghubungkan dompet, menandatangani atau menyetujui apa pun untuk kami di aplikasi dompet, atau mengirim uang untuk "verifikasi". Siapa pun yang meminta itu adalah palsu.',
       footOne: 'Satu-satunya situs resmi: 0x 000 000 000 .com (sembilan angka nol setelah 0x) · 0x000000000 tidak pernah menerbitkan token apa pun · simpan di bookmark dan selalu masuk dari bookmark.'
@@ -211,7 +211,7 @@ td.num{font-variant-numeric:tabular-nums;white-space:nowrap}
   function render() {
     var t = T();
     document.documentElement.lang = lang; document.title = t.ttl; txt('ttl', t.ttl);
-    ['navVanity', 'navContract', 'navToken', 'navFree', 'navWp', 'hereBig', 'hereSub', 'boardH', 'addrL', 'txL', 'honestH', 'toFree', 'toVanity', 'footNever', 'footOne'].forEach(function (k) { txt(k, t[k]); });
+    ['navVanity', 'navContract', 'navToken', 'navWp', 'hereBig', 'hereSub', 'boardH', 'addrL', 'txL', 'honestH', 'toVanity', 'footNever', 'footOne'].forEach(function (k) { txt(k, t[k]); });
     txt('joinH', MODE === 'join' ? t.joinH : t.leaveH);
     $('#joinSteps').innerHTML = (MODE === 'join' ? t.joinSteps : t.leaveSteps).map(function (x) { return '<li>' + esc(x) + '</li>'; }).join('');
     $('#honestL').innerHTML = t.honest.map(function (x) { return '<li>' + esc(x) + '</li>'; }).join('');
@@ -245,7 +245,7 @@ td.num{font-variant-numeric:tabular-nums;white-space:nowrap}
   });
   $('#btnMode').addEventListener('click', function () { MODE = MODE === 'join' ? 'leave' : 'join'; CH = null; $('#proveBox').hidden = true; res('askRes', '', ''); render(); });
   document.querySelectorAll('[data-lang-btn]').forEach(function (b) { b.addEventListener('click', function () { lang = b.getAttribute('data-lang-btn'); try { localStorage.setItem(LANG_KEY, lang); } catch (e) {} render(); }); });
-  // 从免费生成页带过来的地址在 # 后面（不进网址、不发给谁）：填进框里，你自己点才出题
+  // 链接带过来的地址在 # 后面（不进网址、不发给谁；以前免费生成页这样带，FREEGENOFF0X_20261120 起那一页下线）：填进框里，你自己点才出题
   try { var h = decodeURIComponent(location.hash.slice(1)); if (/^0x[0-9a-fA-F]{40}$/.test(h)) $('#addrIn').value = h; } catch (e) {}
   setInterval(function () { txt('utcClock', new Date().toISOString().slice(11, 19) + ' UTC'); }, 1000);
   render(); load();
