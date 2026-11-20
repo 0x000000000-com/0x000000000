@@ -135,6 +135,7 @@ const dict = {
     // LOGINTG0X_20261120：网站上用 Telegram 登录
     loginLbl: '用 Telegram 登录：换电脑、换浏览器也看得到挂在你账号下的订单。',
     loginBtn: '用 Telegram 登录', loginOpen: '打开 Telegram', loginCancel: '取消', logoutBtn: '退出',
+    hdrLogin: '登录', acctOrders: '我的订单',   // LOGINTOP0X_20261120：右上角那个登录按键
     loginWait: (code, bot) => '在 Telegram 里打开 @' + bot + '，点「确认登录（' + code + '）」—— 数字跟这里一样才点。点完这一页几秒内自己登录。',
     loginAs: (name) => '已用 Telegram 登录：' + name,
     loginDenied: '你在 Telegram 里点了「不是我」，这一页没有登录。',
@@ -409,6 +410,7 @@ const dict = {
     // LOGINTG0X_20261120
     loginLbl: 'Log in with Telegram to see the orders kept with your account on any computer or browser.',
     loginBtn: 'Log in with Telegram', loginOpen: 'Open Telegram', loginCancel: 'Cancel', logoutBtn: 'Log out',
+    hdrLogin: 'Log in', acctOrders: 'My orders',   // LOGINTOP0X_20261120
     loginWait: (code, bot) => 'In Telegram, open @' + bot + ' and tap "Confirm login (' + code + ')" - only if the number matches this one. This page logs in by itself within a few seconds.',
     loginAs: (name) => 'Logged in with Telegram: ' + name,
     loginDenied: 'You tapped "Not me" in Telegram - this page is not logged in.',
@@ -673,6 +675,7 @@ const dict = {
     // LOGINTG0X_20261120
     loginLbl: 'Masuk dengan Telegram untuk melihat pesanan yang tersimpan di akun Anda dari komputer atau browser mana pun.',
     loginBtn: 'Masuk dengan Telegram', loginOpen: 'Buka Telegram', loginCancel: 'Batal', logoutBtn: 'Keluar',
+    hdrLogin: 'Masuk', acctOrders: 'Pesanan saya',   // LOGINTOP0X_20261120
     loginWait: (code, bot) => 'Di Telegram, buka @' + bot + ' dan ketuk "Konfirmasi masuk (' + code + ')" - hanya jika angkanya sama dengan yang ini. Halaman ini akan masuk sendiri dalam beberapa detik.',
     loginAs: (name) => 'Masuk dengan Telegram: ' + name,
     loginDenied: 'Anda mengetuk "Bukan saya" di Telegram - halaman ini tidak masuk.',
@@ -1086,7 +1089,7 @@ function forgetOrder(id) {
 //   私钥外发检查的白名单（每个请求都要能逐字重算）照旧成立。
 //   登录凭证存在这个浏览器里（0x_login），只跟「看我的订单 / 挂一张单 / 退出」这三条请求走；碰不到钥匙、碰不到钱。
 const LOGIN_KEY = '0x_login';
-const LOGIN = { t: null, name: '', ids: [], poll: null, code: '', bot: '', link: '', until: 0, msg: null, warn: false, timer: 0, gen: 0 };
+const LOGIN = { t: null, name: '', ids: [], poll: null, code: '', bot: '', link: '', until: 0, msg: null, warn: false, timer: 0, gen: 0, pop: false };   // pop：LOGINTOP0X_20261120 右上角弹出来那一块开着没有
 try { const v = JSON.parse(localStorage.getItem(LOGIN_KEY) || 'null'); if (v && /^[A-Za-z0-9_-]{43}$/.test(v.t)) { LOGIN.t = v.t; LOGIN.name = String(v.n || '').slice(0, 40); } } catch (e) {}
 function loginSave() {
   try { if (LOGIN.t) localStorage.setItem(LOGIN_KEY, JSON.stringify({ t: LOGIN.t, n: LOGIN.name })); else localStorage.removeItem(LOGIN_KEY); } catch (e) {}
@@ -2042,6 +2045,7 @@ if ($('#resumeBtn')) {
    登录了：「我的订单」列挂在这个号下的单（网站上没有 6 步，接着做要回下载下来的那一页），还能把一张订单按订单号挂上来。 */
 function loginSay(f, warn) { LOGIN.msg = f; LOGIN.warn = !!warn; }
 function renderLogin() {
+  renderAcct();                                  // LOGINTOP0X_20261120：右上角跟着同一个 LOGIN 画
   const bar = $('#loginBar'); if (!bar) return;
   bar.hidden = !ON_SITE;
   const rc = $('#resumeId') && $('#resumeId').closest('.flow-ctl');
@@ -2059,6 +2063,39 @@ function renderLogin() {
   m.textContent = LOGIN.msg ? LOGIN.msg() : '';
   m.className = 'step-desc' + (LOGIN.msg && LOGIN.warn ? ' warn' : '');
 }
+// ── LOGINTOP0X_20261120：右上角的登录按键（DSJ 11-20 18:47「你应该把登录按键放在右上方，用户比较容易看见」）──
+//   跟「我的订单」那一块的登录条读同一个 LOGIN、走同一串请求，只是换个看得见的地方。只在网站上；下载下来的那一页它一直藏着。
+//   没登录：点一下就开始登录，4 位数字和「打开 Telegram」在按键下面弹出来。登录了：按键上是名字，点开是「我的订单」「退出」。
+function renderAcct() {
+  const box = $('#acct'); if (!box) return;
+  box.hidden = !ON_SITE;
+  if (!ON_SITE) return;
+  const inn = !!LOGIN.t, wait = !inn && !!LOGIN.poll, nm = LOGIN.name || 'Telegram', btn = $('#acctBtn');
+  btn.textContent = inn ? nm : t('hdrLogin');
+  btn.title = inn ? t('loginAs')(nm) : t('loginBtn');
+  btn.classList.toggle('in', inn);
+  btn.setAttribute('aria-expanded', LOGIN.pop ? 'true' : 'false');
+  $('#acctPop').hidden = !LOGIN.pop;
+  $('#acctLbl').textContent = inn ? t('loginAs')(nm) : wait ? t('loginWait')(LOGIN.code, LOGIN.bot) : t('loginLbl');
+  const c = $('#acctCode'); c.textContent = wait ? LOGIN.code : ''; c.hidden = !wait;
+  $('#acctGo').hidden = inn || wait;
+  $('#acctOpen').hidden = !wait;
+  $('#acctCancel').hidden = !wait;
+  $('#acctOrders').hidden = !inn;
+  $('#acctOut').hidden = !inn;
+  const m = $('#acctMsg');
+  m.textContent = LOGIN.msg ? LOGIN.msg() : '';
+  m.className = 'step-desc' + (LOGIN.msg && LOGIN.warn ? ' warn' : '');
+}
+function acctClick() {
+  if (!LOGIN.t && !LOGIN.poll) { LOGIN.pop = true; return loginStart(); }   // 没登录：点一下就开始
+  LOGIN.pop = !LOGIN.pop; renderAcct();
+}
+function acctToOrders() {
+  LOGIN.pop = false; renderAcct();
+  const s = $('#secOrders'); if (s) s.scrollIntoView({ behavior: reducedMotion ? 'auto' : 'smooth', block: 'start' });
+}
+const loginOpenTg = () => { if (/^https:\/\/t\.me\//.test(LOGIN.link)) window.open(LOGIN.link, '_blank', 'noopener'); };
 async function loginStart() {
   const g = ++LOGIN.gen;
   loginSay(null); renderLogin();
@@ -2123,7 +2160,11 @@ async function loginAdd() {
 {
   const on = (sel, f) => { const e = $(sel); if (e) e.addEventListener('click', f); };
   on('#loginBtn', loginStart); on('#loginCancel', loginCancel); on('#logoutBtn', logout); on('#loginAddBtn', loginAdd);
-  on('#loginOpen', () => { if (/^https:\/\/t\.me\//.test(LOGIN.link)) window.open(LOGIN.link, '_blank', 'noopener'); });
+  on('#loginOpen', loginOpenTg);
+  // LOGINTOP0X_20261120：右上角那一套 —— 点外面、按 Esc 收起来
+  on('#acctBtn', acctClick); on('#acctGo', loginStart); on('#acctOpen', loginOpenTg); on('#acctCancel', loginCancel); on('#acctOut', () => { LOGIN.pop = false; return logout(); }); on('#acctOrders', acctToOrders);
+  document.addEventListener('click', (e) => { if (LOGIN.pop && !e.target.closest('#acct')) { LOGIN.pop = false; renderAcct(); } });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && LOGIN.pop) { LOGIN.pop = false; renderAcct(); const b = $('#acctBtn'); if (b) b.focus(); } });
   const ai = $('#loginAddId'); if (ai) ai.addEventListener('keydown', (e) => { if (e.key === 'Enter') loginAdd(); });
   // 从 Telegram 切回来：马上问一次，不等下一个 2 秒
   document.addEventListener('visibilitychange', () => { if (!document.hidden && LOGIN.poll) loginTick(LOGIN.gen); });
