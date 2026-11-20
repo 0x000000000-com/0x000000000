@@ -3,6 +3,8 @@
 //   可复现：不许有时间戳、随机数。
 //   NONET 闸：这一页一个请求都不发 —— 成品里不许出现任何发请求的写法（fetch、XMLHttpRequest、WebSocket、EventSource、sendBeacon、importScripts、
 //     <img>/<iframe>/<link>/<script> 外链）。这是「不看运行、只看字」的那一半；另一半是私钥外发检查用真浏览器数请求（必须 0 个）。
+// FREEGENOFF0X_20261120：免费生成下线（DSJ 11-20「免费生成地址也拿掉」）—— free.html 只剩一页「已下线」的说明，只拼三份样式；
+//   另加一道：成品里不许出现任何算钥匙的代码（KEYCODE），这一页只能是说明。
 // 用法：node build-free.mjs [源码目录] [输出目录]
 import fs from 'fs';
 import path from 'path';
@@ -14,8 +16,8 @@ const ARGS = process.argv.slice(2).filter((a) => !a.startsWith('--'));
 const DIR = ARGS[0] || HERE, OUTDIR = ARGS[1] || DIR;
 const rd = (rel) => fs.readFileSync(path.join(DIR, rel), 'utf8').replace(/\r\n/g, '\n');
 export const PAGE = ['free.html', '0x000000000-free.html'];
-const PARTS = [['css/fonts.css', 'style'], ['css/fonts-extra.css', 'style'], ['css/style.css', 'style'],
-  ['js/news.js', 'script'], ['js/noble.js', 'script'], ['js/keycore.js', 'script'], ['js/freegen.js', 'script'], ['js/freeapp.js', 'script']];
+const PARTS = [['css/fonts.css', 'style'], ['css/fonts-extra.css', 'style'], ['css/style.css', 'style']];
+const KEYCODE = [/getRandomValues/, /\bFreeGen\b/, /\bKeyCore\b/, /\bnoble\b/i, /privateKey|secretKey/, /<input\b[^>]*type=["']?password/i];
 const NONET = [/\bfetch\s*\(/, /XMLHttpRequest/, /\bWebSocket\b/, /\bEventSource\b/, /sendBeacon/, /importScripts/, /\bnew\s+Image\s*\(/, /\.src\s*=/];
 const BANNED = [/挖/, /ECDLP/, /P\s*=\s*A\s*\+\s*b/, /\bmines?\b/i, /\bmining\b/i, /\bminers?\b/i];
 
@@ -44,6 +46,7 @@ export function buildFree() {
   // NONET：成品里不许有发请求的写法（样式表里的 url(data:…) 不算请求）
   for (const re of NONET) { const m = html.match(re); if (m) throw new Error(`NONET：${dst} 里出现了发请求的写法「${m[0]}」（第 ${html.slice(0, m.index).split('\n').length} 行）`); }
   for (const re of BANNED) { const m = html.match(re); if (m) throw new Error(`禁用词：${dst} 里出现了「${m[0]}」`); }
+  for (const re of KEYCODE) { const m = html.match(re); if (m) throw new Error(`KEYCODE：免费生成已下线，${dst} 里不许再有算钥匙的代码，却出现了「${m[0]}」`); }
   const styles = [...html.matchAll(/<style\b[^>]*>([\s\S]*?)<\/style>/g)].map((m) => m[1]).join('\n');
   const css = styles.match(/url\(\s*(?!["']?(?:data:|#|%23))[^)]*\)/);      // 样式表里的 url()：只许 data:（字体）或页内 #引用
   if (css) throw new Error('NONET：样式表里有不是 data: 的 url()：' + css[0]);
