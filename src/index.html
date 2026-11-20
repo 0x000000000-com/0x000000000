@@ -53,6 +53,31 @@ button.run.acct-btn.in{background:rgba(201,162,39,.14);color:var(--gold-b);font-
   .titlebar:has(#acct:not([hidden]))::after{display:none}
   .titlebar:has(#acct:not([hidden])) .topnav{margin-top:0}
 }
+/* PROMOVID0X_20261121：首页的宣传片（只在网站上露出来）。DSJ 11-21「…但是因为你做的是竖屏版，所以用户看的时候不要让他们看见左右两边的黑屏」：
+   框跟片子一样是 9:16（aspect-ratio），片子铺满框（object-fit:cover；比例一样，所以一个像素都不裁）—— 哪一边都没有黑条。
+   手机（≤640）：从屏幕左边贴到右边（左右各伸出 12 像素，正好抵掉 body 在这个宽度下的边距），放在免费查上面，进来第一眼就是它；
+   宽一点（>640）：放在免费查、安全快讯的右边，高度按一屏算（屏幕高减 240，最高 640），两样并排，第一屏整个看得见。
+   喇叭在右上角、播放键在 42% 高的地方：手机上片子比一屏高，放在下面的话进来第一眼看不到。
+   外面那层 .pvtop 平时是 display:contents —— 片子藏着的时候（下载下来的那一页、拿不到片子）排法跟原来一模一样。 */
+.pvtop{display:contents}
+.pv{position:relative;aspect-ratio:9/16;margin:0 -12px 20px;background:#07080d;overflow:hidden;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.pv video{display:block;width:100%;height:100%;object-fit:cover;background:#07080d}
+.pv button{position:absolute;z-index:2;display:flex;align-items:center;justify-content:center;padding:0;cursor:pointer;color:var(--gold-b);
+  background:rgba(6,7,12,.68);border:1px solid rgba(235,198,92,.5);border-radius:50%;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+.pv button svg{display:block}
+.pv-snd{right:12px;top:12px;width:42px;height:42px}
+.pv-snd svg{width:20px;height:20px}
+.pv-snd[aria-pressed="true"]{background:rgba(201,162,39,.22)}
+.pv-play{left:50%;top:42%;width:72px;height:72px;margin:-36px 0 0 -36px}
+.pv-play svg{width:30px;height:30px;margin-left:4px}
+@media (min-width:641px){
+  .pvtop:has(> #promoVid:not([hidden])){display:grid;grid-template-columns:minmax(0,1fr) min(42%,360px,max(220px,calc((100vh - 240px) * .5625)));
+    grid-template-rows:auto 1fr;column-gap:24px;align-items:start;margin:6px 0 22px}
+  .pvtop > .pv{grid-column:2;grid-row:1 / span 2;margin:0;border-radius:12px;box-shadow:0 0 0 1px var(--line2),0 18px 40px rgba(0,0,0,.45)}
+  .pvtop:has(> #promoVid:not([hidden])) > .fc{grid-column:1;grid-row:1;margin-top:0}
+  .pvtop:has(> #promoVid:not([hidden])) > .ncards{grid-column:1;grid-row:2;margin-bottom:0}
+  .pvtop:has(> #promoVid:not([hidden])) .nc-wrap{grid-template-columns:1fr}
+}
 </style>
 </head>
 <body class="p-vanity">
@@ -106,6 +131,16 @@ button.run.acct-btn.in{background:rgba(201,162,39,.14);color:var(--gold-b);font-
 
   <div class="body" id="body">
 
+    <!-- PROMOVID0X_20261121：首页的宣传片（DSJ 11-21 05:40「可以把这个视频放在网页，让人进来就可以看。但是因为你做的是竖屏版，所以用户看的时候不要让他们看见左右两边的黑屏。」）
+         只在网站上露出来，也只在网站上才去拿片子（地址由 app.js 写进去）—— 下载下来的那一页它一直藏着、一个请求都不多发。
+         外面这一层 .pvtop 只在片子露出来时才排成左右两栏（宽屏）；平时 display:contents，排法一个像素不变。 -->
+    <div class="pvtop">
+    <section class="pv" id="promoVid" hidden>
+      <video id="pvVideo" tabindex="0" muted playsinline loop preload="none" disablepictureinpicture disableremoteplayback></video>
+      <button type="button" class="pv-play" id="pvPlay" hidden></button>
+      <button type="button" class="pv-snd" id="pvSnd" aria-pressed="false"></button>
+    </section>
+
     <!-- FREECHECK0X_20260928：首页正中间的免费查（构思 v3：像 Google、Namecheap 那样，页面上最大的就是它；框的上下边沿各一条金色代码流）。
          代码流里的「地址」是随手编的，波场、以太坊类轮着来，每一个都故意带一个那一类地址里不可能有的字（波场带「0」，以太坊类带「x」）—— 没人能照着转钱。 -->
     <section class="fc" id="secCheck" aria-labelledby="fcTitle">
@@ -133,6 +168,7 @@ button.run.acct-btn.in{background:rgba(201,162,39,.14);color:var(--gold-b);font-
       <div class="nc-head"><span id="ncHead">Security news</span> <button type="button" class="peek" id="newsAllBtn">See all 66 cases →</button></div>
       <div class="nc-wrap" id="ncWrap"></div>
     </section>
+    </div><!-- /.pvtop（PROMOVID0X_20261121） -->
 
     <!-- CONTRACT0X_20260928：入口（构思 v3 第一章：防骗提醒 · 个人靓号 · 给项目方）—— 三样东西三页，名字、颜色都不一样。
          LESSMORE0X_20260929（DSJ 09-29「可以，做吧」）：三张卡片改成一排按钮 —— 每样是什么，下面「三个铸造页」那张对照表点开就在。 -->
