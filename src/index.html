@@ -252,6 +252,20 @@
     <section class="block" id="secOrders">
       <div class="prompt">PS C:\0x000000000&gt; <span class="cmd">Get-MyOrders</span></div>
       <div class="out">
+        <!-- LOGINTG0X_20261120：网站上用 Telegram 登录（DSJ 11-20）。只在 0x000000000.com 上露出来；下载下来的铸造页面不登录、不多发一个请求 -->
+        <div class="flow-ctl" id="loginBar" hidden>
+          <span class="lbl" id="loginLbl"></span>
+          <button class="run" id="loginBtn" type="button" data-i18n="loginBtn">Log in with Telegram</button>
+          <button class="run" id="loginOpen" type="button" hidden data-i18n="loginOpen">Open Telegram</button>
+          <button class="copy" id="loginCancel" type="button" hidden data-i18n="loginCancel">Cancel</button>
+          <button class="copy" id="logoutBtn" type="button" hidden data-i18n="logoutBtn">Log out</button>
+          <div id="loginAdd" hidden>
+            <span class="lbl" data-i18n="loginAddLbl">Keep an order with your account (the order number is on the minting page you ordered from):</span>
+            <input id="loginAddId" maxlength="8" spellcheck="false" aria-label="order number" data-i18n-ph="ordersIdPh" placeholder="order number (8 chars)">
+            <button class="run" id="loginAddBtn" type="button" data-i18n="loginAddBtn">Add to my account</button>
+          </div>
+          <div class="step-desc" id="loginMsg"></div>
+        </div>
         <div class="tblwrap">
           <table>
             <thead>
