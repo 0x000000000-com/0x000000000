@@ -1,109 +1,77 @@
-// noleak-free.cjs —— 免费生成页的私钥外发检查（公开，任何人都能自己跑）。FREEGEN0X_20260928
-// Private-key leak check for the Free Generator page (public; anyone can run it).
+// noleak-free.cjs —— /free 那一页的外发检查（公开，任何人都能自己跑）。FREEGEN0X_20260928 · FREEGENOFF0X_20261120
+// Leak check for the /free page (public; anyone can run it).
 //
-// 用真浏览器打开网站上那【一个文件】（0x000000000-free.html），真的生成几个地址，逐个核对：
-//   ① 页面发出去的请求：除了打开页面那一次，一个都没有（没有接口、没有图片、没有字体、没有 WebSocket）
-//   ② 断网也能生成：先打开再断网；另一种是下载下来、一开始就断网双击打开
-//   ③ 存下来的钱包文件，用你设的密码解开，得到的钥匙算出来的地址 = 页面上显示的那个地址，而且对得上图案
-//   ④ 只钉开头、最多 5 位（FREEPRE0X_20260928：钉结尾拿掉了，不给 7 位）：页面上没有「钉哪一头」的选项；超过 5 位的打不进去，判法也不认
-// 用法：cd test && npm ci && npx playwright install --with-deps chromium
-//       node noleak-free.cjs ../0x000000000-free.html ./node_modules
+// 2026-11-20 起免费生成下线，/free（0x000000000-free.html）只剩一页说明。这一份核的是：
+//   ① 网站上打开（中文 / English / Indonesia 各一次）、下载下来断网双击打开：除了打开页面那一次，一个请求都不发
+//   ② 页面里没有任何算钥匙的东西：没有输入框、没有密码框、没有 getRandomValues / FreeGen / KeyCore
+//   ③ 每种语言都看得见「已下线」那句话和回首页的链接；切语言不发请求；页面不报错
+// Since 2026-11-20 the Free Generator is retired and /free is a short notice. This checks: no requests besides loading the page
+// (on the site in all three languages, and as a downloaded file opened offline), no key-making code, the notice visible in each language.
+// 用法 · usage：cd test && npm ci && npx playwright install --with-deps chromium
+//              node noleak-free.cjs ../0x000000000-free.html ./node_modules
 const { chromium } = require('playwright');
-const crypto = require('crypto');
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
+const http = require('http');
 const { pathToFileURL } = require('url');
 
 const PAGE_FILE = path.resolve(process.argv[2] || path.join(__dirname, '..', '0x000000000-free.html'));
-const NM = path.resolve(process.argv[3] || path.join(__dirname, 'node_modules'));
 const html = fs.readFileSync(PAGE_FILE, 'utf8');
-const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 let fail = 0; const chk = (ok, m) => { if (!ok) { fail++; console.log('  ★ ' + m); } else console.log('  ✓ ' + m); };
-const PW = 'a long test password 42';
-const B58 = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz';
-function b58(buf) { let n = BigInt('0x' + buf.toString('hex')), s = ''; while (n > 0n) { s = B58[Number(n % 58n)] + s; n /= 58n; } for (const b of buf) { if (b === 0) s = '1' + s; else break; } return s; }
+const SAY = { zh: '免费生成已下线', en: 'The Free Generator is retired', id: 'Generator Gratis sudah dihentikan' };
+const KEYCODE = [/getRandomValues/, /\bFreeGen\b/, /\bKeyCore\b/, /privateKey|secretKey/, /<input\b/i, /\bfetch\s*\(/, /XMLHttpRequest/, /\bWebSocket\b/, /sendBeacon/, /\bnew\s+Worker\s*\(/];
 
 (async () => {
-  const N = await import(pathToFileURL(path.join(NM, '@noble/secp256k1/index.js')).href);
-  const { keccak_256 } = await import(pathToFileURL(path.join(NM, '@noble/hashes/sha3.js')).href);
-  const sha = (b) => crypto.createHash('sha256').update(b).digest();
-  function addrOfKey(hexKey, chain) {
-    const pub = N.getPublicKey(Buffer.from(hexKey, 'hex'), false);
-    const h20 = Buffer.from(keccak_256(pub.subarray(1))).subarray(12);
-    if (chain === 'evm') return '0x' + h20.toString('hex');
-    const body = Buffer.concat([Buffer.from([0x41]), h20]);
-    return b58(Buffer.concat([body, sha(sha(body)).subarray(0, 4)]));
-  }
-  function openKeystore(ks) {
-    const c = ks.crypto, p = c.kdfparams;
-    const dk = crypto.scryptSync(Buffer.from(PW), Buffer.from(p.salt, 'hex'), p.dklen, { N: p.n, r: p.r, p: p.p, maxmem: 512 * 1024 * 1024 });
-    const mac = Buffer.from(keccak_256(Buffer.concat([dk.subarray(16, 32), Buffer.from(c.ciphertext, 'hex')]))).toString('hex');
-    const d = crypto.createDecipheriv('aes-128-ctr', dk.subarray(0, 16), Buffer.from(c.cipherparams.iv, 'hex'));
-    return { key: Buffer.concat([d.update(Buffer.from(c.ciphertext, 'hex')), d.final()]).toString('hex'), macOk: mac === c.mac };
-  }
+  // ② 先看字：这一页的字节里不许有算钥匙、发请求的写法（拿一段植进去的代码先验这把尺子抓得到）
+  const hits = (s) => KEYCODE.filter((re) => re.test(s)).map(String);
+  chk(hits('crypto.getRandomValues(a); fetch("/x")').length === 2, '尺子自证：植进去的算钥匙、发请求的代码抓得到 · the detector catches planted code');
+  chk(hits(html).length === 0, '页面里没有输入框、没有算钥匙或发请求的代码 · no inputs, no key-making or request code' + (hits(html).length ? '（' + hits(html).join(' ') + '）' : ''));
+
+  const srv = http.createServer((q, s) => { s.writeHead(200, { 'content-type': 'text/html; charset=utf-8' }); s.end(html); });
+  await new Promise((r) => srv.listen(0, '127.0.0.1', r));
+  const SITE = 'http://127.0.0.1:' + srv.address().port + '/free';
   const browser = await chromium.launch();
-  const all = [];
-  async function generate(page, chain, where, pat) {
-    await page.click(`#chainPick [data-chain="${chain}"]`);   // FREEPRE0X：只钉开头，没有「钉哪一头」可点
-    await page.fill('#patIn', pat); await sleep(100);
-    await page.click('#btnGo');
-    await page.waitForSelector('#ksBox:not([hidden])', { timeout: 120000 });
-    const shown = (await page.textContent('.fg-addr code')).trim();
-    await page.fill('#ksPw', PW); await page.fill('#ksPw2', PW);
-    const [dl] = await Promise.all([page.waitForEvent('download', { timeout: 120000 }), page.click('#btnKs')]);
-    const ks = JSON.parse(fs.readFileSync(await dl.path(), 'utf8'));
-    const { key, macOk } = openKeystore(ks);
-    const derived = addrOfKey(key, chain);
-    const body = chain === 'evm' ? shown.slice(2) : shown;
-    const hit = where === 'prefix' ? body.startsWith(chain === 'tron' ? 'T' + pat : pat) : body.endsWith(pat);
-    await page.click('#btnAgain');
-    return { shown, derived, macOk, hit, name: dl.suggestedFilename() };
+  let cases = 0, extra = 0;
+  async function flow(name, url, lang, offline) {
+    const ctx = await browser.newContext();
+    if (offline) await ctx.setOffline(true);
+    if (lang) await ctx.addInitScript((l) => { try { localStorage.setItem('0xlang2', l); } catch (e) {} }, lang);
+    const page = await ctx.newPage();
+    const reqs = [], errs = [];
+    page.on('request', (r) => reqs.push(r.url()));
+    page.on('pageerror', (e) => errs.push(e.message));
+    await page.goto(url, { waitUntil: 'load' });
+    await page.waitForTimeout(800);
+    const want = lang || 'en';
+    const shown = await page.evaluate(() => document.body.innerText);
+    const home = await page.$('a[href="https://0x000000000.com/"]');
+    // 切一圈语言：每种都看得见自己那一句，切的时候不发请求
+    let sw = true;
+    for (const l of ['zh', 'en', 'id']) {
+      await page.click('.lang button[data-lang="' + l + '"]');
+      sw = sw && (await page.evaluate(() => document.body.innerText)).includes(SAY[l]);
+    }
+    await page.waitForTimeout(300);
+    const others = reqs.filter((u) => u !== url);
+    extra += others.length; cases++;
+    chk(shown.includes(SAY[want]) && !!home && sw && !errs.length && others.length === 0,
+      `${name}：看得见「${SAY[want]}」、有回首页的链接、切三种语言都对，页面没报错，除了打开页面那一次请求 ${others.length} 个`
+      + (others.length ? '（' + others.slice(0, 3).join(' ') + '）' : '') + (errs.length ? ' · 报错 ' + errs[0] : ''));
+    await ctx.close();
   }
   try {
-    // ── 网站模式：https://0x000000000.com/free 送这一个文件（本机，不碰真网站），打开之后断网 ──
-    const ctx = await browser.newContext({ acceptDownloads: true });
-    ctx.on('request', (r) => all.push(r.url()));
-    await ctx.route('**/*', (route) => {
-      const u = route.request().url();
-      if (u === 'https://0x000000000.com/free') return route.fulfill({ status: 200, contentType: 'text/html; charset=utf-8', body: html });
-      return route.abort();
-    });
-    const page = await ctx.newPage(); const errs = [];
-    page.on('pageerror', (e) => errs.push(e.message)); page.on('console', (m) => { if (m.type() === 'error') errs.push(m.text()); });
-    let ws = 0; page.on('websocket', () => { ws++; });
-    await page.goto('https://0x000000000.com/free'); await sleep(800);
-    await ctx.setOffline(true); await sleep(300);
-    const where = await page.$$eval('#wherePick [data-where]', (b) => b.length);
-    chk(where === 0, '只钉开头：页面上没有「钉哪一头」的选项（找到 ' + where + ' 个）');
-    for (const [c, w, p] of [['evm', 'prefix', 'abc'], ['tron', 'prefix', 'Xo'], ['tron', 'prefix', 'X']]) {
-      const r = await generate(page, c, w, p);
-      chk(r.macOk && r.derived === r.shown && r.hit, `${c} ${w} 「${p}」：页面显示 ${r.shown}；钱包文件（${r.name}）用密码解开 → 钥匙算出来的地址一样、对得上图案`);
-    }
-    // 超过上限：输入框最多收 5 个字，多的打不进去；页面里的判法也不认（有人改输入框也没用）：6 位、钉结尾、两头都钉
-    await page.click('#chainPick [data-chain="evm"]'); await page.fill('#patIn', '1234567'); await sleep(100);
-    const v1 = await page.inputValue('#patIn');
-    await page.click('#chainPick [data-chain="tron"]'); await page.fill('#patIn', 'Abcdefg'); await sleep(100);
-    const v2 = await page.inputValue('#patIn');
-    const rule = await page.evaluate(() => [FreeGen.problem('evm', 'prefix', '123456'), FreeGen.problem('tron', 'prefix', 'TAbcdef'), FreeGen.problem('evm', 'suffix', 'ab'), FreeGen.problem('tron', 'suffix', 'oo'), FreeGen.problem('evm', 'both', 'ab')].every((x) => x !== null));
-    chk(v1.length <= 5 && v2.length <= 5 && rule, `超过上限打不进去（以太坊类只收下 ${v1.length} 位、波场 ${v2.length} 位）；判法也不认 6 位 / 钉结尾 / 两头都钉`);
-    chk(errs.length === 0, '页面没有报错' + (errs.length ? '：' + errs.slice(0, 2).join(' | ') : ''));
-    chk(ws === 0, '没有 WebSocket');
-    await ctx.close();
-    // ── 下载模式：一开始就断网，双击打开下载下来的文件 ──
-    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'fg_')), f = path.join(dir, '0x000000000-free.html');
-    fs.writeFileSync(f, html);
-    const ctx2 = await browser.newContext({ acceptDownloads: true, offline: true });
-    ctx2.on('request', (r) => all.push(r.url()));
-    const p2 = await ctx2.newPage();
-    await p2.goto(pathToFileURL(f).href); await sleep(800);
-    const r2 = await generate(p2, 'evm', 'prefix', 'ff');
-    chk(r2.macOk && r2.derived === r2.shown && r2.hit, `下载下来、一开始就断网打开：evm prefix 「ff」→ ${r2.shown}，钱包文件解开对得上`);
-    await ctx2.close();
-    const net = all.filter((u) => !/^(blob:|data:)/.test(u) && u !== 'https://0x000000000.com/free' && u !== pathToFileURL(f).href);
-    chk(net.length === 0, `页面发出去的请求：除了打开页面那一次，${net.length} 个` + (net.length ? '：' + net.slice(0, 5).join(' | ') : ''));
-  } catch (e) { fail++; console.log('  ★ 炸了：' + (e && e.message)); }
-  finally { await browser.close(); }
-  console.log(fail ? `★ ${fail} 条不对` : '✓ 全部通过：这一页一个请求都不发，钥匙只在这台电脑上');
-  process.exit(fail ? 1 : 0);
+    for (const l of ['zh', 'en', 'id']) await flow('网站上 · on the site · ' + l, SITE, l, false);
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'freeoff-'));
+    const f = path.join(dir, '0x000000000-free.html'); fs.writeFileSync(f, html);
+    await flow('下载下来、一开始就断网 · downloaded, opened offline', pathToFileURL(f).href, null, true);
+    fs.rmSync(dir, { recursive: true, force: true });
+  } catch (e) {
+    fail++; console.log('  ★ 走到一半炸了：' + e.message);
+  } finally {
+    await browser.close(); srv.close();
+  }
+  console.log(`  流程 ${cases} 个 · 打开页面之外的请求 ${extra} 个`);
+  console.log(`  ---- 不合格 ${fail} 处 ----`);
+  process.exitCode = fail ? 1 : 0;
 })();

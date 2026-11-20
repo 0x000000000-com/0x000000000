@@ -893,7 +893,7 @@ const APP = rd('js/app.js');
       [/数学上做不到|cannot do it, mathematically|secara matematis, itu tidak mungkin/, 'the FAQ says "mathematically impossible" without its conditions (review 4) · FAQ 说「数学上做不到」却不说前提（第四轮）'],
     ];
     const here = (f) => [path.join(ROOT, f), path.join(ROOT, '..', f)].find((p) => fs.existsSync(p));
-    const want = ['js/app.js', 'index.html', 'js/freeapp.js', 'free.html', 'js/c2app.js', 'contract.html', 'token.html', 'js/fcheck.js', 'faq.html',
+    const want = ['js/app.js', 'index.html', 'free.html', 'js/c2app.js', 'contract.html', 'token.html', 'js/fcheck.js', 'faq.html',
       '.github/workflows/noleak.yml', '.github/workflows/tamper-check.yml', '.github/workflows/fonts.yml'];
     // Review 4: files that were not here used to be skipped without a word. The public repository has no FAQ page (the FAQ is checked in the tree it lives in);
     // the internal tree keeps the workflows elsewhere. Anything else missing fails, and what was not read is named. · 第四轮：原来找不到的文件悄悄跳过。
@@ -1121,47 +1121,23 @@ const APP = rd('js/app.js');
     }
   });
 
-  // ── 7 · Free Generator: the "saved" mark belongs to the result whose wallet file was saved · 免费生成页：「存好了」只属于真存了钱包文件的那一个结果 ──
-  //   Review 3 (N3): while one wallet file was still being locked, a new address could be generated, and the old save then marked the new one "saved".
-  //   第三轮复查：上一个钱包文件还在上锁，就能再算出一个新地址；旧的锁完，新的被当成「存好了」（关页面不再提醒）
-  console.log('== 7 · Free Generator saved mark · 免费生成页「存好了」');
+  // ── 7 · Free Generator retired (2026-11-20): /free is a notice only · 免费生成下线（2026-11-20）：/free 只剩一页说明 ──
+  //   The old section 7 tested the generator's "saved" mark (review 3, N3); the generator is gone, so this checks that nothing of it came back.
+  //   原来第 7 节测免费生成页的「存好了」标记（第三轮 N3）；生成器拿掉了，这一节改成核它没有回来：页面里不许有算钥匙、发请求的代码，不许有密码框。
+  console.log('== 7 · Free Generator retired · 免费生成已下线');
   await section('7', async () => {
-    const FA = rd('js/freeapp.js');
-    const tick = () => new Promise((r) => setTimeout(r, 0));
-    const el = {}, on = {}, win = {}, starts = [], pend = [], dls = [];
-    const mk = (id) => el[id] || (el[id] = { id, hidden: false, disabled: false, value: '', textContent: '', innerHTML: '', className: '', placeholder: '', maxLength: 0, open: false, style: {},
-      classList: { toggle: () => {}, add: () => {}, remove: () => {} }, addEventListener: (e, fn) => { on[id + ':' + e] = fn; }, insertAdjacentHTML: function (w, h) { this.innerHTML += h; },
-      focus: () => {}, getAttribute: () => null, click: () => {}, remove: () => {}, appendChild: () => {} });
-    const document = { querySelector: (s) => mk(s), getElementById: (id) => mk('#' + id), querySelectorAll: () => [], documentElement: {}, title: '', body: mk('body'),
-      createElement: () => { const a = mk('a' + Math.random()); a.click = () => dls.push(a.download); return a; } };
-    const FG = { norm: (c, w, v) => String(v || '').trim(), CAP: { evm: 10, tron: 10 }, problem: () => null, expected: () => 16, stop: () => {},
-      start: (o, cb) => { starts.push(cb); return { workers: 2 }; } };
-    const KC = { setLang: () => {}, keystoreName: () => 'my-keystore.json', addrOf: () => '0x' + '0'.repeat(40),
-      keystore: (k, addr) => new Promise((res, rej) => pend.push({ res, rej, addr })) };
-    const ctx = { document, window: win, navigator: { onLine: true }, localStorage: { getItem: () => null, setItem: () => {} }, location: { protocol: 'https:', search: '', pathname: '/free', hash: '' },
-      history: { replaceState: () => {} }, URL: { createObjectURL: () => 'blob:x', revokeObjectURL: () => {} }, Blob: function () {}, Worker: function () {}, BigInt,
-      crypto: { getRandomValues: (a) => a, subtle: {} }, setInterval: () => 0, clearInterval: () => {}, setTimeout: () => 0, clearTimeout: () => {}, Promise, Date, Math, JSON, String, Number, Object };
-    win.FreeGen = FG; win.KeyCore = KC; win.crypto = ctx.crypto; win.addEventListener = (e, fn) => { on['win:' + e] = fn; };
-    vm.createContext(ctx); vm.runInContext(FA, ctx);
-    const click = (id) => on[id + ':click'] && on[id + ':click']();
-    const leaveWarns = () => { const e = { p: false, preventDefault() { this.p = true; } }; on['win:beforeunload'](e); return e.p; };
-    const R = (n) => ({ addr: '0x' + String(n).repeat(40).slice(0, 40), k: BigInt(n), chain: 'evm', where: 'prefix', pat: '00', tried: 10, ms: 5 });
-    mk('#patIn').value = '00';
-    click('#btnGo'); starts[0] && starts[0].found(R(1));
-    mk('#ksPw').value = 'correct horse 1'; mk('#ksPw2').value = 'correct horse 1';
-    click('#btnKs');
-    ok(starts.length === 1 && pend.length === 1 && pend[0].addr === R(1).addr, '7 (setup) one address found, its wallet file is being locked · 算出一个地址，正在给它的钱包文件上锁');
-    click('#btnAgain'); click('#btnGo'); if (starts[1]) starts[1].found(R(2));
-    const blocked = starts.length === 1;
-    pend[0].res({ version: 3 }); await tick(); await tick();
-    ok(blocked, '7 attack (review 3, N3): while a wallet file is being locked, "make another" and "generate" do nothing · 上锁的时候，「再算一个」「生成」都不动');
-    ok(blocked ? !leaveWarns() && !mk('#afterBox').hidden : leaveWarns(), '7 attack (review 3, N3): the "saved" mark only belongs to the address whose wallet file was saved (leaving the page warns for an unsaved one) · 「存好了」只属于存了文件的那个地址（没存的关页面照样提醒）');
-    // normal: after saving, generating again works, and the new one is "not saved" until its own file is saved · 正常：存好之后可以再算；新的那个在自己存好之前都算「没存」
-    click('#btnGo'); const n1 = starts.length; if (starts[n1 - 1] && n1 >= 2) starts[n1 - 1].found(R(3));
-    const warnNew = leaveWarns();
-    mk('#ksPw').value = 'correct horse 2'; mk('#ksPw2').value = 'correct horse 2';   // generating again clears the password boxes · 再算一次会清掉密码框
-    const np = pend.length; click('#btnKs'); const last = pend.length > np ? pend[pend.length - 1] : null; if (last) last.res({ version: 3 }); await tick(); await tick();
-    ok(n1 >= 2 && warnNew && !!last && !leaveWarns() && dls.length >= 2, '7 normal: after saving, a new address can be generated; it warns until its own wallet file is saved · 存好之后能再算；新地址自己存好之前关页面会提醒');
+    const KEYCODE = [/getRandomValues/, /\bFreeGen\b/, /\bKeyCore\b/, /privateKey|secretKey/, /<input\b[^>]*type=["']?password/i,
+      /\bfetch\s*\(/, /XMLHttpRequest/, /\bWebSocket\b/, /sendBeacon/, /\bnew\s+Worker\s*\(/];
+    const hits = (s) => KEYCODE.filter((re) => re.test(s)).map(String);
+    ok(hits('x' + 'crypto.getRandomValues(a); fetch("/x")').length === 2, '7 (gauge) the detector catches planted key-making and request code · 量具自证：植进去的算钥匙、发请求的代码抓得到');
+    const pages = [['src/free.html', rd('free.html')]];
+    const built = path.join(ROOT, '..', '0x000000000-free.html');
+    if (fs.existsSync(built)) pages.push(['0x000000000-free.html', fs.readFileSync(built, 'utf8')]);
+    for (const [name, s] of pages) {
+      ok(hits(s).length === 0, '7 attack: ' + name + ' carries no key-making code, no request code and no password box · 不带算钥匙、发请求的代码，没有密码框' + (hits(s).length ? ' (found: ' + hits(s).join(' ') + ')' : ''));
+      const langs = ['L-zh', 'L-en', 'L-id'].every((c) => s.includes('class="' + c + '"'));
+      ok(langs && /2026-11-20/.test(s) && s.includes('href="https://0x000000000.com/"'), '7 normal: ' + name + ' says it was retired on 2026-11-20 in all three languages and links back to the home page · 三种语言都说了 2026-11-20 下线、有回首页的链接');
+    }
   });
 
   // 名片回归（devroom-tests/card-validation.cjs）并进来：姓名字符范围、姓名不匹配、地址校验被改回去时这里会变红 · card regression folded in so GitHub goes red if name-charset / name-mismatch / address checks are reverted
