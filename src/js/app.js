@@ -101,6 +101,11 @@ const dict = {
       receipt: '交收条 —— 带了一个签名，证明你拿到了',
       leave: '说不打算付的原因 —— 只带了你点的那一个词（没有订单号）',
       voucher: '用券 —— 只带了你填的券码',
+      login: '用 Telegram 登录 —— 没带你的任何东西（平台回一串只给机器人的号、一串留在这一页的号）',
+      loginpoll: '问登录好了没有 —— 带了留在这一页的那串号',
+      me: '看挂在账号下的订单 —— 带了登录凭证',
+      claim: '把一张订单挂到账号下 —— 带了登录凭证和那个订单号',
+      logout: '退出登录 —— 带了登录凭证',
       other: '其他',
     },
     foot2: '平台永远不会索要你的私钥或备份文件 —— 任何索要私钥的消息都是钓鱼。',
@@ -127,6 +132,19 @@ const dict = {
     ordersEmpty: '还没有订单', ordersDown: '订单暂时取不到，刷新一下再试',
     ordersResume: '接着做', thAction: '操作', ordersIdPh: '订单号（8 位）', ordersIdBtn: '接着做这一单',
     ordersIdLbl: '换了电脑或浏览器？输入订单号接着做：',
+    // LOGINTG0X_20261120：网站上用 Telegram 登录
+    loginLbl: '用 Telegram 登录：换电脑、换浏览器也看得到挂在你账号下的订单。',
+    loginBtn: '用 Telegram 登录', loginOpen: '打开 Telegram', loginCancel: '取消', logoutBtn: '退出',
+    loginWait: (code, bot) => '在 Telegram 里打开 @' + bot + '，点「确认登录（' + code + '）」—— 数字跟这里一样才点。点完这一页几秒内自己登录。',
+    loginAs: (name) => '已用 Telegram 登录：' + name,
+    loginDenied: '你在 Telegram 里点了「不是我」，这一页没有登录。',
+    loginExpired: '这次登录过期了（5 分钟内有效）。再点一次「用 Telegram 登录」。',
+    loginGone: '登录过期了，请重新登录。',
+    loginOut: '已退出。',
+    loginAddLbl: '把一张订单挂到你的账号下（订单号在你下单的那个铸造页面上）：',
+    loginAddBtn: '挂到我的账号',
+    loginAdded: (id) => '订单 ' + id + ' 已经挂在你的账号下。',
+    loginAddNone: (id) => '找不到订单 ' + id + ' —— 看看有没有抄错。',
     statusTxt: (s) => '订单 ' + (orderState.orderId || '-') + ' · 状态: ' + s,
     flow: {
       // ALLINONE0X_20260923：全部改成人话。DSJ 原话「每个步骤必须人话解释，容易让用户明白」。
@@ -358,6 +376,11 @@ const dict = {
       receipt: 'receipt - carried a signature proving you got it',
       leave: 'said why you are not paying - carried only the one word you tapped (no order number)',
       voucher: 'voucher - carried only the code you typed',
+      login: 'Log in with Telegram - carries nothing of yours (the platform replies with one code only for the bot and one that stays on this page)',
+      loginpoll: 'Ask whether the login is done - carries the code that stays on this page',
+      me: 'See the orders kept with your account - carries the login token',
+      claim: 'Keep an order with your account - carries the login token and that order number',
+      logout: 'Log out - carries the login token',
       other: 'other',
     },
     foot2: 'The platform will never ask for your private key or backup file - any message asking for keys is phishing.',
@@ -383,6 +406,19 @@ const dict = {
     ordersEmpty: 'No orders yet', ordersDown: 'Could not load your orders - refresh to try again',
     ordersResume: 'Continue', thAction: 'Action', ordersIdPh: 'order number (8 chars)', ordersIdBtn: 'Continue this order',
     ordersIdLbl: 'On another computer or browser? Enter the order number to continue:',
+    // LOGINTG0X_20261120
+    loginLbl: 'Log in with Telegram to see the orders kept with your account on any computer or browser.',
+    loginBtn: 'Log in with Telegram', loginOpen: 'Open Telegram', loginCancel: 'Cancel', logoutBtn: 'Log out',
+    loginWait: (code, bot) => 'In Telegram, open @' + bot + ' and tap "Confirm login (' + code + ')" - only if the number matches this one. This page logs in by itself within a few seconds.',
+    loginAs: (name) => 'Logged in with Telegram: ' + name,
+    loginDenied: 'You tapped "Not me" in Telegram - this page is not logged in.',
+    loginExpired: 'This login request expired (valid for 5 minutes). Tap "Log in with Telegram" again.',
+    loginGone: 'Your login has expired - please log in again.',
+    loginOut: 'Logged out.',
+    loginAddLbl: 'Keep an order with your account (the order number is on the minting page you ordered from):',
+    loginAddBtn: 'Add to my account',
+    loginAdded: (id) => 'Order ' + id + ' is kept with your account.',
+    loginAddNone: (id) => 'Order ' + id + ' was not found - check for a typo.',
     statusTxt: (s) => 'order ' + (orderState.orderId || '-') + ' · status: ' + s,
     flow: {
       netTag: ['🔌 best offline', '🌐 online', '🌐 online', '🌐 stay online', '🌐 collect → 🔌 build offline', '🌐 online'], why: 'why',
@@ -604,6 +640,11 @@ const dict = {
       receipt: 'tanda terima - membawa tanda tangan yang membuktikan Anda sudah menerimanya',
       leave: 'alasan Anda tidak membayar - hanya membawa satu kata yang Anda ketuk (tanpa nomor pesanan)',
       voucher: 'voucher - hanya membawa kode yang Anda ketik',
+      login: 'Masuk dengan Telegram - tidak membawa apa pun milik Anda (platform membalas dengan satu kode khusus untuk bot dan satu kode yang tetap di halaman ini)',
+      loginpoll: 'Menanyakan apakah proses masuk sudah selesai - membawa kode yang tetap di halaman ini',
+      me: 'Melihat pesanan yang tersimpan di akun Anda - membawa token masuk',
+      claim: 'Menyimpan sebuah pesanan di akun Anda - membawa token masuk dan nomor pesanan itu',
+      logout: 'Keluar - membawa token masuk',
       other: 'lainnya',
     },
     foot2: 'Platform tidak akan pernah meminta kunci privat atau file cadangan Anda - pesan apa pun yang meminta kunci adalah phishing.',
@@ -629,6 +670,19 @@ const dict = {
     ordersEmpty: 'Belum ada pesanan', ordersDown: 'Pesanan Anda tidak bisa dimuat - muat ulang untuk mencoba lagi',
     ordersResume: 'Lanjutkan', thAction: 'Aksi', ordersIdPh: 'nomor pesanan (8 karakter)', ordersIdBtn: 'Lanjutkan pesanan ini',
     ordersIdLbl: 'Di komputer atau browser lain? Masukkan nomor pesanan untuk melanjutkan:',
+    // LOGINTG0X_20261120
+    loginLbl: 'Masuk dengan Telegram untuk melihat pesanan yang tersimpan di akun Anda dari komputer atau browser mana pun.',
+    loginBtn: 'Masuk dengan Telegram', loginOpen: 'Buka Telegram', loginCancel: 'Batal', logoutBtn: 'Keluar',
+    loginWait: (code, bot) => 'Di Telegram, buka @' + bot + ' dan ketuk "Konfirmasi masuk (' + code + ')" - hanya jika angkanya sama dengan yang ini. Halaman ini akan masuk sendiri dalam beberapa detik.',
+    loginAs: (name) => 'Masuk dengan Telegram: ' + name,
+    loginDenied: 'Anda mengetuk "Bukan saya" di Telegram - halaman ini tidak masuk.',
+    loginExpired: 'Permintaan masuk ini sudah kedaluwarsa (berlaku 5 menit). Ketuk "Masuk dengan Telegram" lagi.',
+    loginGone: 'Sesi masuk Anda sudah kedaluwarsa - silakan masuk lagi.',
+    loginOut: 'Sudah keluar.',
+    loginAddLbl: 'Simpan pesanan di akun Anda (nomor pesanan ada di halaman cetak tempat Anda memesan):',
+    loginAddBtn: 'Tambahkan ke akun saya',
+    loginAdded: (id) => 'Pesanan ' + id + ' tersimpan di akun Anda.',
+    loginAddNone: (id) => 'Pesanan ' + id + ' tidak ditemukan - periksa apakah ada salah ketik.',
     statusTxt: (s) => 'pesanan ' + (orderState.orderId || '-') + ' · status: ' + s,
     flow: {
       netTag: ['🔌 sebaiknya offline', '🌐 online', '🌐 online', '🌐 tetap online', '🌐 ambil → 🔌 rakit offline', '🌐 online'], why: 'kenapa',
@@ -838,6 +892,7 @@ function applyStaticLang() {
 function applyLang(save) {
   if (save) { try { localStorage.setItem(LANG_KEY, lang); } catch (e) {} }
   applyStaticLang();
+  renderLogin();
   renderBoot(true);
   renderCatalog();
   renderTeaser();
@@ -1014,15 +1069,27 @@ const orderState = { orderId: null, challenge: null, A: null, b: null, address: 
 // MYORDERS0X_20260923：「我的订单」= 这个浏览器自己下过的单。平台没有账号,服务器不该、也不再
 //   把全库的单列给任何人。这里存的只是订单号（丢了也不要紧,订单号页面上写着、用订单号就能续）。
 const MY_KEY = '0x_myorders';
-function myOrders() {
+function localOrders() {
   try { const v = JSON.parse(localStorage.getItem(MY_KEY) || '[]'); return Array.isArray(v) ? v.filter((x) => /^[0-9a-f]{8}$/.test(x)) : []; }
   catch (e) { return []; }
 }
+// LOGINTG0X_20261120：网站上不下单 ——「我的订单」列的是挂在登录账号下的单；下载下来的那一页照旧列这个浏览器自己下过的单（记、删只动这个浏览器自己的那一份）
+function myOrders() { return ON_SITE ? LOGIN.ids.slice() : localOrders(); }
 function rememberOrder(id) {
-  try { const l = myOrders().filter((x) => x !== id); l.unshift(id); localStorage.setItem(MY_KEY, JSON.stringify(l.slice(0, 50))); } catch (e) {}
+  try { const l = localOrders().filter((x) => x !== id); l.unshift(id); localStorage.setItem(MY_KEY, JSON.stringify(l.slice(0, 50))); } catch (e) {}
 }
 function forgetOrder(id) {
-  try { localStorage.setItem(MY_KEY, JSON.stringify(myOrders().filter((x) => x !== id))); } catch (e) {}
+  try { localStorage.setItem(MY_KEY, JSON.stringify(localOrders().filter((x) => x !== id))); } catch (e) {}
+}
+// ── LOGINTG0X_20261120：网站上用 Telegram 登录（DSJ 11-20 增加用户登录，选了 Telegram 登录）──────────────
+//   只在 0x000000000.com 上出现。下载下来的铸造页面（file://）和本机测试页不登录、一个请求都不多发 ——
+//   私钥外发检查的白名单（每个请求都要能逐字重算）照旧成立。
+//   登录凭证存在这个浏览器里（0x_login），只跟「看我的订单 / 挂一张单 / 退出」这三条请求走；碰不到钥匙、碰不到钱。
+const LOGIN_KEY = '0x_login';
+const LOGIN = { t: null, name: '', ids: [], poll: null, code: '', bot: '', link: '', until: 0, msg: null, warn: false, timer: 0, gen: 0 };
+try { const v = JSON.parse(localStorage.getItem(LOGIN_KEY) || 'null'); if (v && /^[A-Za-z0-9_-]{43}$/.test(v.t)) { LOGIN.t = v.t; LOGIN.name = String(v.n || '').slice(0, 40); } } catch (e) {}
+function loginSave() {
+  try { if (LOGIN.t) localStorage.setItem(LOGIN_KEY, JSON.stringify({ t: LOGIN.t, n: LOGIN.name })); else localStorage.removeItem(LOGIN_KEY); } catch (e) {}
 }
 // ── REF0X_20260928：推荐码 ────────────────────────────────────────────────
 // 网站上（0x000000000.com）：带 ?ref= 进来 → 记在这个浏览器里（换一个推荐链接进来就换成新的）；「下载铸造页面」的文件名带上它 ——
@@ -1059,6 +1126,11 @@ function sentKind(method, path) {
   if (method === 'POST' && p === '/api/check') return 'check';   // FREECHECK0X_20260928
   if (method === 'POST' && p === '/api/orders') return 'create';
   if (method === 'POST' && p === '/api/fw/leave') return 'leave';   // REF0X_20260928 第 8 步
+  if (method === 'POST' && p === '/api/login/tg') return 'login';          // LOGINTG0X_20261120（这五种只在网站上）
+  if (method === 'POST' && p === '/api/login/tg/poll') return 'loginpoll';
+  if (p === '/api/me') return 'me';
+  if (method === 'POST' && p === '/api/me/claim') return 'claim';
+  if (method === 'POST' && p === '/api/logout') return 'logout';
   if (/\/share$/.test(p)) return 'share';
   if (/\/payment$/.test(p)) return 'payment';
   if (/\/pay-sim$/.test(p)) return 'paysim';
@@ -1075,7 +1147,7 @@ function renderSent() {
   const rows = [];
   for (const x of SENT) {
     const last = rows[rows.length - 1];
-    if (last && last.kind === x.kind && x.kind === 'status' && !last.failed && !x.failed) { last.n++; continue; }
+    if (last && last.kind === x.kind && (x.kind === 'status' || x.kind === 'loginpoll') && !last.failed && !x.failed) { last.n++; continue; }
     rows.push({ kind: x.kind, n: 1, failed: !!x.failed, raw: x.method + ' ' + x.url + (x.body ? '\n' + x.body : '') });
   }
   // SENTPLAIN0X_20260924：DSJ「还有这个改成人话版」—— 每行只写人话；原样内容整块收进最下面「懂技术的人看这里」
@@ -1096,7 +1168,10 @@ async function api(path, method = 'GET', body) {
   try { renderSent(); } catch (e) {}
   // OFFLINE0X_20260924：断网时 fetch 直接抛错。统一变成 code 0 + 人话，各步照常用 showApiError 显示。
   let r;
-  try { r = await fetch(API_BASE + path, { method, headers: { 'Content-Type': 'application/json' }, body: body ? JSON.stringify(body) : undefined }); }
+  // LOGINTG0X_20261120：登录凭证只跟「看我的订单 / 挂一张单 / 退出」这三条走（只在网站上；下载下来的那一页从来没有凭证）
+  const hd = { 'Content-Type': 'application/json' };
+  if (LOGIN.t && /^\/api\/(me(\/claim)?|logout)$/.test(path)) hd.Authorization = 'Bearer ' + LOGIN.t;
+  try { r = await fetch(API_BASE + path, { method, headers: hd, body: body ? JSON.stringify(body) : undefined }); }
   catch (e) { rec.failed = true; try { renderSent(); } catch (e2) {} return { code: 0, body: { error: t('offlineErr') } }; }
   let j = {};
   try { j = await r.json(); } catch (e) {}
@@ -1953,11 +2028,105 @@ async function resumeFrom(id, msgEl) {
 }
 document.addEventListener('click', (e) => {
   const b = e.target.closest('[data-resume]');
-  if (b) resumeFrom(b.dataset.resume, $('#resumeMsg'));
+  // LOGINTG0X_20261120：网站上没有 6 步 —— 那一行的「接着做」告诉他回下载下来的那一页、填这个订单号
+  if (b && ON_SITE) { const id = b.dataset.resume; loginSay(() => t('dlResume')(id)); renderLogin(); }
+  else if (b) resumeFrom(b.dataset.resume, $('#resumeMsg'));
 });
 if ($('#resumeBtn')) {
   $('#resumeBtn').addEventListener('click', () => resumeFrom($('#resumeId').value, $('#resumeMsg')));
   $('#resumeId').addEventListener('keydown', (e) => { if (e.key === 'Enter') resumeFrom($('#resumeId').value, $('#resumeMsg')); });
+}
+
+/* ---- LOGINTG0X_20261120：网站上用 Telegram 登录 ----
+   要登录 → 平台给一个只交给机器人的链接 + 一串留在这一页的号 + 4 位数字 → 他在 Telegram 里点确认 → 这一页每 2 秒问一次，确认了就拿到登录凭证。
+   登录了：「我的订单」列挂在这个号下的单（网站上没有 6 步，接着做要回下载下来的那一页），还能把一张订单按订单号挂上来。 */
+function loginSay(f, warn) { LOGIN.msg = f; LOGIN.warn = !!warn; }
+function renderLogin() {
+  const bar = $('#loginBar'); if (!bar) return;
+  bar.hidden = !ON_SITE;
+  const rc = $('#resumeId') && $('#resumeId').closest('.flow-ctl');
+  if (rc && ON_SITE) rc.hidden = true;          // 网站上没有 6 步：「输入订单号接着做」只在下载下来的那一页
+  if (!ON_SITE) return;
+  const inn = !!LOGIN.t, wait = !inn && !!LOGIN.poll;
+  const tbl = $('#secOrders .tblwrap'); if (tbl) tbl.hidden = !inn;
+  $('#loginLbl').textContent = inn ? t('loginAs')(LOGIN.name || 'Telegram') : wait ? t('loginWait')(LOGIN.code, LOGIN.bot) : t('loginLbl');
+  $('#loginBtn').hidden = inn || wait;
+  $('#loginOpen').hidden = !wait;
+  $('#loginCancel').hidden = !wait;
+  $('#logoutBtn').hidden = !inn;
+  $('#loginAdd').hidden = !inn;
+  const m = $('#loginMsg');
+  m.textContent = LOGIN.msg ? LOGIN.msg() : '';
+  m.className = 'step-desc' + (LOGIN.msg && LOGIN.warn ? ' warn' : '');
+}
+async function loginStart() {
+  const g = ++LOGIN.gen;
+  loginSay(null); renderLogin();
+  const r = await api('/api/login/tg', 'POST', {});
+  if (g !== LOGIN.gen) return;
+  const b = r.body || {};
+  if (r.code !== 200 || !/^[A-Za-z0-9_-]{22}$/.test(b.poll || '') || !/^https:\/\/t\.me\/[A-Za-z0-9_]{5,32}\?start=lg_[A-Za-z0-9_-]{22}$/.test(b.link || '')) {
+    loginSay(() => L(b, 'error') || t('offlineErr'), true); return renderLogin();
+  }
+  Object.assign(LOGIN, { poll: b.poll, code: String(b.code || ''), bot: String(b.bot || ''), link: b.link, until: Date.now() + (Number(b.expiresInSec) || 300) * 1000 });
+  renderLogin();
+  loginTick(g);
+}
+function loginTick(g) {
+  clearTimeout(LOGIN.timer);
+  LOGIN.timer = setTimeout(async () => {
+    if (g !== LOGIN.gen || !LOGIN.poll) return;
+    if (Date.now() > LOGIN.until + 5000) { LOGIN.poll = null; loginSay(() => t('loginExpired'), true); return renderLogin(); }
+    const r = await api('/api/login/tg/poll', 'POST', { poll: LOGIN.poll });
+    if (g !== LOGIN.gen) return;
+    const b = r.body || {}, st = r.code === 200 ? b.state : null;
+    if (st === 'ok' && /^[A-Za-z0-9_-]{43}$/.test(b.token || '')) {
+      Object.assign(LOGIN, { t: b.token, name: String(b.name || '').slice(0, 40), poll: null });
+      loginSay(null); loginSave(); renderLogin(); return refreshMe();
+    }
+    if (st === 'pending' || r.code === 0 || r.code === 429 || r.code >= 500) return loginTick(g);   // 还在等 / 没连上 / 问太快：接着问（到 5 分钟为止）
+    LOGIN.poll = null;
+    loginSay(st === 'denied' ? () => t('loginDenied') : () => t('loginExpired'), true);
+    renderLogin();
+  }, 2000);
+}
+function loginCancel() { LOGIN.gen++; clearTimeout(LOGIN.timer); LOGIN.poll = null; loginSay(null); renderLogin(); }
+async function refreshMe() {
+  if (!ON_SITE || !LOGIN.t) return;
+  const g = LOGIN.gen, r = await api('/api/me');
+  if (g !== LOGIN.gen || !LOGIN.t) return;
+  if (r.code === 401) { Object.assign(LOGIN, { t: null, name: '', ids: [] }); loginSave(); loginSay(() => t('loginGone'), true); renderLogin(); return renderOrders(); }
+  if (r.code !== 200 || !r.body) return;            // 没连上：照旧显示已登录，下次再问
+  LOGIN.ids = (Array.isArray(r.body.orders) ? r.body.orders : []).filter((x) => /^[0-9a-f]{8}$/.test(x)).slice(0, 100);
+  if (typeof r.body.name === 'string' && r.body.name) { LOGIN.name = r.body.name.slice(0, 40); loginSave(); }
+  renderLogin(); renderOrders();
+}
+async function logout() {
+  if (LOGIN.t) await api('/api/logout', 'POST', {});   // 平台那边删掉这一把（没连上也照样在这里退出）
+  LOGIN.gen++; clearTimeout(LOGIN.timer);
+  Object.assign(LOGIN, { t: null, name: '', ids: [], poll: null });
+  loginSave(); loginSay(() => t('loginOut')); renderLogin(); renderOrders();
+}
+async function loginAdd() {
+  const inp = $('#loginAddId'), id = String(inp.value || '').trim().toLowerCase();
+  if (!/^[0-9a-f]{8}$/.test(id)) { loginSay(() => t('loginAddNone')(id || '-'), true); return renderLogin(); }
+  const r = await api('/api/me/claim', 'POST', { ids: [id] });
+  if (r.code === 401) return refreshMe();
+  const b = r.body || {};
+  if (r.code !== 200) { loginSay(() => L(b, 'error') || t('offlineErr'), true); return renderLogin(); }
+  if (Array.isArray(b.unknown) && b.unknown.includes(id)) { loginSay(() => t('loginAddNone')(id), true); return renderLogin(); }
+  inp.value = '';
+  loginSay(() => t('loginAdded')(id));
+  await refreshMe();
+  renderLogin();
+}
+{
+  const on = (sel, f) => { const e = $(sel); if (e) e.addEventListener('click', f); };
+  on('#loginBtn', loginStart); on('#loginCancel', loginCancel); on('#logoutBtn', logout); on('#loginAddBtn', loginAdd);
+  on('#loginOpen', () => { if (/^https:\/\/t\.me\//.test(LOGIN.link)) window.open(LOGIN.link, '_blank', 'noopener'); });
+  const ai = $('#loginAddId'); if (ai) ai.addEventListener('keydown', (e) => { if (e.key === 'Enter') loginAdd(); });
+  // 从 Telegram 切回来：马上问一次，不等下一个 2 秒
+  document.addEventListener('visibilitychange', () => { if (!document.hidden && LOGIN.poll) loginTick(LOGIN.gen); });
 }
 
 /* ---- 启动 ---- */
@@ -2048,7 +2217,8 @@ setInterval(tickUtc, 1000);
 //   同一个文件、同一个指纹：在 0x000000000.com 上打开 → 只给「下载铸造页面」；
 //   下载到电脑上双击打开（file://）→ 6 步。本机测试（127.0.0.1 / localhost）也走 6 步 —— GitHub 上的私钥外发检查就在本机跑。
 const ON_SITE = /(^|\.)0x000000000\.com$/i.test(location.hostname);
-[['#dlGate', !ON_SITE], ['#flowWrap', ON_SITE], ['#secOrders', ON_SITE]].forEach(([sel, hide]) => { const e = $(sel); if (e) e.hidden = hide; });
+// LOGINTG0X_20261120：「我的订单」那一块网站上也露出来 —— 网站上只放登录条和挂在账号下的单（renderLogin 管），6 步照旧只在下载下来的那一页
+[['#dlGate', !ON_SITE], ['#flowWrap', ON_SITE]].forEach(([sel, hide]) => { const e = $(sel); if (e) e.hidden = hide; });
 // REF0X_20260928：网站上有推荐码 → 下载的文件名带上它 + 「下载」那一块最上面说一句（带复制按钮）
 function renderRef() {
   const box = $('#dlRef'); if (!box) return;
@@ -2087,7 +2257,9 @@ if (!/^https?:$/.test(location.protocol)) {
 // 老链接（track.html、以前发出去的 #secOrder / #secOrders）和带订单号进来的：网站上的订单区已经撤掉 → 直接带到下载那一块
 if (ON_SITE && (/^#secOrders?$/.test(START_HASH) || /[?&](order=|track\b)/.test(START_QS))) setTimeout(() => toOrder(false), 300);
 applyStaticLang();
+renderLogin();
 renderOrders();
+refreshMe();
 renderSteps();
 renderBoot(false);
 // 带着订单号进来（比如 track.html 跳过来,或者他自己存的链接）就直接续 —— 网站上没有 6 步，就告诉他去下载的那一页续
