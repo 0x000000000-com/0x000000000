@@ -4,11 +4,11 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>0x000000000 — Vanity Address Foundry</title>
-<meta name="description" content="Vanity address mint for EVM and TRON. You make half the key on your own computer, we mint the other half on GPUs, and only you can put the full private key together.">
+<meta name="description" content="Vanity address mint for EVM addresses (one address works on seven networks). You make half the key on your own computer, we mint the other half on GPUs, and only you can put the full private key together.">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="0x000000000">
 <meta property="og:title" content="0x000000000 — Vanity Address Foundry">
-<meta property="og:description" content="Vanity address mint for EVM and TRON. You make half the key on your own computer, we mint the other half on GPUs, and only you can put the full private key together.">
+<meta property="og:description" content="Vanity address mint for EVM addresses (one address works on seven networks). You make half the key on your own computer, we mint the other half on GPUs, and only you can put the full private key together.">
 <meta property="og:url" content="https://0x000000000.com/">
 <meta property="og:image" content="https://0x000000000.com/og.png">
 <meta property="og:image:width" content="1200">
@@ -691,7 +691,7 @@ details.netline[open]>summary{margin-bottom:4px}
       <div class="gold-strip" id="goldStrip">
         <div class="gs-item" data-pat="0000000000" data-chain="evm"><span class="gs-l" data-i18n="gsEvm0">0x0000000000 · prefix 10</span><span class="gs-v">100 USDT</span></div>
         <div class="gs-item" data-pat="8888888888" data-chain="evm"><span class="gs-l" data-i18n="gsEvm8">0x8888888888 · prefix 10</span><span class="gs-v">100 USDT</span></div>
-        <div class="gs-item" data-pat="TXooooo" data-chain="tron"><span class="gs-l" data-i18n="gsTron">TXooooo… · TRON prefix 6</span><span class="gs-v">100 USDT</span></div>
+        <!-- TRONOFF0X_20261120：波场铸造暂停接单（DSJ 11-20「先把波场地址铸造的服务拿掉」），波场那一格拿掉 -->
         <!-- CLEANURL0X_20260924：原来是 <a href="#secOrder">，一点地址栏就多出 #secOrder。按钮只滚动，不碰地址栏。 -->
         <div class="gs-item cta"><button type="button" id="heroCta" data-i18n="heroCta">Start minting →</button></div>
       </div>
@@ -754,7 +754,7 @@ details.netline[open]>summary{margin-bottom:4px}
           <ul class="proof">
             <li data-i18n="proof1">Your half of the key is created on your own computer and only ever stored there. The platform only receives a public key (public, like a bank account number) and signatures (proof that you hold your half, without revealing it). Everything the minting page says to the platform is listed at its bottom under "Every word this page said to the platform" - check it yourself.</li>
             <li data-i18n="proof2">"Make key" needs no network: switch off Wi-Fi before clicking and it still works.</li>
-            <li><span data-i18n="proof3">This page is a single file, byte-for-byte identical to the copy published on GitHub. GitHub's machines download the live page on an hourly schedule (not guaranteed to be on time) and compare fingerprints, and run the whole flow in a real browser on every new version to check that no private key is sent; anyone can see the results. We wrote those checks - the strongest check is to compute this file's SHA-256 yourself and compare it with the one on GitHub.</span> <span class="dim"><span data-i18n="proofVer">page version</span> <span id="buildId">9579224ea64b</span></span></li>
+            <li><span data-i18n="proof3">This page is a single file, byte-for-byte identical to the copy published on GitHub. GitHub's machines download the live page on an hourly schedule (not guaranteed to be on time) and compare fingerprints, and run the whole flow in a real browser on every new version to check that no private key is sent; anyone can see the results. We wrote those checks - the strongest check is to compute this file's SHA-256 yourself and compare it with the one on GitHub.</span> <span class="dim"><span data-i18n="proofVer">page version</span> <span id="buildId">fc6b06cba344</span></span></li>
           </ul></details>
           <!-- LESSMORE0X_20260929：原来这里还有一个「下载铸造页面到自己电脑上」—— 网站上它跟下面那个大「下载」按钮重复，下载下来的那份又一直把它藏着（藏了还留下一个孤零零的「·」）。拿掉，只留「到 GitHub 核对」。 -->
           <div class="proof-links"><a href="https://github.com/0x000000000-com/0x000000000" target="_blank" rel="noopener" data-i18n="proofGh">Verify on GitHub</a></div>
@@ -1574,7 +1574,7 @@ const dict = {
     posPrefix: '前缀 Prefix', posSuffix: '后缀 Suffix', posBoth: '前+后 Both ends',
     thType: '类型 Type', thPrice: '价格 USDT', thEta: '铸造耗时',
     catalogOpen: '查看全部价格 ▸', catalogTitle: '价目表',
-    catalogTeaser: (on, off) => '两条链 · ' + on + ' 档在售' + (off ? '（另有 ' + off + ' 档铸造机暂不支持）' : ''), 
+    catalogTeaser: (on, off, nc, soon) => (nc === 1 ? '以太坊类' : nc === 2 ? '两条链' : nc + ' 条链') + ' · ' + on + ' 档在售' + (soon ? '（另有 ' + soon + ' 档即将开放）' : '') + (off ? '（另有 ' + off + ' 档铸造机暂不支持）' : ''), 
     catalogDown: '价目表暂时取不到 —— 宁可不显示，也不给你看一张可能过期的表。',
     kindPrefix: '前缀', digits: '位', sellLens: '可售位数: ',
     onlyKinds: (k) => '目前只卖：' + k + '。后缀、前后缀组合、按图案定价都还没实现 —— 不在这张表里的一律不可售。',
@@ -1616,7 +1616,7 @@ const dict = {
     // TICKER0X_20260924：顶栏那一行一直在「打字」的话。第一句是 DSJ 要的那句意思，另外两句是能自己核对的证据。
     ticker: ['我们不要你的信任 —— 我们给你证据。', '私钥从不离开你的电脑 —— 发给我们的每一句话都列给你看。', '这个页面 = GitHub 上公开的那份，一字不差 —— 你自己核对。'],
     tickerSr: '我们不要你的信任 —— 我们给你证据。',
-    gsEvm0: '0x0000000000 · 前缀10位', gsEvm8: '0x8888888888 · 前缀10位', gsTron: 'TXooooo… · TRON 前缀6位',
+    gsEvm0: '0x0000000000 · 前缀10位', gsEvm8: '0x8888888888 · 前缀10位',
     footTrack: '订单查询',
     footPartners: '招商',                    // REF0X_20260928 第 6 步：招商页
     footVerify: '认证 · 收款名片',           // VERIFY0X_20260928：认证页、付费提醒页
@@ -1843,7 +1843,7 @@ const dict = {
     posPrefix: 'Prefix', posSuffix: 'Suffix', posBoth: 'Both ends',
     thType: 'Type', thPrice: 'Price USDT', thEta: 'Mint time',
     catalogOpen: 'See all prices',  catalogTitle: 'Price list',
-    catalogTeaser: (on, off) => 'Two chains · ' + on + ' tiers on sale' + (off ? ' (' + off + ' more not supported by the minter yet)' : ''), 
+    catalogTeaser: (on, off, nc, soon) => (nc === 1 ? 'EVM' : nc === 2 ? 'Two chains' : nc + ' chains') + ' · ' + on + ' tiers on sale' + (soon ? ' (' + soon + ' more opening soon)' : '') + (off ? ' (' + off + ' more not supported by the minter yet)' : ''), 
     catalogDown: 'Price list unavailable right now — better to show nothing than a table that may be out of date.',
     kindPrefix: 'Prefix', digits: 'digits', sellLens: 'sellable lengths: ',
     onlyKinds: (k) => 'Currently on sale: ' + k + '. Suffix, both-ends and pattern-based pricing are not implemented — anything not in this table cannot be ordered.',
@@ -1879,7 +1879,7 @@ const dict = {
     cmpWhere: 'Where',
     ticker: ["We don't ask for your trust - we give you proof.", 'Your private key never leaves your computer - every message sent to us is listed for you.', 'This page = the public copy on GitHub, byte for byte - verify it yourself.'],
     tickerSr: "We don't ask for your trust - we give you proof.",
-    gsEvm0: '0x0000000000 · prefix 10', gsEvm8: '0x8888888888 · prefix 10', gsTron: 'TXooooo… · TRON prefix 6',
+    gsEvm0: '0x0000000000 · prefix 10', gsEvm8: '0x8888888888 · prefix 10',
     footTrack: 'Track an order',
     footPartners: 'Partners',
     footVerify: 'Verification · payment cards',
@@ -2089,7 +2089,7 @@ const dict = {
     posPrefix: 'Awalan', posSuffix: 'Akhiran', posBoth: 'Kedua ujung',
     thType: 'Jenis', thPrice: 'Harga USDT', thEta: 'Waktu cetak',
     catalogOpen: 'Lihat semua harga',  catalogTitle: 'Daftar harga',
-    catalogTeaser: (on, off) => 'Dua jaringan · ' + on + ' tingkat dijual' + (off ? ' (' + off + ' lagi belum didukung mesin cetak)' : ''),
+    catalogTeaser: (on, off, nc, soon) => (nc === 1 ? 'EVM' : nc === 2 ? 'Dua jaringan' : nc + ' jaringan') + ' · ' + on + ' tingkat dijual' + (soon ? ' (' + soon + ' lagi segera dibuka)' : '') + (off ? ' (' + off + ' lagi belum didukung mesin cetak)' : ''),
     catalogDown: 'Daftar harga sedang tidak tersedia — lebih baik tidak menampilkan apa-apa daripada tabel yang mungkin sudah usang.',
     kindPrefix: 'Awalan', digits: 'karakter', sellLens: 'panjang yang dijual: ',
     onlyKinds: (k) => 'Saat ini yang dijual: ' + k + '. Akhiran, kedua ujung, dan harga berdasarkan pola belum tersedia — yang tidak ada di tabel ini tidak bisa dipesan.',
@@ -2125,7 +2125,7 @@ const dict = {
     cmpWhere: 'Di mana',
     ticker: ['Kami tidak meminta kepercayaan Anda - kami memberi bukti.', 'Kunci privat Anda tidak pernah meninggalkan komputer Anda - setiap pesan yang dikirim ke kami ditampilkan untuk Anda.', 'Halaman ini = salinan publik di GitHub, byte demi byte - periksa sendiri.'],
     tickerSr: 'Kami tidak meminta kepercayaan Anda - kami memberi bukti.',
-    gsEvm0: '0x0000000000 · awalan 10', gsEvm8: '0x8888888888 · awalan 10', gsTron: 'TXooooo… · awalan TRON 6',
+    gsEvm0: '0x0000000000 · awalan 10', gsEvm8: '0x8888888888 · awalan 10',
     footTrack: 'Lacak pesanan',
     footPartners: 'Mitra',
     footVerify: 'Verifikasi · kartu pembayaran',
@@ -2510,8 +2510,10 @@ function renderTeaser() {
   const el = $('#catalogTeaser'); if (!el) return;
   if (!CATALOG) { el.textContent = ''; return; }
   const on = CATALOG.rows.filter((r) => r.orderable).length;
-  const off = CATALOG.rows.filter((r) => r.priceUsdt != null && !r.orderable).length;
-  el.textContent = t('catalogTeaser')(on, off);
+  // PRICEV2X_20261120：「即将开放」那几档（后端 soon:true）单独数；链数从目录来（TRONOFF0X 波场关了就只剩一条）
+  const soon = CATALOG.rows.filter((r) => r.soon).length;
+  const off = CATALOG.rows.filter((r) => r.priceUsdt != null && !r.orderable && !r.soon).length;
+  el.textContent = t('catalogTeaser')(on, off, (CATALOG.chains || []).length || 1, soon);
 }
 function renderCatalog() {
   const body = $('#catalogBody');
@@ -2543,7 +2545,9 @@ function renderCatalog() {
         + esc((L(r, 'kindLabel') || t('kindPrefix')) + ' ' + (r.pinned != null ? r.pinned : r.length) + ' ' + t('digits')) + '</td>'
         + '<td class="price">' + price + '</td>'
         // MINTABLE0X_20260923：定了价但铸造机做不了的,价格照写（DSJ 定的价不动）,耗时那格写明为什么不卖
-        + '<td class="eta">' + (r.mintable === false
+        // PRICEV2X_20261120：挂价不接单的档（soon）写后端给的「即将开放」那句
+        + '<td class="eta">' + (r.soon ? '<span class="soon">' + esc(L(r, 'mintTimeText')) + '</span>'
+            : r.mintable === false
             ? '<span class="soon">' + esc(f.posSoon) + '</span>'
             : esc(L(r, 'mintTimeText'))) + '</td></tr>';
     }).join('');
@@ -2885,6 +2889,7 @@ function wireOrderFlow(f) {
     el.textContent = why ? why
       : !(pre || suf) ? ''
       : !CATALOG ? f.offlineHint
+      : row && row.soon ? L(row, 'mintTimeText')      // PRICEV2X_20261120：13~15 位挂价、即将开放
       : row && row.mintable === false ? f.cantMint
       : row && row.priceUsdt == null ? f.soon + (row.suggestedUsdt != null ? '（' + f.suggest + ' ' + row.suggestedUsdt + ' USDT）' : '')
       // PLAINHINT0X_20260923：原来写「大约要试 1,099,511,627,776 次」—— 13 位数字对客户没有任何意义。
