@@ -608,6 +608,31 @@ button.run.acct-btn.in{background:rgba(201,162,39,.14);color:var(--gold-b);font-
   .titlebar:has(#acct:not([hidden]))::after{display:none}
   .titlebar:has(#acct:not([hidden])) .topnav{margin-top:0}
 }
+/* PROMOVID0X_20261121：首页的宣传片（只在网站上露出来）。DSJ 11-21「…但是因为你做的是竖屏版，所以用户看的时候不要让他们看见左右两边的黑屏」：
+   框跟片子一样是 9:16（aspect-ratio），片子铺满框（object-fit:cover；比例一样，所以一个像素都不裁）—— 哪一边都没有黑条。
+   手机（≤640）：从屏幕左边贴到右边（左右各伸出 12 像素，正好抵掉 body 在这个宽度下的边距），放在免费查上面，进来第一眼就是它；
+   宽一点（>640）：放在免费查、安全快讯的右边，高度按一屏算（屏幕高减 240，最高 640），两样并排，第一屏整个看得见。
+   喇叭在右上角、播放键在 42% 高的地方：手机上片子比一屏高，放在下面的话进来第一眼看不到。
+   外面那层 .pvtop 平时是 display:contents —— 片子藏着的时候（下载下来的那一页、拿不到片子）排法跟原来一模一样。 */
+.pvtop{display:contents}
+.pv{position:relative;aspect-ratio:9/16;margin:0 -12px 20px;background:#07080d;overflow:hidden;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.pv video{display:block;width:100%;height:100%;object-fit:cover;background:#07080d}
+.pv button{position:absolute;z-index:2;display:flex;align-items:center;justify-content:center;padding:0;cursor:pointer;color:var(--gold-b);
+  background:rgba(6,7,12,.68);border:1px solid rgba(235,198,92,.5);border-radius:50%;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+.pv button svg{display:block}
+.pv-snd{right:12px;top:12px;width:42px;height:42px}
+.pv-snd svg{width:20px;height:20px}
+.pv-snd[aria-pressed="true"]{background:rgba(201,162,39,.22)}
+.pv-play{left:50%;top:42%;width:72px;height:72px;margin:-36px 0 0 -36px}
+.pv-play svg{width:30px;height:30px;margin-left:4px}
+@media (min-width:641px){
+  .pvtop:has(> #promoVid:not([hidden])){display:grid;grid-template-columns:minmax(0,1fr) min(42%,360px,max(220px,calc((100vh - 240px) * .5625)));
+    grid-template-rows:auto 1fr;column-gap:24px;align-items:start;margin:6px 0 22px}
+  .pvtop > .pv{grid-column:2;grid-row:1 / span 2;margin:0;border-radius:12px;box-shadow:0 0 0 1px var(--line2),0 18px 40px rgba(0,0,0,.45)}
+  .pvtop:has(> #promoVid:not([hidden])) > .fc{grid-column:1;grid-row:1;margin-top:0}
+  .pvtop:has(> #promoVid:not([hidden])) > .ncards{grid-column:1;grid-row:2;margin-bottom:0}
+  .pvtop:has(> #promoVid:not([hidden])) .nc-wrap{grid-template-columns:1fr}
+}
 </style>
 </head>
 <body class="p-vanity">
@@ -661,6 +686,16 @@ button.run.acct-btn.in{background:rgba(201,162,39,.14);color:var(--gold-b);font-
 
   <div class="body" id="body">
 
+    <!-- PROMOVID0X_20261121：首页的宣传片（DSJ 11-21 05:40「可以把这个视频放在网页，让人进来就可以看。但是因为你做的是竖屏版，所以用户看的时候不要让他们看见左右两边的黑屏。」）
+         只在网站上露出来，也只在网站上才去拿片子（地址由 app.js 写进去）—— 下载下来的那一页它一直藏着、一个请求都不多发。
+         外面这一层 .pvtop 只在片子露出来时才排成左右两栏（宽屏）；平时 display:contents，排法一个像素不变。 -->
+    <div class="pvtop">
+    <section class="pv" id="promoVid" hidden>
+      <video id="pvVideo" tabindex="0" muted playsinline loop preload="none" disablepictureinpicture disableremoteplayback></video>
+      <button type="button" class="pv-play" id="pvPlay" hidden></button>
+      <button type="button" class="pv-snd" id="pvSnd" aria-pressed="false"></button>
+    </section>
+
     <!-- FREECHECK0X_20260928：首页正中间的免费查（构思 v3：像 Google、Namecheap 那样，页面上最大的就是它；框的上下边沿各一条金色代码流）。
          代码流里的「地址」是随手编的，波场、以太坊类轮着来，每一个都故意带一个那一类地址里不可能有的字（波场带「0」，以太坊类带「x」）—— 没人能照着转钱。 -->
     <section class="fc" id="secCheck" aria-labelledby="fcTitle">
@@ -688,6 +723,7 @@ button.run.acct-btn.in{background:rgba(201,162,39,.14);color:var(--gold-b);font-
       <div class="nc-head"><span id="ncHead">Security news</span> <button type="button" class="peek" id="newsAllBtn">See all 66 cases →</button></div>
       <div class="nc-wrap" id="ncWrap"></div>
     </section>
+    </div><!-- /.pvtop（PROMOVID0X_20261121） -->
 
     <!-- CONTRACT0X_20260928：入口（构思 v3 第一章：防骗提醒 · 个人靓号 · 给项目方）—— 三样东西三页，名字、颜色都不一样。
          LESSMORE0X_20260929（DSJ 09-29「可以，做吧」）：三张卡片改成一排按钮 —— 每样是什么，下面「三个铸造页」那张对照表点开就在。 -->
@@ -804,7 +840,7 @@ button.run.acct-btn.in{background:rgba(201,162,39,.14);color:var(--gold-b);font-
           <ul class="proof">
             <li data-i18n="proof1">Your half of the key is created on your own computer and only ever stored there. The platform only receives a public key (public, like a bank account number) and signatures (proof that you hold your half, without revealing it). Everything the minting page says to the platform is listed at its bottom under "Every word this page said to the platform" - check it yourself.</li>
             <li data-i18n="proof2">"Make key" needs no network: switch off Wi-Fi before clicking and it still works.</li>
-            <li><span data-i18n="proof3">This page is a single file, byte-for-byte identical to the copy published on GitHub. GitHub's machines download the live page on an hourly schedule (not guaranteed to be on time) and compare fingerprints, and run the whole flow in a real browser on every new version to check that no private key is sent; anyone can see the results. We wrote those checks - the strongest check is to compute this file's SHA-256 yourself and compare it with the one on GitHub.</span> <span class="dim"><span data-i18n="proofVer">page version</span> <span id="buildId">ed1651aeff3c</span></span></li>
+            <li><span data-i18n="proof3">This page is a single file, byte-for-byte identical to the copy published on GitHub. GitHub's machines download the live page on an hourly schedule (not guaranteed to be on time) and compare fingerprints, and run the whole flow in a real browser on every new version to check that no private key is sent; anyone can see the results. We wrote those checks - the strongest check is to compute this file's SHA-256 yourself and compare it with the one on GitHub.</span> <span class="dim"><span data-i18n="proofVer">page version</span> <span id="buildId">4dd124fa77a5</span></span></li>
           </ul></details>
           <!-- LESSMORE0X_20260929：原来这里还有一个「下载铸造页面到自己电脑上」—— 网站上它跟下面那个大「下载」按钮重复，下载下来的那份又一直把它藏着（藏了还留下一个孤零零的「·」）。拿掉，只留「到 GitHub 核对」。 -->
           <div class="proof-links"><a href="https://github.com/0x000000000-com/0x000000000" target="_blank" rel="noopener" data-i18n="proofGh">Verify on GitHub</a></div>
@@ -1768,6 +1804,7 @@ const dict = {
     loginLbl: '用 Telegram 登录：换电脑、换浏览器也看得到挂在你账号下的订单。',
     loginBtn: '用 Telegram 登录', loginOpen: '打开 Telegram', loginCancel: '取消', logoutBtn: '退出',
     hdrLogin: '登录', acctOrders: '我的订单',   // LOGINTOP0X_20261120：右上角那个登录按键
+    pvAria: '零九零宣传片（30 秒）', pvPlay: '播放', pvSndOn: '打开声音', pvSndOff: '关闭声音',   // PROMOVID0X_20261121：首页的宣传片（这几个只做按键的说明文字，页面上只画图标）
     loginWait: (code, bot) => '在 Telegram 里打开 @' + bot + '，点「确认登录（' + code + '）」—— 数字跟这里一样才点。点完这一页几秒内自己登录。',
     loginAs: (name) => '已用 Telegram 登录：' + name,
     loginDenied: '你在 Telegram 里点了「不是我」，这一页没有登录。',
@@ -2043,6 +2080,7 @@ const dict = {
     loginLbl: 'Log in with Telegram to see the orders kept with your account on any computer or browser.',
     loginBtn: 'Log in with Telegram', loginOpen: 'Open Telegram', loginCancel: 'Cancel', logoutBtn: 'Log out',
     hdrLogin: 'Log in', acctOrders: 'My orders',   // LOGINTOP0X_20261120
+    pvAria: '0x000000000 promo video (30 seconds)', pvPlay: 'Play', pvSndOn: 'Sound on', pvSndOff: 'Sound off',   // PROMOVID0X_20261121
     loginWait: (code, bot) => 'In Telegram, open @' + bot + ' and tap "Confirm login (' + code + ')" - only if the number matches this one. This page logs in by itself within a few seconds.',
     loginAs: (name) => 'Logged in with Telegram: ' + name,
     loginDenied: 'You tapped "Not me" in Telegram - this page is not logged in.',
@@ -2308,6 +2346,7 @@ const dict = {
     loginLbl: 'Masuk dengan Telegram untuk melihat pesanan yang tersimpan di akun Anda dari komputer atau browser mana pun.',
     loginBtn: 'Masuk dengan Telegram', loginOpen: 'Buka Telegram', loginCancel: 'Batal', logoutBtn: 'Keluar',
     hdrLogin: 'Masuk', acctOrders: 'Pesanan saya',   // LOGINTOP0X_20261120
+    pvAria: 'Video promosi 0x000000000 (30 detik)', pvPlay: 'Putar', pvSndOn: 'Nyalakan suara', pvSndOff: 'Matikan suara',   // PROMOVID0X_20261121
     loginWait: (code, bot) => 'Di Telegram, buka @' + bot + ' dan ketuk "Konfirmasi masuk (' + code + ')" - hanya jika angkanya sama dengan yang ini. Halaman ini akan masuk sendiri dalam beberapa detik.',
     loginAs: (name) => 'Masuk dengan Telegram: ' + name,
     loginDenied: 'Anda mengetuk "Bukan saya" di Telegram - halaman ini tidak masuk.',
@@ -2523,6 +2562,7 @@ function applyStaticLang() {
   if (typeof renderRef === 'function') renderRef();              // REF0X：推荐码那一句跟着换语言
   tickerRestart();
   if (typeof window.fcLang === 'function') window.fcLang();   // FREECHECK0X_20260928：免费查、快讯自己画出来的字也跟着换
+  if (typeof renderPromo === 'function') renderPromo();      // PROMOVID0X_20261121：宣传片按键的说明文字跟着换
 }
 function applyLang(save) {
   if (save) { try { localStorage.setItem(LANG_KEY, lang); } catch (e) {} }
@@ -3892,6 +3932,73 @@ setInterval(tickUtc, 1000);
 const ON_SITE = /(^|\.)0x000000000\.com$/i.test(location.hostname);
 // LOGINTG0X_20261120：「我的订单」那一块网站上也露出来 —— 网站上只放登录条和挂在账号下的单（renderLogin 管），6 步照旧只在下载下来的那一页
 [['#dlGate', !ON_SITE], ['#flowWrap', ON_SITE]].forEach(([sel, hide]) => { const e = $(sel); if (e) e.hidden = hide; });
+// ── PROMOVID0X_20261121：首页的宣传片（DSJ 11-21 05:40「可以把这个视频放在网页，让人进来就可以看。但是因为你做的是竖屏版，
+//   所以用户看的时候不要让他们看见左右两边的黑屏。」）—— 框是 9:16、跟片子一样（样式在 index.html 里），所以不会有黑边。
+//   只在网站上：片子的地址到这里才写进 <video>，下载下来的那一页一个请求都不多发。浏览器只许【静音】自动播放 → 静音循环放，右下角一个喇叭开声音。
+//   滚出屏幕就停、滚回来接着放；点画面暂停 / 接着放。系统设了「减少动态效果」或「省流量」就不自动放：摆第一帧 + 播放键，点了才放。
+//   拿不到片子（404、断网、浏览器放不了）→ 整块藏起来，排法回到没有它的样子。
+//   现在只有中文版：三种语言都放它；PROMO_SRC 里加一种语言（如 en: '/media/promo-en'）就换那种语言的片子。
+const PROMO_SRC = { zh: '/media/promo-zh' };
+const PV = { on: false, src: '', user: false, blocked: false, io: null };
+const PV_ICON = {
+  off: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 9.2h3.8L12 5v14l-4.7-4.2H3.5z" fill="currentColor"/><path d="M15.6 9.4l5 5.2M20.6 9.4l-5 5.2" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></svg>',
+  on: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 9.2h3.8L12 5v14l-4.7-4.2H3.5z" fill="currentColor"/><path d="M15.4 8.6a4.9 4.9 0 0 1 0 6.8M17.9 6.2a8.4 8.4 0 0 1 0 11.6" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></svg>',
+  play: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7.5 5.2v13.6L19 12z" fill="currentColor"/></svg>' };
+function renderPromo() {
+  const box = $('#promoVid'); if (!box || !PV.on) return;
+  const v = $('#pvVideo'), s = $('#pvSnd'), p = $('#pvPlay');
+  const want = PROMO_SRC[lang] || PROMO_SRC.zh;
+  if (PV.src !== want) {                                  // 第一次，或者换了一种有自己片子的语言
+    PV.src = want; v.poster = want + '.jpg'; v.src = want + '.mp4';
+    if (!PV.blocked && !PV.user) pvPlay();
+  }
+  v.setAttribute('aria-label', t('pvAria'));
+  const loud = !v.muted, lbl = loud ? t('pvSndOff') : t('pvSndOn');   // 两个都写成 t('…')：字典死词条检查按这个写法认（order-ui 测试）
+  s.setAttribute('aria-pressed', loud ? 'true' : 'false');
+  s.setAttribute('aria-label', lbl); s.title = lbl;
+  if (s.dataset.st !== (loud ? 'on' : 'off')) { s.dataset.st = loud ? 'on' : 'off'; s.innerHTML = PV_ICON[s.dataset.st]; }
+  p.setAttribute('aria-label', t('pvPlay')); p.title = t('pvPlay');
+  if (!p.firstChild) p.innerHTML = PV_ICON.play;
+  p.hidden = !(v.paused && (PV.user || PV.blocked));
+}
+function pvPlay() {
+  const v = $('#pvVideo'); if (!v || !PV.on) return;
+  const r = v.play();
+  if (r && r.catch) r.catch((e) => { if (e && e.name === 'NotAllowedError') { PV.blocked = true; renderPromo(); } });   // 浏览器不让自动放（省电模式之类）→ 摆播放键
+}
+function pvHide() {
+  PV.on = false; const box = $('#promoVid'); if (box) box.hidden = true;
+  if (PV.io) PV.io.disconnect();
+  const v = $('#pvVideo'); if (v) { try { v.pause(); v.removeAttribute('src'); v.load(); } catch (e) {} }
+}
+(() => {
+  const box = $('#promoVid'), v = $('#pvVideo'); if (!box || !v || !ON_SITE) return;
+  let save = false; try { save = !!(navigator.connection && navigator.connection.saveData); } catch (e) {}
+  PV.on = true; PV.blocked = reducedMotion || save;
+  v.muted = true; v.defaultMuted = true; v.playsInline = true;
+  v.preload = PV.blocked ? 'metadata' : 'auto';
+  v.addEventListener('error', pvHide);
+  ['play', 'pause', 'volumechange'].forEach((ev) => v.addEventListener(ev, renderPromo));
+  box.addEventListener('click', (e) => {
+    const snd = e.target.closest && e.target.closest('#pvSnd');
+    if (snd) { v.muted = !v.muted; if (!v.muted && v.paused) { PV.user = false; PV.blocked = false; pvPlay(); } return; }
+    if (v.paused) { PV.user = false; PV.blocked = false; pvPlay(); } else { PV.user = true; v.pause(); }
+  });
+  v.addEventListener('keydown', (e) => {                  // 键盘也能停 / 接着放（空格、回车）
+    if (e.key !== ' ' && e.key !== 'Enter') return;
+    e.preventDefault(); if (v.paused) { PV.user = false; PV.blocked = false; pvPlay(); } else { PV.user = true; v.pause(); }
+  });
+  box.hidden = false;
+  if ('IntersectionObserver' in window) {                 // 露出来不到 2 成就停（也不在后面一直响），回来接着放 —— 他自己按了暂停的不动。
+    //   2 成不是 3、4 成：320×640 的小手机上顶栏占得多，进来时片子只露出 3 成多，门槛高了它进来就不放（20261121 量过）
+    PV.io = new IntersectionObserver((es) => { for (const en of es) {
+      if (en.intersectionRatio >= 0.2) { if (v.paused && !PV.user && !PV.blocked) pvPlay(); }
+      else if (!v.paused) v.pause();
+    } }, { threshold: [0, 0.2] });
+    PV.io.observe(box);
+  }
+  renderPromo();
+})();
 // REF0X_20260928：网站上有推荐码 → 下载的文件名带上它 + 「下载」那一块最上面说一句（带复制按钮）
 function renderRef() {
   const box = $('#dlRef'); if (!box) return;
